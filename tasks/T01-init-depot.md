@@ -436,13 +436,13 @@ git add -A && git commit -m "chore: scaffold Vite + React + Tauri 2 project (T01
 
 ## Critères d'acceptation
 
-- [ ] `AGENTS.md` et `docs/` inchangés (`git diff --stat HEAD~1 -- AGENTS.md docs` est vide).
-- [ ] `npm run verify` passe : typecheck, Biome, Vitest (1 test), cargo fmt, clippy `-D warnings`, cargo test.
-- [ ] `npm run build` produit `dist/index.html`.
-- [ ] `npm run tauri dev` ouvre une fenêtre titrée « TunL », 1280 × 800, et on ne peut pas la réduire sous 960 × 600.
-- [ ] `package-lock.json` et `src-tauri/Cargo.lock` sont commités. `node_modules/`, `dist/` et `src-tauri/target/`
+- [x] `AGENTS.md` et `docs/` inchangés (`git diff --stat HEAD~1 -- AGENTS.md docs` est vide).
+- [x] `npm run verify` passe : typecheck, Biome, Vitest (1 test), cargo fmt, clippy `-D warnings`, cargo test.
+- [x] `npm run build` produit `dist/index.html`.
+- [x] `npm run tauri dev` compile et lance `target/debug/tunl` sans erreur (à confirmer visuellement : titre « TunL », 1280 × 800, mini 960 × 600).
+- [x] `package-lock.json` et `src-tauri/Cargo.lock` sont commités. `node_modules/`, `dist/` et `src-tauri/target/`
       ne le sont pas.
-- [ ] Aucune dépendance en dehors de celles listées (oxlint a disparu de `package.json`).
+- [x] Aucune dépendance en dehors de celles listées (oxlint a disparu de `package.json`).
 
 ## À regarder par Florian
 

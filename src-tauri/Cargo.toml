@@ -1,0 +1,28 @@
+[package]
+name = "tunl"
+version = "0.1.0"
+description = "A modern SSH, SFTP and RDP connection manager for Linux"
+authors = ["Fleorens"]
+license = "GPL-3.0-or-later"
+repository = "https://github.com/Fleorens/TunL"
+edition = "2024"
+rust-version = "1.90"
+
+[lib]
+name = "tunl_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.6", features = [] }
+
+[dependencies]
+tauri = { version = "2.11", features = [] }
+tauri-plugin-log = "2.9"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+log = "0.4"
+
+[profile.release]
+codegen-units = 1
+lto = true
+strip = true
