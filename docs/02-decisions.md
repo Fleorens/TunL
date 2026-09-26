@@ -115,11 +115,13 @@ avec retour automatique aux décorations natives.
 
 ## D14 — Identifiant et nom
 
-- Identifiant d'app (Tauri, Flatpak, D-Bus) : `io.github.fleorens.TunL`.
+- Dépôt GitHub : **`Fleorens/TunL`** (confirmé par Florian le 2026-09-26) → `https://github.com/Fleorens/TunL`.
+- Identifiant d'app (Tauri, Flatpak, D-Bus) : `io.github.fleorens.TunL`, dérivé du dépôt (exigence Flathub).
 - Nom affiché : **TunL**. Binaire et paquet : `tunl`.
 
 ## D15 — Licence
 
-**À confirmer par Florian.** Proposition : **GPL-3.0-or-later**, l'usage des apps de bureau Linux, compatible avec
+**GPL-3.0-or-later**, confirmée par Florian le 2026-09-26. C'est l'usage des apps de bureau Linux, compatible avec
 Flathub et avec les dépendances (MIT / Apache-2.0).
-En attendant, les manifestes portent `GPL-3.0-or-later` et le fichier `LICENSE` est ajouté en T39.
+Les manifestes (`package.json`, `Cargo.toml`, `tauri.conf.json`) la déclarent dès T01. Le fichier `LICENSE`
+(texte intégral de la GPL v3) est ajouté en T39.

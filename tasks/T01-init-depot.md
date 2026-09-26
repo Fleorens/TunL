@@ -53,6 +53,7 @@ rm -rf src/assets src/App.css src/index.css public/icons.svg public/favicon.svg 
   "version": "0.1.0",
   "type": "module",
   "license": "GPL-3.0-or-later",
+  "repository": { "type": "git", "url": "git+https://github.com/Fleorens/TunL.git" },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -280,6 +281,7 @@ version = "0.1.0"
 description = "A modern SSH, SFTP and RDP connection manager for Linux"
 authors = ["Fleorens"]
 license = "GPL-3.0-or-later"
+repository = "https://github.com/Fleorens/TunL"
 edition = "2024"
 rust-version = "1.90"
 
@@ -382,6 +384,7 @@ pub fn run() {
     "shortDescription": "SSH, SFTP and RDP connection manager",
     "longDescription": "TunL is a modern, keyboard-first SSH, SFTP and RDP connection manager for Linux.",
     "license": "GPL-3.0-or-later",
+    "homepage": "https://github.com/Fleorens/TunL",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
