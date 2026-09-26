@@ -61,7 +61,30 @@
   "statusbar": {
     "activeSessions_one": "{{count}} active session",
     "activeSessions_other": "{{count}} active sessions",
-    "via": "via {{name}}"
+    "via": "via {{name}}",
+    "version": "v{{version}}",
+    "mockBackend": "Mock backend"
+  },
+  "errors": {
+    "kind": {
+      "notFound": "Not found",
+      "validation": "Invalid value",
+      "io": "File system error",
+      "store": "Your connections could not be read or saved",
+      "secret": "Keyring error",
+      "network": "Connection failed",
+      "timeout": "Timed out",
+      "auth": "Authentication failed",
+      "hostKeyRejected": "Host key rejected",
+      "hostKeyChanged": "The server's host key has changed",
+      "cancelled": "Cancelled",
+      "sftp": "File transfer error",
+      "rdpClientMissing": "No RDP client found",
+      "rdp": "RDP error",
+      "wol": "Wake-on-LAN error",
+      "inUse": "Still in use",
+      "internal": "Unexpected error"
+    }
   },
   "home": {
     "welcomeTitle": "Welcome to TunL",

@@ -754,17 +754,17 @@ git add -A && git commit -m "feat: Rust foundation, ts-rs bindings and typed IPC
 
 ## Critères d'acceptation
 
-- [ ] `npm run verify` passe : au moins 9 tests Rust (dont les 4 `export_bindings_*`) et tous les tests TS.
-- [ ] `src/bindings/` contient `AppError.ts`, `AppInfo.ts`, `ErrorDetail.ts` et `ErrorKind.ts`, et `AppInfo.ts`
+- [x] `npm run verify` passe : au moins 9 tests Rust (dont les 4 `export_bindings_*`) et tous les tests TS.
+- [x] `src/bindings/` contient `AppError.ts`, `AppInfo.ts`, `ErrorDetail.ts` et `ErrorKind.ts`, et `AppInfo.ts`
       déclare `startedAtMs: number` (pas `bigint`).
-- [ ] `grep -rn "invoke(" src --include=*.ts --include=*.tsx | grep -v "src/lib/ipc.ts"` est vide.
+- [x] `grep -rn "invoke(" src --include=*.ts --include=*.tsx | grep -v "src/lib/ipc.ts"` est vide.
 - [ ] Dans un navigateur sur `http://localhost:1420` (`npm run dev`), la StatusBar affiche « Mock backend » et
       `v0.1.0-mock`.
 - [ ] Dans `npm run tauri dev`, la StatusBar affiche `v0.1.0`, **sans** badge « Mock backend ».
 - [ ] Relancer l'app alors qu'elle tourne déjà ramène la fenêtre existante au premier plan, sans en ouvrir une seconde.
 - [ ] La fenêtre retrouve sa taille et sa position d'un lancement à l'autre.
 - [ ] Le binaire de release s'affiche correctement (même rendu qu'en dev).
-- [ ] Les dossiers de configuration et de données sont en `700`.
+- [x] Les dossiers de configuration et de données sont en `700`.
 
 ## À regarder par Florian
 

@@ -63,7 +63,30 @@
     "activeSessions_one": "{{count}} session active",
     "activeSessions_many": "{{count}} de sessions actives",
     "activeSessions_other": "{{count}} sessions actives",
-    "via": "via {{name}}"
+    "via": "via {{name}}",
+    "version": "v{{version}}",
+    "mockBackend": "Backend simulé"
+  },
+  "errors": {
+    "kind": {
+      "notFound": "Introuvable",
+      "validation": "Valeur invalide",
+      "io": "Erreur du système de fichiers",
+      "store": "Impossible de lire ou d'enregistrer vos connexions",
+      "secret": "Erreur du trousseau",
+      "network": "Échec de la connexion",
+      "timeout": "Délai dépassé",
+      "auth": "Échec de l'authentification",
+      "hostKeyRejected": "Clé d'hôte refusée",
+      "hostKeyChanged": "La clé d'hôte du serveur a changé",
+      "cancelled": "Annulé",
+      "sftp": "Erreur de transfert de fichiers",
+      "rdpClientMissing": "Aucun client RDP trouvé",
+      "rdp": "Erreur RDP",
+      "wol": "Erreur Wake-on-LAN",
+      "inUse": "Encore utilisé",
+      "internal": "Erreur inattendue"
+    }
   },
   "home": {
     "welcomeTitle": "Bienvenue sur TunL",
