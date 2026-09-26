@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Logo, Wordmark } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { AtomsSection } from "@/dev/gallery/AtomsSection";
@@ -6,12 +7,16 @@ import { ColorsSection } from "@/dev/gallery/ColorsSection";
 import { ControlsSection } from "@/dev/gallery/ControlsSection";
 import { OverlaysSection } from "@/dev/gallery/OverlaysSection";
 import { TypographySection } from "@/dev/gallery/TypographySection";
+import { type LanguagePreference, setLanguage } from "@/i18n";
 import { applyTheme, type ThemeMode } from "@/lib/theme";
 
 const THEMES: ThemeMode[] = ["system", "dark", "light"];
+const LANGUAGES: LanguagePreference[] = ["system", "en", "fr"];
 
 export function Gallery() {
   const [mode, setMode] = useState<ThemeMode>("system");
+  const [preference, setPreference] = useState<LanguagePreference>("system");
+  const { t } = useTranslation();
 
   useEffect(() => applyTheme(mode), [mode]);
 
@@ -29,7 +34,21 @@ export function Gallery() {
               size="sm"
               onClick={() => setMode(m)}
             >
-              {m === "system" ? "System" : m === "dark" ? "Dark" : "Light"}
+              {t(`theme.${m}`)}
+            </Button>
+          ))}
+          <div className="mx-1 h-6 w-px bg-border" />
+          {LANGUAGES.map((p) => (
+            <Button
+              key={p}
+              variant={preference === p ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setPreference(p);
+                void setLanguage(p);
+              }}
+            >
+              {p === "system" ? t("language.system") : p === "en" ? "English" : "Français"}
             </Button>
           ))}
         </div>

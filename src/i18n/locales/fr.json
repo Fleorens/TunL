@@ -1,0 +1,33 @@
+{
+  "app": {
+    "name": "TunL",
+    "tagline": "Gestionnaire de connexions SSH, SFTP et RDP"
+  },
+  "common": {
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "close": "Fermer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "retry": "Réessayer",
+    "search": "Rechercher",
+    "details": "Détails"
+  },
+  "status": {
+    "online": "En ligne",
+    "connecting": "Connexion…",
+    "offline": "Hors ligne",
+    "error": "Erreur",
+    "unknown": "Inconnu"
+  },
+  "theme": {
+    "system": "Système",
+    "dark": "Sombre",
+    "light": "Clair"
+  },
+  "language": {
+    "system": "Langue du système",
+    "en": "English",
+    "fr": "Français"
+  }
+}

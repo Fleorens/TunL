@@ -1,0 +1,33 @@
+{
+  "app": {
+    "name": "TunL",
+    "tagline": "SSH, SFTP and RDP connection manager"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "delete": "Delete",
+    "edit": "Edit",
+    "retry": "Retry",
+    "search": "Search",
+    "details": "Details"
+  },
+  "status": {
+    "online": "Online",
+    "connecting": "Connecting",
+    "offline": "Offline",
+    "error": "Error",
+    "unknown": "Unknown"
+  },
+  "theme": {
+    "system": "System",
+    "dark": "Dark",
+    "light": "Light"
+  },
+  "language": {
+    "system": "System language",
+    "en": "English",
+    "fr": "Français"
+  }
+}
