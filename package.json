@@ -17,6 +17,8 @@
     "check": "biome check .",
     "format": "biome check --write .",
     "test": "vitest run",
+    "e2e": "playwright test",
+    "review": "npm run verify && npm run e2e",
     "bindings": "cd src-tauri && cargo test export_bindings",
     "verify:rust": "cd src-tauri && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test",
     "verify": "npm run typecheck && npm run check && npm run test && npm run verify:rust"
@@ -45,6 +47,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.14",
+    "@playwright/test": "~1.63",
     "@tauri-apps/cli": "^2.11.5",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",

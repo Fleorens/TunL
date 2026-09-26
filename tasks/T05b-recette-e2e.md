@@ -119,7 +119,7 @@ test("closing every tab shows the welcome screen", async ({ page }) => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe : `verify` puis 6 scénarios e2e verts.
-- [ ] `e2e/shell.spec.ts` contient les 5 tests fournis **inchangés** (vérifiable par `git diff` avec la fiche),
+- [x] `npm run review` passe : `verify` puis 6 scénarios e2e verts.
+- [x] `e2e/shell.spec.ts` contient les 5 tests fournis **inchangés** (vérifiable par `git diff` avec la fiche),
       plus le test n° 6.
-- [ ] Aucun navigateur téléchargé : `ls ~/.cache/ms-playwright 2>/dev/null` est vide ou absent.
+- [x] Aucun navigateur téléchargé : `ls ~/.cache/ms-playwright 2>/dev/null` est vide ou absent.
