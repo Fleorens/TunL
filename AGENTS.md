@@ -18,6 +18,9 @@ Un orchestrateur a écrit l'architecture (`docs/`) et découpé le travail en fi
 5. Termine par `npm run format`, puis `npm run verify`. Tout doit être vert.
 6. Dans la fiche, coche les critères d'acceptation vérifiés (`- [x]`). Dans `tasks/README.md`, passe le statut
    de la fiche à `livrée`.
+   ⚠ Tu n'as **pas d'accès visuel**. Un critère qui se juge à l'écran (couleur, animation, disposition, texte
+   affiché dans la fenêtre) reste **décoché**, sans en modifier le libellé. Tu le signales dans ton compte rendu,
+   et l'orchestrateur le vérifie par captures d'écran.
 7. Commit : `git add -A && git commit -m "<type>: <résumé en anglais> (Txx)"`,
    avec `<type>` ∈ `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`, `ci`.
 8. Réponds par un **compte rendu** :
