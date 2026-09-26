@@ -206,7 +206,8 @@ export function disableNativeContextMenu(): void {
 }
 ```
 
-Dans `src/main.tsx`, avant `createRoot` : `if (import.meta.env.PROD) { disableNativeContextMenu(); }`.
+Dans `src/main.tsx`, juste après l'appel existant `primeTheme("system");` (ajouté à la relecture de T03, à garder
+tel quel) : `if (import.meta.env.PROD) { disableNativeContextMenu(); }`.
 En dev, on garde le menu natif, qui donne accès à l'inspecteur.
 
 ### 4. `src/features/connections/filter.ts` (réutilisé tel quel en T09)

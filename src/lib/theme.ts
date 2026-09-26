@@ -14,8 +14,21 @@ export function resolveTheme(mode: ThemeMode, systemPrefersDark: boolean): Resol
 
 function setDocumentTheme(theme: ResolvedTheme): void {
   const root = document.documentElement;
+  if (root.classList.contains("dark") === (theme === "dark") && root.style.colorScheme === theme) {
+    return;
+  }
+  // Freeze CSS transitions while switching, otherwise components with `transition-all`
+  // (shadcn buttons…) animate from the old palette and show a half-switched frame.
+  root.classList.add("theme-switching");
   root.classList.toggle("dark", theme === "dark");
   root.style.colorScheme = theme;
+  void window.getComputedStyle(root).colorScheme; // flush styles while transitions are off
+  window.setTimeout(() => root.classList.remove("theme-switching"), 1);
+}
+
+/** Applies the theme synchronously, without following the system. Call once before the first render. */
+export function primeTheme(mode: ThemeMode): void {
+  setDocumentTheme(resolveTheme(mode, window.matchMedia(DARK_QUERY).matches));
 }
 
 /** Applies the theme now and follows the system while mode is "system". Returns a cleanup function. */

@@ -185,6 +185,15 @@
   backdrop-filter: blur(20px) saturate(1.4);
 }
 
+/* Set for one frame by lib/theme.ts while the palette switches. Unlayered on purpose:
+   it then beats Tailwind utilities such as `transition-all` without needing !important. */
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition: none;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

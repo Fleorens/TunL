@@ -235,6 +235,10 @@ Courbe par défaut : `ease-out-soft` (`cubic-bezier(0.22, 1, 0.36, 1)`).
 3. **Pastille « en connexion »** : anneau qui pulse (`scale 1 → 2.2`, `opacity 0.6 → 0`, 1,4 s, boucle).
 4. **Cartes au survol** : `translate-y-[-1px]`, `border-border-strong`, `shadow-elevated`, 120 ms.
 
+**Changement de thème** : jamais animé. Le thème est posé **avant** le premier rendu (`primeTheme` dans `main.tsx`),
+et chaque bascule gèle les transitions CSS pendant une frame (classe `theme-switching`, `src/lib/theme.ts`).
+Sinon, les composants en `transition-all` affichent une frame à moitié dans l'ancienne palette.
+
 **Réduction des animations** : si `prefers-reduced-motion: reduce` **ou** le réglage `ui.reduceMotion = "on"`, toutes
 les durées tombent à 0 et les boucles s'arrêtent (anneau statique). Avec motion, on utilise `MotionConfig reducedMotion`.
 
