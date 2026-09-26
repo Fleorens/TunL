@@ -20,6 +20,62 @@
     "error": "Erreur",
     "unknown": "Inconnu"
   },
+  "topbar": {
+    "toggleSidebar": "Afficher ou masquer la barre latérale",
+    "searchPlaceholder": "Rechercher ou se connecter…",
+    "newConnection": "Nouvelle",
+    "settings": "Paramètres"
+  },
+  "sidebar": {
+    "filterPlaceholder": "Filtrer les connexions…",
+    "favorites": "Favoris",
+    "recents": "Récents",
+    "groups": "Groupes",
+    "ungrouped": "Sans groupe",
+    "results": "Résultats",
+    "noResults": "Aucune connexion ne correspond à « {{query}} »",
+    "count_one": "{{count}} connexion",
+    "count_many": "{{count}} de connexions",
+    "count_other": "{{count}} connexions",
+    "import": "Importer des connexions",
+    "viaBastion": "Via {{name}}",
+    "moreActions": "Autres actions pour {{name}}",
+    "createGroup": "Créer un groupe"
+  },
+  "connectionMenu": {
+    "connect": "Se connecter",
+    "openSftp": "Ouvrir en SFTP",
+    "wake": "Réveiller",
+    "edit": "Modifier",
+    "duplicate": "Dupliquer",
+    "addFavorite": "Ajouter aux favoris",
+    "removeFavorite": "Retirer des favoris",
+    "moveToGroup": "Déplacer vers le groupe",
+    "copyAddress": "Copier user@hôte",
+    "delete": "Supprimer"
+  },
+  "tabs": {
+    "label": "Sessions ouvertes",
+    "new": "Nouvelle session",
+    "close": "Fermer {{name}}"
+  },
+  "statusbar": {
+    "activeSessions_one": "{{count}} session active",
+    "activeSessions_many": "{{count}} de sessions actives",
+    "activeSessions_other": "{{count}} sessions actives",
+    "via": "via {{name}}"
+  },
+  "home": {
+    "welcomeTitle": "Bienvenue sur TunL",
+    "welcomeDescription": "Ajoutez une première machine, ou reprenez celles déjà listées dans ~/.ssh/config.",
+    "newConnection": "Nouvelle connexion",
+    "importSshConfig": "Importer ~/.ssh/config",
+    "quickConnect": "Connexion rapide"
+  },
+  "shell": {
+    "notYetAvailable": "Bientôt disponible",
+    "sessionPlaceholder": "La session « {{name}} » s'affichera ici."
+  },
   "theme": {
     "system": "Système",
     "dark": "Sombre",

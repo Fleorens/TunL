@@ -3,8 +3,13 @@ import { describe, expect, it } from "vitest";
 import { App } from "./App";
 
 describe("App", () => {
-  it("shows the design system gallery", () => {
+  it("renders the shell with an active tab", () => {
     render(<App />);
-    expect(screen.getByRole("heading", { name: "Design system" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Search or connect/ })).toBeInTheDocument();
+  });
+
+  it("hides the welcome screen while a tab is open", () => {
+    render(<App />);
+    expect(screen.queryByRole("heading", { name: "Welcome to TunL" })).not.toBeInTheDocument();
   });
 });

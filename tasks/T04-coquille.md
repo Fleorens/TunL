@@ -718,10 +718,10 @@ git add -A && git commit -m "feat: application shell with demo data (T04)"
 
 ## Critères d'acceptation
 
-- [ ] `npm run verify` passe.
-- [ ] Aucun texte d'interface en dur dans `src/features/` : chaque chaîne visible vient de `t()`, sauf les données de
+- [x] `npm run verify` passe.
+- [x] Aucun texte d'interface en dur dans `src/features/` : chaque chaîne visible vient de `t()`, sauf les données de
       démonstration.
-- [ ] `grep -rn "invoke(" src` est vide (pas d'IPC dans cette fiche).
+- [x] `grep -rn "invoke(" src` est vide (pas d'IPC dans cette fiche).
 - [ ] Dans l'app (`npm run tauri dev`) :
   - [ ] la barre latérale se redimensionne entre 220 et 400 px, et `Ctrl+Shift+B` la replie et la déplie ;
   - [ ] `Ctrl+Shift+E` met le focus dans le filtre, et taper « prod » réduit la liste ;

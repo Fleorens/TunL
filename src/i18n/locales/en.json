@@ -20,6 +20,60 @@
     "error": "Error",
     "unknown": "Unknown"
   },
+  "topbar": {
+    "toggleSidebar": "Toggle sidebar",
+    "searchPlaceholder": "Search or connect…",
+    "newConnection": "New",
+    "settings": "Settings"
+  },
+  "sidebar": {
+    "filterPlaceholder": "Filter connections…",
+    "favorites": "Favorites",
+    "recents": "Recent",
+    "groups": "Groups",
+    "ungrouped": "Ungrouped",
+    "results": "Results",
+    "noResults": "No connection matches “{{query}}”",
+    "count_one": "{{count}} connection",
+    "count_other": "{{count}} connections",
+    "import": "Import connections",
+    "viaBastion": "Via {{name}}",
+    "moreActions": "More actions for {{name}}",
+    "createGroup": "Create a group"
+  },
+  "connectionMenu": {
+    "connect": "Connect",
+    "openSftp": "Open in SFTP",
+    "wake": "Wake up",
+    "edit": "Edit",
+    "duplicate": "Duplicate",
+    "addFavorite": "Add to favorites",
+    "removeFavorite": "Remove from favorites",
+    "moveToGroup": "Move to group",
+    "copyAddress": "Copy user@host",
+    "delete": "Delete"
+  },
+  "tabs": {
+    "label": "Open sessions",
+    "new": "New session",
+    "close": "Close {{name}}"
+  },
+  "statusbar": {
+    "activeSessions_one": "{{count}} active session",
+    "activeSessions_other": "{{count}} active sessions",
+    "via": "via {{name}}"
+  },
+  "home": {
+    "welcomeTitle": "Welcome to TunL",
+    "welcomeDescription": "Add your first machine, or bring in the ones already listed in ~/.ssh/config.",
+    "newConnection": "New connection",
+    "importSshConfig": "Import ~/.ssh/config",
+    "quickConnect": "Quick connect"
+  },
+  "shell": {
+    "notYetAvailable": "Coming soon",
+    "sessionPlaceholder": "The session “{{name}}” will be displayed here."
+  },
   "theme": {
     "system": "System",
     "dark": "Dark",
