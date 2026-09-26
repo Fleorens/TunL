@@ -1,11 +1,11 @@
 import { Plus, X } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { ProtocolIcon } from "@/components/ProtocolIcon";
 import { StatusDot } from "@/components/StatusDot";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { notifyComingSoon } from "@/features/shell/coming-soon";
 import type { DemoTab } from "@/features/shell/demo-data";
 import { useDemoTabs } from "@/features/shell/demo-data";
 import { cn } from "@/lib/utils";
@@ -94,7 +94,7 @@ export function TabBar() {
             variant="ghost"
             size="icon-xs"
             aria-label={t("tabs.new")}
-            onClick={() => toast("shell.notYetAvailable")}
+            onClick={notifyComingSoon}
           >
             <Plus className="size-4" />
           </Button>

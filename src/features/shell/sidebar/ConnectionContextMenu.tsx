@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import type { ReactElement } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import {
   ContextMenu,
   ContextMenuCheckboxItem,
@@ -23,6 +22,7 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { notifyComingSoon } from "@/features/shell/coming-soon";
 import type { DemoConnection, DemoGroup } from "@/features/shell/demo-data";
 
 interface ConnectionContextMenuProps {
@@ -38,26 +38,24 @@ export function ConnectionContextMenu({
 }: ConnectionContextMenuProps) {
   const { t } = useTranslation();
 
-  const soon = () => toast("shell.notYetAvailable");
-
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
       <ContextMenuContent>
-        <ContextMenuItem onClick={soon}>
+        <ContextMenuItem onClick={notifyComingSoon}>
           <LogIn className="size-3.5" />
           {t("connectionMenu.connect")}
         </ContextMenuItem>
 
         {connection.protocol === "ssh" && (
-          <ContextMenuItem onClick={soon}>
+          <ContextMenuItem onClick={notifyComingSoon}>
             <FolderTree className="size-3.5" />
             {t("connectionMenu.openSftp")}
           </ContextMenuItem>
         )}
 
         {connection.tags.includes("wol") && (
-          <ContextMenuItem onClick={soon}>
+          <ContextMenuItem onClick={notifyComingSoon}>
             <Power className="size-3.5" />
             {t("connectionMenu.wake")}
           </ContextMenuItem>
@@ -65,16 +63,16 @@ export function ConnectionContextMenu({
 
         <ContextMenuSeparator />
 
-        <ContextMenuItem onClick={soon}>
+        <ContextMenuItem onClick={notifyComingSoon}>
           <Pencil className="size-3.5" />
           {t("connectionMenu.edit")}
         </ContextMenuItem>
-        <ContextMenuItem onClick={soon}>
+        <ContextMenuItem onClick={notifyComingSoon}>
           <Copy className="size-3.5" />
           {t("connectionMenu.duplicate")}
         </ContextMenuItem>
 
-        <ContextMenuCheckboxItem checked={connection.favorite} onClick={soon}>
+        <ContextMenuCheckboxItem checked={connection.favorite} onClick={notifyComingSoon}>
           <Star className="size-3.5" fill={connection.favorite ? "currentColor" : "none"} />
           {connection.favorite
             ? t("connectionMenu.removeFavorite")
@@ -88,21 +86,21 @@ export function ConnectionContextMenu({
           </ContextMenuSubTrigger>
           <ContextMenuSubContent>
             {groups.map((group) => (
-              <ContextMenuItem key={group.id} onClick={soon}>
+              <ContextMenuItem key={group.id} onClick={notifyComingSoon}>
                 {group.name}
               </ContextMenuItem>
             ))}
           </ContextMenuSubContent>
         </ContextMenuSub>
 
-        <ContextMenuItem onClick={soon}>
+        <ContextMenuItem onClick={notifyComingSoon}>
           <AtSign className="size-3.5" />
           {t("connectionMenu.copyAddress")}
         </ContextMenuItem>
 
         <ContextMenuSeparator />
 
-        <ContextMenuItem variant="destructive" onClick={soon}>
+        <ContextMenuItem variant="destructive" onClick={notifyComingSoon}>
           <Trash2 className="size-3.5" />
           {t("connectionMenu.delete")}
         </ContextMenuItem>

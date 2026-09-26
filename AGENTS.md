@@ -67,6 +67,9 @@ Rust édition 2024 · tokio · russh 0.63 · russh-sftp 3 · oo7 0.6 · ts-rs 12
 | xterm.js | `@xterm/xterm`, `@xterm/addon-fit`… | `xterm`, `xterm-addon-fit` |
 | russh | `russh::keys::*` (clés, known_hosts, agent) | crate `russh-keys` |
 | Lint / format | Biome (`npm run check`) | ESLint, Prettier, oxlint |
+| Enfant d'un `asChild` (Radix) | le composant accepte `ComponentProps<"button">` et **propage** le reste des props (`{...props}`) : c'est par là que passent `onContextMenu`, `ref`… | un composant qui ne garde que ses props à lui (le menu ne s'ouvre jamais) |
+| Toasts | `toast(t("cle"))` ou un helper qui appelle `i18n.t(...)` | `toast("cle")` (affiche la clé brute) |
+| Utilitaire CSS maison (`@utility`) | une variante dédiée (ex. `bg-brand-soft`) | un modificateur d'opacité (`bg-brand-gradient/10` ne produit rien) |
 
 ## Règles de code
 

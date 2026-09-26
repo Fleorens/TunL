@@ -152,7 +152,7 @@ sur son fond prévu.
 
 (`--font-sans` existe déjà dans le bloc généré : **remplacer** la ligne, ne pas la dupliquer.)
 
-### 1.3 Utilitaires à ajouter après les blocs `:root` / `.dark`
+### 1.3 Utilitaires (après les blocs `:root` / `.dark`)
 
 ```css
 @utility bg-brand-gradient {
@@ -162,6 +162,13 @@ sur son fond prévu.
   background-image: linear-gradient(135deg, var(--brand-from), var(--brand-to));
   background-clip: text;
   color: transparent;
+}
+@utility bg-brand-soft {
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--brand-from) 16%, transparent),
+    color-mix(in oklch, var(--brand-to) 16%, transparent)
+  );
 }
 @utility glass {
   background-color: var(--glass);
@@ -297,7 +304,7 @@ Mot-symbole : `TunL` en `font-semibold tracking-tight`, le `L` final en `text-br
 | `ProtocolIcon` | icône du protocole | icône §5 colorée `text-protocol-<p>` |
 | `ProtocolBadge` | badge `SSH` / `RDP` / `SFTP` | `font-mono text-[10px] font-semibold uppercase`, fond `bg-protocol-<p>/12`, texte `text-protocol-<p>`, `rounded-full px-1.5 py-0.5` |
 | `SectionHeader` | titre de section de la sidebar ou de l'accueil | titre §2 + action optionnelle à droite (bouton icône `xs`) |
-| `EmptyState` | écran vide | s'appuie sur le composant shadcn `empty` : icône 40 px dans un halo `bg-brand-gradient/10`, titre, texte, 1 ou 2 actions |
+| `EmptyState` | écran vide | s'appuie sur le composant shadcn `empty` : icône 40 px dans un halo `bg-brand-soft` (⚠ `bg-brand-gradient/10` ne marche pas : un `@utility` maison n'accepte pas de modificateur d'opacité), titre, texte, 1 ou 2 actions |
 | `ShortcutHint` | raccourci affiché | composant shadcn `kbd` ; reçoit `keys: string[]` (`["Ctrl","Shift","P"]`) |
 
 Composants shadcn utilisés (générés par le CLI, voir T02) : `button`, `input`, `label`, `textarea`, `select`, `switch`,

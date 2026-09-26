@@ -1,13 +1,11 @@
 import { PanelLeft, Plus, Search, Settings2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { Logo, Wordmark } from "@/components/Logo";
 import { ShortcutHint } from "@/components/ShortcutHint";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { notifyComingSoon } from "@/features/shell/coming-soon";
 import { useUi } from "@/features/shell/ui-store";
-
-const ComingSoon = () => toast("shell.notYetAvailable");
 
 export function TopBar() {
   const { t } = useTranslation();
@@ -35,7 +33,7 @@ export function TopBar() {
       <div className="flex flex-1 justify-center">
         <button
           type="button"
-          onClick={ComingSoon}
+          onClick={notifyComingSoon}
           className="flex h-8 w-full max-w-115 items-center gap-2 rounded-md border bg-background/60 px-3 text-muted-foreground transition-colors duration-120 hover:border-border-strong hover:text-foreground"
         >
           <Search className="size-4" />
@@ -44,7 +42,7 @@ export function TopBar() {
         </button>
       </div>
 
-      <Button size="sm" onClick={ComingSoon}>
+      <Button size="sm" onClick={notifyComingSoon}>
         <Plus className="size-4" />
         {t("topbar.newConnection")}
       </Button>
@@ -55,7 +53,7 @@ export function TopBar() {
             variant="ghost"
             size="icon-sm"
             aria-label={t("topbar.settings")}
-            onClick={ComingSoon}
+            onClick={notifyComingSoon}
           >
             <Settings2 className="size-4" />
           </Button>

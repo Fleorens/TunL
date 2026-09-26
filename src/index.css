@@ -180,6 +180,13 @@
   background-clip: text;
   color: transparent;
 }
+@utility bg-brand-soft {
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--brand-from) 16%, transparent),
+    color-mix(in oklch, var(--brand-to) 16%, transparent)
+  );
+}
 @utility glass {
   background-color: var(--glass);
   backdrop-filter: blur(20px) saturate(1.4);

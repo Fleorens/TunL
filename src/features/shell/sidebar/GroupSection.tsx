@@ -20,8 +20,6 @@ export function GroupSection({ title, color, count, children }: GroupSectionProp
       <CollapsibleTrigger asChild>
         <button
           type="button"
-          aria-expanded={open}
-          onClick={() => setOpen((value) => !value)}
           className="flex h-7 w-full items-center gap-2 px-2 text-left text-sm select-none"
         >
           <ChevronRight

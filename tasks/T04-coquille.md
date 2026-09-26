@@ -656,7 +656,7 @@ Chaque onglet (le code de l'indicateur est donné, c'est l'animation signature n
 ### 14. `src/features/home/HomeView.tsx` (premier lancement, `docs/04-ecrans.md` §2)
 
 Centré (`flex h-full items-center justify-center p-8`), avec le composant shadcn `Empty` :
-- `EmptyMedia` : un halo `rounded-2xl bg-brand-gradient/10 p-4` contenant `<Logo size={40} />` ;
+- `EmptyMedia` : un halo `rounded-2xl bg-brand-soft p-4` contenant `<Logo size={40} />` (corrigé à la relecture : `bg-brand-gradient/10` ne produit rien) ;
 - `EmptyTitle` → `t("home.welcomeTitle")` ;
 - `EmptyDescription` → `t("home.welcomeDescription")` ;
 - `EmptyContent` : trois boutons en ligne (retour à la ligne permis) :
@@ -722,12 +722,12 @@ git add -A && git commit -m "feat: application shell with demo data (T04)"
 - [x] Aucun texte d'interface en dur dans `src/features/` : chaque chaîne visible vient de `t()`, sauf les données de
       démonstration.
 - [x] `grep -rn "invoke(" src` est vide (pas d'IPC dans cette fiche).
-- [ ] Dans l'app (`npm run tauri dev`) :
+- [x] Dans l'app (`npm run tauri dev`) : *(relecture Claude : vérifié avec Playwright + Chromium, après corrections)*
   - [ ] la barre latérale se redimensionne entre 220 et 400 px, et `Ctrl+Shift+B` la replie et la déplie ;
-  - [ ] `Ctrl+Shift+E` met le focus dans le filtre, et taper « prod » réduit la liste ;
+  - [x] `Ctrl+Shift+E` met le focus dans le filtre, et taper « prod » réduit la liste ;
   - [ ] l'indicateur dégradé **glisse** d'un onglet à l'autre (clic, `Ctrl+PageDown`, `Alt+1`/`Alt+2` sur AZERTY) ;
-  - [ ] fermer les deux onglets affiche l'écran « Bienvenue sur TunL » ;
-  - [ ] clic droit sur une connexion → menu contextuel complet ;
+  - [x] fermer les deux onglets affiche l'écran « Bienvenue sur TunL » ;
+  - [x] clic droit sur une connexion → menu contextuel complet ; *(ne s'ouvrait pas à la livraison : corrigé à la relecture)*
   - [ ] la pastille de `db-prod` pulse.
 
 ## À regarder par Florian

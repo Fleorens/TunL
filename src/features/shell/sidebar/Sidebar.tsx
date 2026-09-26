@@ -1,18 +1,17 @@
 import { FileInput, Search } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { SectionHeader } from "@/components/SectionHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { filterConnections } from "@/features/connections/filter";
+import { notifyComingSoon } from "@/features/shell/coming-soon";
 import type { DemoConnection, DemoGroup } from "@/features/shell/demo-data";
 import { ConnectionContextMenu } from "@/features/shell/sidebar/ConnectionContextMenu";
 import { ConnectionRow } from "@/features/shell/sidebar/ConnectionRow";
 import { GroupSection } from "@/features/shell/sidebar/GroupSection";
-import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   connections: readonly DemoConnection[];
@@ -21,18 +20,24 @@ interface SidebarProps {
 
 const byName = (a: DemoConnection, b: DemoConnection) => a.name.localeCompare(b.name);
 
-/** A flat list of selectable connection rows, used by every sidebar section. */
-function ConnectionsList({ connections }: { connections: readonly DemoConnection[] }) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+interface ConnectionsListProps {
+  connections: readonly DemoConnection[];
+  groups: readonly DemoGroup[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}
 
+/** A list of connection rows. Selection is owned by the Sidebar so only one row is ever highlighted. */
+function ConnectionsList({ connections, groups, selectedId, onSelect }: ConnectionsListProps) {
   return (
     <div className="flex flex-col gap-0.5">
       {connections.map((connection) => (
-        <ConnectionContextMenu key={connection.id} connection={connection} groups={[]}>
+        <ConnectionContextMenu key={connection.id} connection={connection} groups={groups}>
           <ConnectionRow
             connection={connection}
             selected={connection.id === selectedId}
-            onSelect={() => setSelectedId(connection.id)}
+            onSelect={() => onSelect(connection.id)}
+            onActivate={notifyComingSoon}
           />
         </ConnectionContextMenu>
       ))}
@@ -43,6 +48,8 @@ function ConnectionsList({ connections }: { connections: readonly DemoConnection
 export function Sidebar({ connections, groups }: SidebarProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const listProps = { groups, selectedId, onSelect: setSelectedId };
 
   const results = filterConnections(connections, query).sort(byName);
   const favorites = connections.filter((c) => c.favorite).sort(byName);
@@ -80,21 +87,26 @@ export function Sidebar({ connections, groups }: SidebarProps) {
                 {t("sidebar.noResults", { query })}
               </p>
             ) : (
-              <ConnectionsList connections={results} />
+              <ConnectionsList connections={results} {...listProps} />
             )}
           </>
         ) : (
           <div className="flex flex-col gap-3">
-            {favorites.length > 0 && <SectionHeader title={t("sidebar.favorites")} />}
-            {favorites.length > 0 && <ConnectionsList connections={favorites} />}
+            {favorites.length > 0 && (
+              <>
+                <SectionHeader title={t("sidebar.favorites")} />
+                <ConnectionsList connections={favorites} {...listProps} />
+              </>
+            )}
 
             {recents.length > 0 && (
               <>
                 <SectionHeader title={t("sidebar.recents")} />
-                <ConnectionsList connections={recents} />
+                <ConnectionsList connections={recents} {...listProps} />
               </>
             )}
 
+            {groups.length > 0 && <SectionHeader title={t("sidebar.groups")} />}
             {groups
               .map((group) => ({ group, items: connections.filter((c) => c.groupId === group.id) }))
               .filter(({ items }) => items.length > 0)
@@ -105,14 +117,14 @@ export function Sidebar({ connections, groups }: SidebarProps) {
                   color={group.color}
                   count={items.length}
                 >
-                  <ConnectionsList connections={items.sort(byName)} />
+                  <ConnectionsList connections={items.sort(byName)} {...listProps} />
                 </GroupSection>
               ))}
 
             {ungrouped.length > 0 && (
               <>
                 <SectionHeader title={t("sidebar.ungrouped")} />
-                <ConnectionsList connections={ungrouped} />
+                <ConnectionsList connections={ungrouped} {...listProps} />
               </>
             )}
           </div>
@@ -120,16 +132,14 @@ export function Sidebar({ connections, groups }: SidebarProps) {
       </ScrollArea>
 
       <div className="flex h-10 items-center justify-between border-t px-3 text-xs text-muted-foreground">
-        <span className={cn("tabular-nums")}>
-          {t("sidebar.count", { count: connections.length })}
-        </span>
+        <span className="tabular-nums">{t("sidebar.count", { count: connections.length })}</span>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
               size="icon-xs"
               aria-label={t("sidebar.import")}
-              onClick={() => toast("shell.notYetAvailable")}
+              onClick={notifyComingSoon}
             >
               <FileInput className="size-4" />
             </Button>
