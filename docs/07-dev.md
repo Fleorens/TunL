@@ -41,7 +41,9 @@ il s'arrête et le signale.
 | `npm run test` | Vitest (une passe) |
 | `npm run bindings` | régénère `src/bindings/` depuis les types Rust (`cargo test export_bindings`) |
 | `npm run verify:rust` | `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test` |
-| `npm run verify` | **tout** : typecheck + check + test + verify:rust |
+| `npm run verify` | typecheck + check + test + verify:rust |
+| `npm run e2e` | scénarios Playwright dans le Chromium du système (`e2e/`), serveur Vite lancé automatiquement (T05b) |
+| `npm run review` | **tout** : `verify` puis `e2e`. C'est la recette d'une fiche |
 
 ## 3. Boucle de travail de l'agent
 
@@ -62,6 +64,7 @@ il s'arrête et le signale.
 | Bindings TS en `bigint` | `src-tauri/.cargo/config.toml` doit définir `TS_RS_LARGE_INT = "number"` |
 | Bindings générés dans `src-tauri/bindings/` | `TS_RS_EXPORT_DIR` absent de `src-tauri/.cargo/config.toml` |
 | `shadcn add` pose une question et bloque | lancer avec `CI=1` et `-y`, et entrée standard fermée : `CI=1 npx shadcn add x -y </dev/null` |
+| `npm run e2e` : « Executable doesn't exist » | pas de Chromium système : `export TUNL_CHROMIUM=/chemin/vers/chromium`, ou `npx playwright install chromium` |
 | Port 1420 occupé | un ancien `npm run dev` tourne encore : `pkill -f "vite"` |
 | Lancé depuis le terminal de VS Code, une app Electron démarre comme Node | variable `ELECTRON_RUN_AS_NODE=1` héritée. Sans effet sur Tauri, mais `env -u ELECTRON_RUN_AS_NODE` en cas de doute |
 

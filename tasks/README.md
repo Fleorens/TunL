@@ -6,22 +6,26 @@ le modèle a réellement livré. Une fiche qui cite des signatures de code pas e
 
 ## Comment Florian fait tourner une fiche
 
+Objectif fixé par Florian (2026-09-26) : **économiser au maximum le quota Claude** et voir jusqu'où va le modèle
+local. Claude n'intervient donc qu'**une fois par lot**, pas une fois par fiche.
+
 ```bash
-cd ~/Documents/GitHub/TunL
-opencode            # puis, dans opencode :
-/tache T01
+cd ~/Documents/GitHub/TunL && opencode      # une session neuve par fiche
+/tache T06                                  # le modèle code jusqu'à ce que `npm run review` soit vert
 ```
 
-La commande `/tache` (`.opencode/commands/tache.md`) force le modèle Cyber-Tiel et lui fait suivre `AGENTS.md`.
-**Une session neuve par fiche** : on quitte opencode entre deux fiches, pour repartir d'un contexte propre.
-
 Après chaque fiche :
-1. regarder le compte rendu du modèle et, si la fiche touche l'UI, l'app (`npm run tauri dev`) ;
-2. revenir vers Claude avec « relis T0x ». Claude relit le diff (`git show`), corrige ou fait corriger, puis
-   débloque la suite.
+1. **Contrôle rapide, sans Claude** : `npm run review` (1 à 2 minutes).
+   - Vert : jeter un œil à l'app (`npm run tauri dev`, section « À regarder » de la fiche), puis fiche suivante.
+   - Rouge, ou modèle arrêté sur un blocage : nouvelle session opencode, puis `/repare T06`. Le modèle relance la
+     recette et corrige son code sans toucher aux tests.
+   - Toujours rouge après `/repare` : prendre le modèle de la colonne **Repli**, ou demander à Claude
+     « débloque T06 ».
+2. **En fin de lot**, un seul message à Claude : « revue du lot 2 et écris le lot 3 ». Claude relit tout le lot d'un
+   coup (tests, diff, captures), corrige si besoin, puis écrit les fiches suivantes. Une seule relecture pour tout le
+   lot.
 
-Si le modèle local bloque (il doit s'arrêter après 3 échecs sur la même erreur), la colonne **Repli** indique quel
-modèle Claude reprendre et avec quel effort. L'effort suit la densité de décisions, pas le volume de code.
+Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : Claude le traitera à la revue de lot.
 
 ## Statuts
 
@@ -39,6 +43,7 @@ modèle Claude reprendre et avec quel effort. L'effort suit la densité de déci
 | T03 | i18n (en / fr) : infrastructure, clés typées, test de parité | T02 | faible | Haiku 4.5 · low | validée |
 | T04 | Coquille de l'app (TopBar, Sidebar, TabBar, StatusBar, accueil vide), textes via i18n | T03 | moyen | Sonnet 5 · medium | validée |
 | T05 | Socle Rust (AppError, chemins, état, logs, ts-rs) + `ipc.ts` et mock | T04 | moyen | Sonnet 5 · high | prête |
+| T05b | Tests de recette dans le navigateur (Playwright) + `npm run review` | T05 | faible | Sonnet 5 · low | prête |
 
 ### M1 — Connexions
 
@@ -118,7 +123,7 @@ modèle Claude reprendre et avec quel effort. L'effort suit la densité de déci
 ## Chemin critique
 
 ```
-T01 → T02 → T03 → T04 → T05 → T06 → T07 → T08 ─┬─ T09 → T10 → T12 → T17 → T18 → T19 → T20 → T21 → T22 ─┬─ T24 → T25 → T26
+T01 → T02 → T03 → T04 → T05 → T05b → T06 → T07 → T08 ─┬─ T09 → T10 → T12 → T17 → T18 → T19 → T20 → T21 → T22 ─┬─ T24 → T25 → T26
                                                │                    ↑                                  ├─ T23 → T28
                                                │              T16 ──┘                                  └─ T29
                                                ├─ T15, T27, T32 (parallélisables après T08)
@@ -127,11 +132,14 @@ T01 → T02 → T03 → T04 → T05 → T06 → T07 → T08 ─┬─ T09 → T1
 
 ## Lots d'écriture des fiches
 
+À partir du lot 2, les fiches sont au format **contrat** (types, comportement, pièges, tests) : c'est le modèle
+local qui écrit le code (voir `AGENTS.md`).
+
 | Lot | Fiches | Écrit quand |
 |---|---|---|
-| 1 | T01 → T05 | **maintenant** |
-| 2 | T06 → T11 | après validation de T05 |
-| 3 | T12 → T16 | après validation de T09 |
-| 4 | T17 → T21 | après validation de T16 (Claude aura éprouvé russh contre les conteneurs) |
-| 5 | T22 → T30 | après validation de T21 |
-| 6 | T31 → T40 | après validation de T28 |
+| 1 | T01 → T05b | écrit (T05b déjà au format contrat) |
+| 2 | T06 → T11 | à la demande « revue du lot 1 et écris le lot 2 », une fois T05b verte |
+| 3 | T12 → T16 | fin du lot 2 |
+| 4 | T17 → T21 | fin du lot 3 (Claude aura éprouvé russh contre les conteneurs de T16) |
+| 5 | T22 → T30 | fin du lot 4 |
+| 6 | T31 → T40 | fin du lot 5 |

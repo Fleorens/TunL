@@ -15,7 +15,8 @@ Un orchestrateur a écrit l'architecture (`docs/`) et découpé le travail en fi
    non demandés.
 4. Écris les fichiers par morceaux raisonnables : **jamais plus d'environ 300 lignes par écriture**.
    Au-delà, crée le fichier puis complète-le par éditions successives.
-5. Termine par `npm run format`, puis `npm run verify`. Tout doit être vert.
+5. Termine par `npm run format`, puis `npm run review` (= `verify` + tests e2e ; `npm run verify` seul tant que
+   T05b n'est pas livrée). Tout doit être vert.
 6. Dans la fiche, coche les critères d'acceptation vérifiés (`- [x]`). Dans `tasks/README.md`, passe le statut
    de la fiche à `livrée`.
    ⚠ Tu n'as **pas d'accès visuel**. Un critère qui se juge à l'écran (couleur, animation, disposition, texte
@@ -29,6 +30,20 @@ Un orchestrateur a écrit l'architecture (`docs/`) et découpé le travail en fi
    - écarts avec la fiche, et pourquoi ;
    - ce que Florian doit regarder à l'écran ;
    - questions.
+
+## Fiches « contrat » (à partir du lot 2)
+
+Les fiches ne donnent plus le code : elles donnent les **types**, le **comportement attendu**, les **pièges**, et
+surtout les **tests**. C'est toi qui écris toute l'implémentation.
+- Les fichiers de test fournis dans une fiche sont **le contrat** :
+  - tu les crées à l'identique ;
+  - tu ne les modifies jamais, ne les supprimes jamais, et n'y ajoutes ni `.skip`, ni `.only`, ni `.todo` ;
+  - tu peux **ajouter** tes propres tests à côté.
+- Boucle de travail : écrire → `npm run review` → lire les échecs → corriger le **code** → recommencer.
+  Une fiche n'est pas livrée tant qu'un test du contrat échoue.
+- Un test du contrat te paraît faux ? Ne le touche pas : arrête-toi et explique pourquoi dans ton compte rendu.
+- Un scénario e2e qui échoue laisse une trace dans `test-results/`. Lis le message d'erreur (il dit quel élément
+  était introuvable ou invisible) plutôt que de deviner.
 
 ## Quand ça bloque
 
@@ -97,7 +112,7 @@ Rust édition 2024 · tokio · russh 0.63 · russh-sftp 3 · oo7 0.6 · ts-rs 12
 ## Commandes utiles
 
 `npm run dev` (UI seule dans le navigateur, IPC simulé) · `npm run tauri dev` (app complète) ·
-`npm run verify` (tout) · `npm run bindings` (types TS depuis Rust) · `cd src-tauri && cargo check` (rapide).
+`npm run verify` (types, lint, tests, Rust) · `npm run e2e` (scénarios Playwright) · `npm run review` (les deux) · `npm run bindings` (types TS depuis Rust) · `cd src-tauri && cargo check` (rapide).
 
 ## Carte des documents
 
