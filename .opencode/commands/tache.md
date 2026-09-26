@@ -11,6 +11,7 @@ Exécute la fiche de tâche **$1** du projet TunL.
    Si le point de départ n'est pas bon, arrête-toi et explique pourquoi.
 4. Crée d'abord les tests fournis par la fiche, **à l'identique**. Ensuite, écris le code.
 5. Boucle : `npm run review` → corrige le code → recommence, jusqu'au vert. Ne modifie jamais un test fourni.
+   (Tant que le script `review` n'existe pas, c'est-à-dire avant T05b, utilise `npm run verify`.)
 6. Termine : `npm run format`, `npm run review` vert, cases cochées (sauf les critères visuels), statut `livrée`,
    commit, et compte rendu au format d'`AGENTS.md`.
 
