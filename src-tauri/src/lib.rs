@@ -1,6 +1,7 @@
 pub mod clock;
 pub mod commands;
 pub mod error;
+pub mod model;
 pub mod paths;
 pub mod state;
 

@@ -1,15 +1,6 @@
-// Provisional local type: replaced by the generated `AccentColor` binding in T09.
-export type AccentColor =
-  | "slate"
-  | "red"
-  | "orange"
-  | "amber"
-  | "green"
-  | "teal"
-  | "cyan"
-  | "blue"
-  | "violet"
-  | "pink";
+import type { AccentColor } from "@/bindings/AccentColor";
+
+export type { AccentColor };
 
 /** The only place where Tailwind's built-in palette is allowed (docs/05-modele-donnees.md §2). */
 export const ACCENT_DOT_CLASSES: Record<AccentColor, string> = {

@@ -517,11 +517,11 @@ fn settings_out_of_range_are_rejected_with_their_path() {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, avec les 26 tests de `model/tests.rs`.
-- [ ] `model/tests.rs` est identique à la fiche (au formatage `cargo fmt` près).
-- [ ] Les bindings listés à l'étape 2 existent, et `ProtocolSettings.ts` est une union discriminée par `"protocol"`.
-- [ ] Aucun fichier de `model/` ne dépasse 400 lignes.
-- [ ] `grep -rn "unwrap()\|expect(" src-tauri/src/model --include=*.rs | grep -v tests.rs` est vide.
+- [x] `npm run review` passe, avec les 26 tests de `model/tests.rs`.
+- [x] `model/tests.rs` est identique à la fiche (au formatage `cargo fmt` près).
+- [x] Les bindings listés à l'étape 2 existent, et `ProtocolSettings.ts` est une union discriminée par `"protocol"`.
+- [x] Aucun fichier de `model/` ne dépasse 400 lignes.
+- [x] `grep -rn "unwrap()\|expect(" src-tauri/src/model --include=*.rs | grep -v tests.rs` est vide.
 
 ## À regarder par Florian
 

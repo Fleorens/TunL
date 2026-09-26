@@ -1,6 +1,8 @@
 import { useSyncExternalStore } from "react";
 
-export type ThemeMode = "system" | "dark" | "light";
+import type { ThemeMode } from "@/bindings/ThemeMode";
+
+export type { ThemeMode };
 export type ResolvedTheme = "dark" | "light";
 
 const DARK_QUERY = "(prefers-color-scheme: dark)";
