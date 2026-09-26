@@ -409,13 +409,13 @@ git add -A && git commit -m "feat: TunL design system, tokens and dev gallery (T
 
 ## Critères d'acceptation
 
-- [ ] `components.json` contient `"style": "radix-nova"`, et `src/components/ui/` contient 32 fichiers :
+- [x] `components.json` contient `"style": "radix-nova"`, et `src/components/ui/` contient 32 fichiers :
       les 31 demandés + `input-group.tsx`, tiré par `command` (`ls src/components/ui | wc -l` → 32). Pas de `sidebar.tsx`.
-- [ ] `next-themes`, `clsx` et `tailwind-merge` sont absents de `package.json`.
-- [ ] `src/index.css` contient les tokens TunL (`grep -c "protocol-ssh" src/index.css` ≥ 3) et un seul `--font-sans`.
-- [ ] Aucune couleur `#…` ni `oklch(` hors de `src/index.css` : `grep -rnE "#[0-9a-fA-F]{3,8}\b|oklch\(" src --include=*.tsx`
+- [x] `next-themes`, `clsx` et `tailwind-merge` sont absents de `package.json`.
+- [x] `src/index.css` contient les tokens TunL (`grep -c "protocol-ssh" src/index.css` ≥ 3) et un seul `--font-sans`.
+- [x] Aucune couleur `#…` ni `oklch(` hors de `src/index.css` : `grep -rnE "#[0-9a-fA-F]{3,8}\b|oklch\(" src --include=*.tsx`
       est vide.
-- [ ] `npm run verify` passe, avec au moins 8 tests.
+- [x] `npm run verify` passe, avec au moins 8 tests.
 - [ ] `npm run tauri dev` : la galerie s'affiche. En **Dark** : fond graphite quasi noir, bouton principal cyan,
       logo en dégradé cyan → violet. En **Light** : fond blanc cassé, bouton principal bleu. La pastille
       « connecting » pulse.
