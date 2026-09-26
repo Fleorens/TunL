@@ -758,7 +758,7 @@ git add -A && git commit -m "feat: Rust foundation, ts-rs bindings and typed IPC
 - [x] `src/bindings/` contient `AppError.ts`, `AppInfo.ts`, `ErrorDetail.ts` et `ErrorKind.ts`, et `AppInfo.ts`
       déclare `startedAtMs: number` (pas `bigint`).
 - [x] `grep -rn "invoke(" src --include=*.ts --include=*.tsx | grep -v "src/lib/ipc.ts"` est vide.
-- [ ] Dans un navigateur sur `http://localhost:1420` (`npm run dev`), la StatusBar affiche « Mock backend » et
+- [x] Dans un navigateur sur `http://localhost:1420` (`npm run dev`), la StatusBar affiche « Mock backend » et
       `v0.1.0-mock`.
 - [ ] Dans `npm run tauri dev`, la StatusBar affiche `v0.1.0`, **sans** badge « Mock backend ».
 - [ ] Relancer l'app alors qu'elle tourne déjà ramène la fenêtre existante au premier plan, sans en ouvrir une seconde.

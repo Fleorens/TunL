@@ -85,6 +85,9 @@ Rust édition 2024 · tokio · russh 0.63 · russh-sftp 3 · oo7 0.6 · ts-rs 12
 | Enfant d'un `asChild` (Radix) | le composant accepte `ComponentProps<"button">` et **propage** le reste des props (`{...props}`) : c'est par là que passent `onContextMenu`, `ref`… | un composant qui ne garde que ses props à lui (le menu ne s'ouvre jamais) |
 | Toasts | `toast(t("cle"))` ou un helper qui appelle `i18n.t(...)` | `toast("cle")` (affiche la clé brute) |
 | Utilitaire CSS maison (`@utility`) | une variante dédiée (ex. `bg-brand-soft`) | un modificateur d'opacité (`bg-brand-gradient/10` ne produit rien) |
+| Radix `Select` | une valeur sentinelle (`"__none__"`) pour « aucun » | `<SelectItem value="">` (plante à l'ouverture) |
+| Sélecteur zustand | sélectionner la donnée brute, dériver avec `useMemo` (ou `useShallow`) | `useStore((s) => s.list.filter(…))` (nouveau tableau à chaque rendu → boucle infinie) |
+| zod 4 | `{ error: "code" }` dans un schéma, `ctx.addIssue({ code: "custom", message, path })` dans `superRefine` | `{ message: "…" }` dans un schéma, `z.string().nonempty()` |
 
 ## Règles de code
 

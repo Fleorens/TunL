@@ -42,19 +42,19 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | T02 | Design system : shadcn, tokens TunL, polices, thème, galerie | T01 | moyen | Sonnet 5 · medium | validée |
 | T03 | i18n (en / fr) : infrastructure, clés typées, test de parité | T02 | faible | Haiku 4.5 · low | validée |
 | T04 | Coquille de l'app (TopBar, Sidebar, TabBar, StatusBar, accueil vide), textes via i18n | T03 | moyen | Sonnet 5 · medium | validée |
-| T05 | Socle Rust (AppError, chemins, état, logs, ts-rs) + `ipc.ts` et mock | T04 | moyen | Sonnet 5 · high | livrée |
-| T05b | Tests de recette dans le navigateur (Playwright) + `npm run review` | T05 | faible | Sonnet 5 · low | livrée |
+| T05 | Socle Rust (AppError, chemins, état, logs, ts-rs) + `ipc.ts` et mock | T04 | moyen | Sonnet 5 · high | validée |
+| T05b | Tests de recette dans le navigateur (Playwright) + `npm run review` | T05 | faible | Sonnet 5 · low | validée |
 
 ### M1 — Connexions
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T06 | Modèle de données Rust + validation + bindings + tests | T05 | moyen | Sonnet 5 · medium | à écrire |
-| T07 | Store JSON atomique, `.bak`, `.corrupt`, migrations, permissions 0600 | T06 | moyen | Sonnet 5 · high | à écrire |
-| T08 | Commandes CRUD connexions / groupes / réglages + ipc + mock | T07 | faible | Sonnet 5 · low | à écrire |
-| T09 | Stores zustand + Sidebar branchée (sections, filtre, menu contextuel) | T08 | moyen | Sonnet 5 · medium | à écrire |
-| T10 | Éditeur de connexion — Général + Authentification | T09 | moyen | Sonnet 5 · medium | à écrire |
-| T11 | Éditeur de connexion — Réseau (bastion, WoL) + Avancé (SSH, RDP) | T10 | moyen | Sonnet 5 · medium | à écrire |
+| T06 | Modèle de données Rust + validation + bindings + tests | T05b | moyen | Sonnet 5 · medium | prête |
+| T07 | Store JSON atomique, `.bak`, `.corrupt`, migrations, permissions 0600 | T06 | moyen | Sonnet 5 · high | prête |
+| T08 | Commandes CRUD connexions / groupes / réglages + ipc + mock | T07 | faible | Sonnet 5 · low | prête |
+| T09 | Stores zustand + Sidebar branchée (sections, filtre, menu contextuel) | T08 | moyen | Sonnet 5 · medium | prête |
+| T10 | Éditeur de connexion — Général + Authentification | T09 | moyen | Sonnet 5 · medium | prête |
+| T11 | Éditeur de connexion — Réseau (bastion, WoL) + Avancé (SSH, RDP) | T10 | moyen | Sonnet 5 · medium | prête |
 | T12 | Trousseau (oo7) : `secret_set/has/delete` + UI « Mémoriser » | T10 | moyen | Opus 5 · high | à écrire |
 | T13 | Palette de commandes + connexion rapide + table des raccourcis | T09 | moyen | Sonnet 5 · medium | à écrire |
 | T14 | Accueil : cartes favoris / récents, premier lancement | T09 | faible | Sonnet 5 · low | à écrire |
@@ -138,8 +138,8 @@ local qui écrit le code (voir `AGENTS.md`).
 | Lot | Fiches | Écrit quand |
 |---|---|---|
 | 1 | T01 → T05b | écrit (T05b déjà au format contrat) |
-| 2 | T06 → T11 | à la demande « revue du lot 1 et écris le lot 2 », une fois T05b verte |
-| 3 | T12 → T16 | fin du lot 2 |
+| 2 | T06 → T11 | écrit (format contrat), après la revue du lot 1 |
+| 3 | T12 → T16 | à la demande « revue du lot 2 et écris le lot 3 », une fois T11 verte |
 | 4 | T17 → T21 | fin du lot 3 (Claude aura éprouvé russh contre les conteneurs de T16) |
 | 5 | T22 → T30 | fin du lot 4 |
 | 6 | T31 → T40 | fin du lot 5 |

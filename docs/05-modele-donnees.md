@@ -148,7 +148,9 @@ Migrations : `store/migrate.rs` lit d'abord le JSON en `serde_json::Value`, rega
 `vN → vN+1` jusqu'à `STORE_VERSION`, puis désérialise. Une version **supérieure** à celle connue →
 `AppError::new(ErrorKind::Store, "created by a newer TunL")`, sans rien écraser.
 
-Ce que renvoie `store_load` au frontend : `StoreSnapshot { groups, connections }`. C'est la même forme, sans `version`.
+Ce que renvoie `store_load` au frontend : `StoreSnapshot { groups, connections, quarantined }`, c'est-à-dire la même
+forme sans `version`, plus la liste des fichiers mis en quarantaine au démarrage (T08). Un `connections.json` écrit
+par une version plus récente bloque toutes les commandes du store, pour qu'il ne soit jamais écrasé.
 
 ## 5. Réglages (`settings.json`)
 
@@ -186,7 +188,7 @@ pub struct UiSettings {
 }
 ```
 
-Un `settings.json` absent ou illisible donne les valeurs par défaut (et la même procédure « .corrupt » que le store).
+Un `settings.json` absent, illisible **ou hors bornes** donne les valeurs par défaut (et la même procédure « .corrupt » que le store).
 Un champ inconnu est ignoré. Un champ manquant prend sa valeur par défaut : `#[serde(default)]` au niveau de chaque
 struct de réglages.
 
@@ -215,8 +217,12 @@ Pourquoi refuser `\n` : les arguments FreeRDP passent **ligne par ligne** sur st
 d'injecter un argument. La même règle vaut donc pour **tout** champ qui finit dans les arguments FreeRDP : hôte,
 utilisateur, domaine, mot de passe.
 
-Une erreur de validation → `AppError::validation("<champ>", "<raison>")` (message « <champ>: <raison> ») en anglais, avec le nom du champ en camelCase,
-pour que l'UI puisse l'attacher au bon champ.
+Une erreur de validation → `AppError::validation("<chemin>", "<raison>")`, soit le message « <chemin>: <raison> »
+en anglais. Le chemin est celui du champ dans le JSON, en camelCase (`host`, `settings.auth.path`, `wol.mac`…),
+pour que l'UI puisse attacher l'erreur au bon champ. La raison ne recopie jamais la valeur refusée (S7).
+Changer en RDP une connexion qui sert de bastion → `ErrorKind::InUse` avec `ErrorDetail::InUse { names }`.
+
+Groupes : nom après `trim` de 1 à 80 caractères, sans caractère de contrôle, **unique sans tenir compte de la casse**.
 
 ## 7. Secrets (trousseau via oo7)
 
@@ -238,6 +244,11 @@ pub enum ErrorDetail {
     HostKeyChanged { host: String, port: u16, key_type: String, fingerprint: String, known_hosts_path: String, line: u32 },
     InUse { names: Vec<String> },   // ex. supprimer un bastion encore utilisé
 }
+
+// Store (T08)
+pub enum Protocol { Ssh, Rdp }
+pub struct StoreSnapshot { pub groups: Vec<Group>, pub connections: Vec<Connection>, pub quarantined: Vec<String> }
+pub struct ConnectionTemplates { pub ssh: ConnectionInput, pub rdp: ConnectionInput, pub wol: WolConfig }
 
 // Prompts
 pub struct PromptRequest { pub id: Uuid, pub session_id: Option<Uuid>, pub prompt: PromptKind }

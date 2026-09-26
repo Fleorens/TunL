@@ -165,7 +165,7 @@ pas à l'improviste.
 | Domaine | Commandes | Fiche |
 |---|---|---|
 | App | `app_info` | T05 |
-| Store | `store_load` → `{ groups, connections }` | T08 |
+| Store | `store_load` → `{ groups, connections, quarantined }`, `connection_templates` (valeurs par défaut) | T08 |
 | Connexions | `connection_create`, `connection_update`, `connection_duplicate`, `connection_delete`, `connection_set_favorite`, `connection_touch` (dernière connexion) | T08 |
 | Groupes | `group_create`, `group_update`, `group_delete`, `group_reorder` | T08 |
 | Réglages | `settings_get`, `settings_update` | T08 |
