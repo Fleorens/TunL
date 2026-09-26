@@ -416,7 +416,7 @@ git add -A && git commit -m "feat: TunL design system, tokens and dev gallery (T
 - [x] Aucune couleur `#…` ni `oklch(` hors de `src/index.css` : `grep -rnE "#[0-9a-fA-F]{3,8}\b|oklch\(" src --include=*.tsx`
       est vide.
 - [x] `npm run verify` passe, avec au moins 8 tests.
-- [ ] `npm run tauri dev` : la galerie s'affiche. En **Dark** : fond graphite quasi noir, bouton principal cyan,
+- [x] `npm run tauri dev` : la galerie s'affiche. *(Relecture Claude : vérifié sur captures Chromium sans tête, en sombre et en clair ; la pulsation et le rendu WebKitGTK restent à voir par Florian.)* En **Dark** : fond graphite quasi noir, bouton principal cyan,
       logo en dégradé cyan → violet. En **Light** : fond blanc cassé, bouton principal bleu. La pastille
       « connecting » pulse.
 

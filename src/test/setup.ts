@@ -39,7 +39,7 @@ if (!("ResizeObserver" in globalThis)) {
 }
 
 // @testing-library/react v16 does not unmount between tests; otherwise rendered
-// components accumulate and break getByRole / getByByText lookups.
+// components accumulate and break getByRole / getByText lookups.
 afterEach(() => {
   cleanup();
 });

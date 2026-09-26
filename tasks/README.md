@@ -35,7 +35,7 @@ modèle Claude reprendre et avec quel effort. L'effort suit la densité de déci
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
 | T01 | Initialiser le dépôt (Vite + React + Tauri 2 + Biome + Vitest) | — | moyen | Sonnet 5 · medium | validée |
-| T02 | Design system : shadcn, tokens TunL, polices, thème, galerie | T01 | moyen | Sonnet 5 · medium | livrée |
+| T02 | Design system : shadcn, tokens TunL, polices, thème, galerie | T01 | moyen | Sonnet 5 · medium | validée |
 | T03 | i18n (en / fr) : infrastructure, clés typées, test de parité | T02 | faible | Haiku 4.5 · low | prête |
 | T04 | Coquille de l'app (TopBar, Sidebar, TabBar, StatusBar, accueil vide), textes via i18n | T03 | moyen | Sonnet 5 · medium | prête |
 | T05 | Socle Rust (AppError, chemins, état, logs, ts-rs) + `ipc.ts` et mock | T04 | moyen | Sonnet 5 · high | prête |

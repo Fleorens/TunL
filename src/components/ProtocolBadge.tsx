@@ -1,6 +1,5 @@
+import type { Protocol } from "@/components/ProtocolIcon";
 import { cn } from "@/lib/utils";
-
-export type Protocol = "ssh" | "rdp" | "sftp";
 
 const BADGE_CLASSES: Record<Protocol, string> = {
   ssh: "bg-protocol-ssh/12 text-protocol-ssh",
