@@ -4,7 +4,7 @@
 |---|---|
 | **Jalon** | M1 — Connexions |
 | **Dépend de** | T09 |
-| **Lire avant** | `AGENTS.md` (« Fiches contrat », pièges), `docs/04-ecrans.md` §3, `docs/05-modele-donnees.md` §2 et §6, `docs/03-design.md` |
+| **Lire avant** | `docs/04-ecrans.md` §3, `docs/05-modele-donnees.md` §2 et §6, `docs/03-design.md` §1.4, §7, §8 et §10 (le reste du design est déjà en place dans `src/index.css` et `src/components/`) |
 | **Livrable** | Feuille latérale de création et de modification (onglets Général et Authentification), 14 tests unitaires et 7 scénarios e2e verts |
 
 ## Pourquoi
@@ -510,7 +510,7 @@ test("SSH key authentication needs a usable path", async ({ page }) => {
 
 ## Étapes
 
-1. Dépendances, puis les deux fichiers de tests.
+1. Dépendances, puis les deux fichiers de tests : `node scripts/contract-tests.mjs T10`.
 2. `validation.ts` et `form-values.ts` : `npm run test` doit passer le test unitaire avant d'attaquer l'UI.
 3. Les composants, `useUi`, et le branchement des déclencheurs (TopBar, accueil, raccourci, menu contextuel).
 4. `npm run format`, `npm run review` (6 + 7 + 7 scénarios), cases, statut,
@@ -519,7 +519,7 @@ test("SSH key authentication needs a usable path", async ({ page }) => {
 ## Critères d'acceptation
 
 - [ ] `npm run review` passe, avec les 14 tests de `form-values.test.ts` et les 7 scénarios de `editor.spec.ts`.
-- [ ] Les fichiers de tests sont identiques à la fiche (au formatage Biome près).
+- [ ] Les fichiers de tests sont identiques à la fiche : `node scripts/contract-tests.mjs T10 --check` affiche `OK` partout.
 - [ ] Aucun fichier de `editor/` ne dépasse 400 lignes, aucune fonction ne dépasse 50 lignes.
 - [ ] `grep -rn "as unknown as\|: any\|@ts-ignore" src/features/connections` est vide.
 - [ ] Visuel : feuille de 520 px à droite, pied collant, champs Hôte et Port sur une même ligne.

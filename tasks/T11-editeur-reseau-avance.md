@@ -4,7 +4,7 @@
 |---|---|
 | **Jalon** | M1 — Connexions |
 | **Dépend de** | T10 |
-| **Lire avant** | `AGENTS.md` (« Fiches contrat »), `docs/04-ecrans.md` §3, `docs/05-modele-donnees.md` §2 et §6, `docs/06-securite.md` (S5), la fiche T10 |
+| **Lire avant** | `docs/04-ecrans.md` §3, `docs/05-modele-donnees.md` §2 et §6, `docs/06-securite.md` (S5 et S6), et le **code** livré par T10 (`src/features/connections/editor/`) plutôt que la fiche T10 : ne relis pas celle-ci |
 | **Livrable** | Onglets « Network » et « Advanced » de l'éditeur, 16 tests unitaires et 3 scénarios e2e verts ; les tests de T10 restent verts **sans modification** |
 
 ## Pourquoi
@@ -502,7 +502,7 @@ test("RDP advanced settings are validated", async ({ page }) => {
 
 ## Étapes
 
-1. Les trois fichiers de tests.
+1. Les trois fichiers de tests : `node scripts/contract-tests.mjs T11`.
 2. `jump-hosts.ts`, puis `validation.ts` et `form-values.ts`. Les tests unitaires de T10 **et** de T11 doivent passer
    avant d'attaquer l'UI.
 3. Les onglets Network et Advanced.
@@ -512,7 +512,7 @@ test("RDP advanced settings are validated", async ({ page }) => {
 ## Critères d'acceptation
 
 - [ ] `npm run review` passe, avec les 16 tests unitaires et les 3 scénarios de cette fiche.
-- [ ] Les fichiers de tests de T10 **et** de T11 sont identiques à leurs fiches (`git diff` vide sur ceux de T10).
+- [ ] Les fichiers de tests de T10 **et** de T11 sont identiques à leurs fiches : `node scripts/contract-tests.mjs T10 --check` et `node scripts/contract-tests.mjs T11 --check` affichent `OK` partout.
 - [ ] Aucun fichier de `editor/` ne dépasse 400 lignes.
 - [ ] Visuel : la chaîne « You → bastion-01 → app-01 » est lisible, avec des flèches discrètes (`text-muted-foreground`).
 - [ ] Visuel : les champs Wake-on-LAN n'apparaissent qu'une fois l'interrupteur activé, et Width / Height qu'avec

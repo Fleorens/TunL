@@ -14,8 +14,13 @@ cd ~/Documents/GitHub/TunL && opencode      # une session neuve par fiche
 /tache T06                                  # le modèle code jusqu'à ce que `npm run review` soit vert
 ```
 
+`/tache` impose le bon modèle et la méthode qui tient dans le contexte du modèle local : index de la fiche, tests
+écrits par `scripts/contract-tests.mjs`, lectures ciblées, reprise après compaction. Un simple message (« Tu
+t'occupes de T10 ») fonctionne aussi, puisque les règles sont dans `AGENTS.md`, mais sans ces rappels.
+
 Après chaque fiche :
-1. **Contrôle rapide, sans Claude** : `npm run review` (1 à 2 minutes).
+1. **Contrôle rapide, sans Claude** : `npm run review` (1 à 2 minutes), puis `node scripts/contract-tests.mjs T06 --check`
+   (les tests du contrat n'ont pas été retouchés).
    - Vert : jeter un œil à l'app (`npm run tauri dev`, section « À regarder » de la fiche), puis fiche suivante.
    - Rouge, ou modèle arrêté sur un blocage : nouvelle session opencode, puis `/repare T06`. Le modèle relance la
      recette et corrige son code sans toucher aux tests.

@@ -6,17 +6,20 @@ Un orchestrateur a écrit l'architecture (`docs/`) et découpé le travail en fi
 
 ## Déroulé obligatoire d'une session
 
-1. Lis la fiche **en entier**, puis les documents qu'elle cite. Rien d'autre sans raison.
+1. Lis la fiche **une fois en entier**, puis, dans les documents qu'elle cite, **seulement les sections indiquées**.
+   Rien d'autre sans raison. Ce fichier (`AGENTS.md`) est déjà dans tes instructions : ne le relis pas.
 2. Vérifie le point de départ :
    - `git status` doit être propre ;
-   - les fiches listées dans « Dépend de » sont marquées `livrée` dans `tasks/README.md`.
+   - les fiches listées dans « Dépend de » sont marquées `livrée` dans `tasks/README.md`
+     (`grep -n "^| T0X " tasks/README.md` suffit).
    Sinon, ARRÊTE et dis-le.
 3. Exécute les étapes **dans l'ordre**. N'ajoute aucune fonctionnalité, dépendance, fichier ou refactorisation
    non demandés.
 4. Écris les fichiers par morceaux raisonnables : **jamais plus d'environ 300 lignes par écriture**.
    Au-delà, crée le fichier puis complète-le par éditions successives.
 5. Termine par `npm run format`, puis `npm run review` (= `verify` + tests e2e ; `npm run verify` seul tant que
-   T05b n'est pas livrée). Tout doit être vert.
+   T05b n'est pas livrée). Tout doit être vert, et `node scripts/contract-tests.mjs Txx --check` doit afficher
+   `OK` pour chaque test du contrat.
 6. Dans la fiche, coche les critères d'acceptation vérifiés (`- [x]`). Dans `tasks/README.md`, passe le statut
    de la fiche à `livrée`.
    ⚠ Tu n'as **pas d'accès visuel**. Un critère qui se juge à l'écran (couleur, animation, disposition, texte
@@ -31,13 +34,38 @@ Un orchestrateur a écrit l'architecture (`docs/`) et découpé le travail en fi
    - ce que Florian doit regarder à l'écran ;
    - questions.
 
+## Contexte limité : lis juste ce qu'il faut
+
+Ton contexte fait environ 130 000 tokens. Quand il est plein, opencode le **compacte** : il le remplace par un
+résumé, et tu perds le détail de tout ce que tu as lu. Une session qui relit tout tourne en boucle (lecture,
+compaction, relecture…). En T09, cela a coûté une heure et trois compactions sans une ligne de code écrite.
+
+- **Une seule lecture complète de la fiche**, au début. Ensuite, relis seulement la section utile, par ses numéros
+  de ligne : `grep -nE '^#{2,4} ' tasks/Txx-*.md` donne l'index, puis lecture avec offset et limite.
+- **Documents** : seulement les sections citées dans « Lire avant » (`grep -nE '^#{1,3} ' docs/xx.md` pour les
+  trouver). Jamais un document entier « au cas où ».
+- **Code existant** : le strict nécessaire. Pour connaître les exports d'un fichier : `grep -n "export" <fichier>`.
+  Les composants de `src/components/ui/` ne se lisent jamais en entier.
+- **Tests du contrat** : écrits par le script (voir « Fiches contrat »). Ne les recopie pas à la main, ne les compare
+  pas à la fiche toi-même.
+- **Ne revérifie pas ce qui est acquis** : point de départ vert, tests identiques, version d'une dépendance.
+- **Réflexion courte, pas de plan global.** Un fichier = une lecture ciblée, une écriture, puis le suivant, dans
+  l'ordre des « Étapes » de la fiche.
+- **Valide par paliers.** Dès que la logique est écrite (types, stores, validation), lance `npm run typecheck` et les
+  tests unitaires concernés (`npx vitest run <dossier>`), avant d'attaquer l'interface.
+- **Après une compaction, ne repars pas de zéro** : `git status --short` montre ce qui est déjà écrit, l'index de la
+  fiche dit où reprendre. Passe directement au fichier suivant.
+
 ## Fiches « contrat » (à partir du lot 2)
 
 Les fiches ne donnent plus le code : elles donnent les **types**, le **comportement attendu**, les **pièges**, et
 surtout les **tests**. C'est toi qui écris toute l'implémentation.
 - Les fichiers de test fournis dans une fiche sont **le contrat** :
-  - tu les crées à l'identique ;
+  - tu les crées avec `node scripts/contract-tests.mjs Txx`, jamais à la main ;
+  - `node scripts/contract-tests.mjs Txx --check` vérifie qu'ils sont identiques à la fiche (formatage ignoré) ;
   - tu ne les modifies jamais, ne les supprimes jamais, et n'y ajoutes ni `.skip`, ni `.only`, ni `.todo` ;
+  - un avertissement de clippy ou de Biome **dans un test du contrat** ne se corrige pas dans le test : arrête-toi
+    et signale-le (seul le formatage par `npm run format` est permis) ;
   - tu peux **ajouter** tes propres tests à côté.
 - Boucle de travail : écrire → `npm run review` → lire les échecs → corriger le **code** → recommencer.
   Une fiche n'est pas livrée tant qu'un test du contrat échoue.
@@ -115,7 +143,9 @@ Rust édition 2024 · tokio · russh 0.63 · russh-sftp 3 · oo7 0.6 · ts-rs 12
 ## Commandes utiles
 
 `npm run dev` (UI seule dans le navigateur, IPC simulé) · `npm run tauri dev` (app complète) ·
-`npm run verify` (types, lint, tests, Rust) · `npm run e2e` (scénarios Playwright) · `npm run review` (les deux) · `npm run bindings` (types TS depuis Rust) · `cd src-tauri && cargo check` (rapide).
+`npm run verify` (types, lint, tests, Rust) · `npm run e2e` (scénarios Playwright) · `npm run review` (les deux) · `npm run bindings` (types TS depuis Rust) · `cd src-tauri && cargo check` (rapide) ·
+`node scripts/contract-tests.mjs Txx` (écrit les tests du contrat) · `node scripts/contract-tests.mjs Txx --check`
+(vérifie qu'ils n'ont pas bougé).
 
 ## Carte des documents
 
