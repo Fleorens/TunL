@@ -21,7 +21,8 @@ Un orchestrateur a écrit l'architecture (`docs/`) et découpé le travail en fi
    T05b n'est pas livrée). Tout doit être vert, et `node scripts/contract-tests.mjs Txx --check` doit afficher
    `OK` pour chaque test du contrat.
 6. Dans la fiche, coche les critères d'acceptation vérifiés (`- [x]`). Dans `tasks/README.md`, passe le statut
-   de la fiche à `livrée`.
+   de la fiche à `livrée`. Si la fiche rend une fonction utilisable, déplace-la dans le tableau « Where it stands »
+   du `README.md` (colonne « Works today »), en une ligne.
    ⚠ Tu n'as **pas d'accès visuel**. Un critère qui se juge à l'écran (couleur, animation, disposition, texte
    affiché dans la fenêtre) reste **décoché**, sans en modifier le libellé. Tu le signales dans ton compte rendu,
    et l'orchestrateur le vérifie par captures d'écran.
