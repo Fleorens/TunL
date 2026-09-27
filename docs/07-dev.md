@@ -41,8 +41,9 @@ il s'arrête et le signale.
 | `npm run test` | Vitest (une passe) |
 | `npm run bindings` | régénère `src/bindings/` depuis les types Rust (`cargo test export_bindings`) |
 | `npm run verify:rust` | `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test` |
-| `npm run verify` | typecheck + check + test + verify:rust |
-| `npm run e2e` | scénarios Playwright dans le Chromium du système (`e2e/`), serveur Vite lancé automatiquement (T05b) |
+| `npm run rules` | règles projet (`scripts/project-rules.mjs`) et tests du contrat de toutes les fiches livrées (`contract-tests.mjs --all`) |
+| `npm run verify` | typecheck + check + rules + test + verify:rust |
+| `npm run e2e` | scénarios Playwright dans le Chromium du système (`e2e/`), serveur Vite lancé automatiquement (T05b). Un test échoue aussi sur une erreur console (`e2e/support/test.ts`) |
 | `npm run review` | **tout** : `verify` puis `e2e`. C'est la recette d'une fiche |
 
 ## 3. Boucle de travail de l'agent
@@ -50,7 +51,7 @@ il s'arrête et le signale.
 1. `git status` → propre ?
 2. Lire la fiche, coder par petites étapes.
 3. Après chaque étape Rust : `cd src-tauri && cargo check` (rapide). Après chaque étape TS : `npm run typecheck`.
-4. À la fin : `npm run format`, puis `npm run verify` → tout vert.
+4. À la fin : `npm run format`, puis `npm run review` → tout vert.
 5. Si la fiche touche l'UI : `npm run tauri dev` pour que Florian regarde. L'agent n'a pas d'accès visuel :
    il **dit** ce qu'il faut regarder.
 6. Commit.

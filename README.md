@@ -1,3 +1,61 @@
 # TunL
 
-A modern SSH, SFTP and RDP connection manager for Linux. **Work in progress.**
+A modern SSH, SFTP and RDP connection manager for Linux, built with Tauri 2, React 19 and Rust.
+**Work in progress**: this README is for development. The public README comes with the first release.
+
+## Where it stands
+
+| Works today | Not yet |
+|---|---|
+| Connections: create, edit, duplicate, delete, favorites, groups, filter | Opening a session: SSH terminal, SFTP, RDP (the menus say “Coming soon”) |
+| Editor: SSH / RDP, authentication method, jump host chain, Wake-on-LAN, RDP display options | Passwords in the system keyring (T12), `~/.ssh/config` import (T15), command palette (T13) |
+| Storage: `~/.config/io.github.fleorens.TunL/connections.json` (mode 0600, `.bak` copy) | |
+
+The progress of each task is in [`tasks/README.md`](tasks/README.md).
+
+## Try it
+
+Prerequisites: Node.js ≥ 22.12, Rust (rustup, with `rustfmt` and `clippy`), WebKitGTK 4.1 and OpenSSL headers.
+Details and per-distribution packages: [`docs/07-dev.md`](docs/07-dev.md) §1.
+
+```bash
+npm install
+npm run tauri dev   # the real app, with the Rust backend (first build: a few minutes)
+npm run dev         # the interface only, in a browser at http://localhost:1420, on demo data
+```
+
+`npm run dev` answers every backend call with an in-memory mock (the status bar says “Mock backend”): handy to look
+at the interface, but only `npm run tauri dev` proves that the app works.
+
+To start from an empty store again: quit TunL, then remove `~/.config/io.github.fleorens.TunL/connections.json`.
+
+## Check everything
+
+```bash
+npm run review
+```
+
+It runs, in order: TypeScript, Biome, the project rules (`scripts/project-rules.mjs`) and the contract tests of every
+delivered task, Vitest, `cargo fmt` / `clippy` / `test` (including every Tauri command driven through the real IPC
+layer), then the Playwright end-to-end scenarios in the system Chromium. Every script: [`docs/07-dev.md`](docs/07-dev.md) §2.
+
+## Layout
+
+| Path | Content |
+|---|---|
+| `src/` | React interface: `features/` by domain, `components/`, `lib/` (IPC, mock, errors), `bindings/` (generated from Rust) |
+| `src-tauri/` | Rust backend: `commands/` (Tauri commands), `model/`, `store/` |
+| `e2e/` | Playwright scenarios; `support/` holds the console guard and the generic UI checks |
+| `docs/` | Architecture, decisions, design system, screens, data model, security, dev environment (in French) |
+| `tasks/` | One sheet per task, written in lots |
+| `scripts/` | `contract-tests.mjs`, `project-rules.mjs` |
+
+## How it is built
+
+The code is written task by task by a local model (opencode), from contract sheets in `tasks/`: types, expected
+behaviour, pitfalls and tests. Its standing rules are in [`AGENTS.md`](AGENTS.md). An orchestrator (Claude) writes
+the architecture and the sheets, then reviews each lot.
+
+## License
+
+GPL-3.0-or-later.
