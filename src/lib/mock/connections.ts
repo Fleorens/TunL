@@ -33,6 +33,18 @@ function freeName(base: string, connections: readonly Connection[]): string {
   return `${base} (${n})`;
 }
 
+/** Sorted names of the connections that use `id` as their jump host. */
+function jumpHostUsers(state: MockState, id: string): string[] {
+  return state.connections
+    .filter((connection) => connection.id !== id && connection.jumpHostId === id)
+    .map((connection) => connection.name)
+    .sort();
+}
+
+function inUse(message: string, names: string[]): AppError {
+  return { kind: "inUse", message, detail: { type: "inUse", names } };
+}
+
 function withConnection(
   state: MockState,
   connection: Connection,
@@ -88,6 +100,11 @@ export const connectionHandlers: Record<string, Handler<Record<string, unknown>>
     const { id, input } = arg<{ id: string; input: ConnectionInput }>(args);
     const index = slot(_state, id);
     const original = _state.connections[index];
+    // Like the backend: a jump host must stay SSH while other connections go through it.
+    const usedBy = jumpHostUsers(_state, original.id);
+    if (input.settings.protocol === "rdp" && usedBy.length > 0) {
+      throw inUse("protocol: used as a jump host", usedBy);
+    }
     const updated: Connection = {
       ...original,
       name: trimmedName(input.name),
@@ -128,17 +145,8 @@ export const connectionHandlers: Record<string, Handler<Record<string, unknown>>
   connection_delete(_state, args) {
     const { id } = arg<{ id: string }>(args);
     slot(_state, id);
-    const usedBy = _state.connections
-      .filter((connection) => connection.id !== id && connection.jumpHostId === id)
-      .map((connection) => connection.name)
-      .sort();
-    if (usedBy.length > 0) {
-      throw {
-        kind: "inUse",
-        message: "connection is used as a jump host",
-        detail: { type: "inUse", names: usedBy },
-      };
-    }
+    const usedBy = jumpHostUsers(_state, id);
+    if (usedBy.length > 0) throw inUse("connection is used as a jump host", usedBy);
     return {
       state: {
         ..._state,

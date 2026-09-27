@@ -514,8 +514,8 @@ test("RDP advanced settings are validated", async ({ page }) => {
 - [x] `npm run review` passe, avec les 16 tests unitaires et les 3 scénarios de cette fiche.
 - [x] Les fichiers de tests de T10 **et** de T11 sont identiques à leurs fiches : `node scripts/contract-tests.mjs T10 --check` et `node scripts/contract-tests.mjs T11 --check` affichent `OK` partout.
 - [x] Aucun fichier de `editor/` ne dépasse 400 lignes.
-- [ ] Visuel : la chaîne « You → bastion-01 → app-01 » est lisible, avec des flèches discrètes (`text-muted-foreground`).
-- [ ] Visuel : les champs Wake-on-LAN n'apparaissent qu'une fois l'interrupteur activé, et Width / Height qu'avec
+- [x] Visuel : la chaîne « You → bastion-01 → app-01 » est lisible, avec des flèches discrètes (`text-muted-foreground`).
+- [x] Visuel : les champs Wake-on-LAN n'apparaissent qu'une fois l'interrupteur activé, et Width / Height qu'avec
       « Fixed size ».
 
 ## À regarder par Florian

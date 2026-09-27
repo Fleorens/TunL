@@ -7,11 +7,11 @@ import type { ConnectionTemplates } from "@/bindings/ConnectionTemplates";
 import type { Group } from "@/bindings/Group";
 import type { GroupInput } from "@/bindings/GroupInput";
 import type { StoreSnapshot } from "@/bindings/StoreSnapshot";
+import { toInput } from "@/features/connections/to-input";
 import { i18n } from "@/i18n";
 import { notifyError, toAppError } from "@/lib/errors";
 import { ipc } from "@/lib/ipc";
 import type { Result } from "@/lib/result";
-import { toInput } from "@/lib/to-input";
 
 type LoadStatus = "idle" | "loading" | "ready" | "error";
 

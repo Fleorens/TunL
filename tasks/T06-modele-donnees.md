@@ -399,7 +399,7 @@ fn jump_host_must_be_another_ssh_connection() {
 
     let me = saved(ssh_input("me", "h"));
     let input = ConnectionInput { jump_host_id: Some(me.id), ..me.to_input() };
-    let error = normalize_connection_input(&input, Some(me.id), &[], &[me.clone()]).unwrap_err();
+    let error = normalize_connection_input(&input, Some(me.id), &[], &[me]).unwrap_err();
     assert_eq!(field_of(&error), "jumpHostId");
 }
 

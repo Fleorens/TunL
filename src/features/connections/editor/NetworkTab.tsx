@@ -39,11 +39,12 @@ function JumpHost({ selfId }: { selfId: string | null }) {
 
   return (
     <div className="flex flex-col gap-1.5">
+      <Label htmlFor="jumpHost">{t("editor.fields.jumpHost")}</Label>
       <Select
         value={field.value || NONE}
         onValueChange={(value) => field.onChange(value === NONE ? "" : value)}
       >
-        <SelectTrigger id="jumpHost" aria-label={t("editor.fields.jumpHost")}>
+        <SelectTrigger id="jumpHost">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

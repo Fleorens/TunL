@@ -56,7 +56,7 @@ export function GroupSection({
               style={{ transform: open ? "rotate(90deg)" : undefined }}
             />
             <span className={cn("size-2 rounded-full", dotClass)} />
-            <span className="flex-1 truncate text-xs font-medium">{group.name}</span>
+            <span className="flex-1 truncate text-left text-xs font-medium">{group.name}</span>
             <span className="text-xs text-subtle-foreground tabular-nums">{count}</span>
           </button>
         </CollapsibleTrigger>

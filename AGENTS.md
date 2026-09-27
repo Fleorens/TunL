@@ -120,6 +120,10 @@ Rust édition 2024 · tokio · russh 0.63 · russh-sftp 3 · oo7 0.6 · ts-rs 12
 | Radix `Select` | une valeur sentinelle (`"__none__"`) pour « aucun » | `<SelectItem value="">` (plante à l'ouverture) |
 | Sélecteur zustand | sélectionner la donnée brute, dériver avec `useMemo` (ou `useShallow`) | `useStore((s) => s.list.filter(…))` (nouveau tableau à chaque rendu → boucle infinie) |
 | zod 4 | `{ error: "code" }` dans un schéma, `ctx.addIssue({ code: "custom", message, path })` dans `superRefine` | `{ message: "…" }` dans un schéma, `z.string().nonempty()` |
+| Formulaire react-hook-form | ne rendre les champs qu'une fois le `reset` fait pour la cible ouverte (ou des `defaultValues` complètes) | des champs rendus avec des valeurs `undefined`, puis remplis par un `useEffect` (avertissement « uncontrolled → controlled ») |
+| Carte cliquable qui contient un radio | `has-checked:` (input natif) ou `has-[[data-state=checked]]:` (Radix) **sur la carte** | `peer-checked:` sur le parent (ne vise que les frères qui suivent le `peer`) |
+| Texte dans un `<button>` | `text-left` sur le libellé (`flex-1 truncate text-left`) | compter sur le `text-left` d'un parent (le bouton recentre) |
+| Champs propres à un protocole | les conditionner à `protocol` (`useWatch`) : une connexion SSH n'affiche aucun réglage RDP, et inversement | tout afficher dans l'onglet |
 
 ## Règles de code
 

@@ -18,9 +18,9 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useConnections } from "@/features/connections/store";
+import { toInput } from "@/features/connections/to-input";
 import { useUi } from "@/features/shell/ui-store";
 import { notifyError } from "@/lib/errors";
-import { toInput } from "@/lib/to-input";
 import { AdvancedTab } from "./AdvancedTab";
 import { AuthTab } from "./AuthTab";
 import { FormProvider } from "./form-context";
@@ -82,6 +82,9 @@ export function ConnectionEditor() {
   );
   const [discardOpen, setDiscardOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  // The target the form was last reset for. Fields render only once it matches the open target:
+  // before that, every field would be `undefined` (uncontrolled), then controlled after `reset`.
+  const [readyFor, setReadyFor] = useState<typeof target>(null);
 
   const target = useUi((state) => state.editor);
   const closeEditor = useUi((state) => state.closeEditor);
@@ -111,7 +114,12 @@ export function ConnectionEditor() {
     form.reset(toFormValues(base, templates));
     setSavedName(target.mode === "edit" ? base.name : null);
     setActiveTab("general");
+    setReadyFor(target);
   }, [target, templates, form, closeEditor]);
+
+  // While the sheet slides out, `target` is already null: keep showing what it was showing.
+  const shown = target ?? readyFor;
+  const ready = shown !== null && readyFor === shown;
 
   const save = async () => {
     if (!target || !isValid || !templates) return;
@@ -172,52 +180,52 @@ export function ConnectionEditor() {
         }}
       >
         <SheetContent className="flex h-full flex-col gap-4 data-[side=right]:w-full data-[side=right]:sm:max-w-[520px]">
-          <SheetHeader>
-            <div className="flex items-center justify-between">
-              <SheetTitle>
-                {target?.mode === "edit" && savedName
-                  ? t("editor.editTitle", { name: savedName })
-                  : t("editor.createTitle")}
-              </SheetTitle>
-              <ProtocolSwitch portTouched={portTouched} />
-            </div>
+          <SheetHeader className="items-start gap-3">
+            <SheetTitle>
+              {shown?.mode === "edit" && savedName
+                ? t("editor.editTitle", { name: savedName })
+                : t("editor.createTitle")}
+            </SheetTitle>
+            {ready && <ProtocolSwitch portTouched={portTouched} />}
           </SheetHeader>
 
           <fieldset
             data-slot="editor-scroll"
-            className="min-h-0 flex-1 overflow-y-auto border-none"
+            className="min-h-0 flex-1 overflow-y-auto border-none px-4"
             onKeyDown={onKeyDown}
           >
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as never)}>
-              <TabsList>
-                <TabsTrigger value="general">{t("editor.tabs.general")}</TabsTrigger>
-                <TabsTrigger value="authentication">{t("editor.tabs.authentication")}</TabsTrigger>
-                <TabsTrigger value="network">{t("editor.tabs.network")}</TabsTrigger>
-                <TabsTrigger value="advanced">{t("editor.tabs.advanced")}</TabsTrigger>
-              </TabsList>
-              <TabsContent value="general">
-                <GeneralTab portTouched={portTouched} />
-              </TabsContent>
-              <TabsContent value="authentication">
-                <AuthTab />
-              </TabsContent>
-              <TabsContent value="network">
-                <NetworkTab selfId={target?.mode === "edit" ? target.id : null} />
-              </TabsContent>
-              <TabsContent value="advanced">
-                <AdvancedTab />
-              </TabsContent>
-            </Tabs>
+            {ready && (
+              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as never)}>
+                <TabsList>
+                  <TabsTrigger value="general">{t("editor.tabs.general")}</TabsTrigger>
+                  <TabsTrigger value="authentication">
+                    {t("editor.tabs.authentication")}
+                  </TabsTrigger>
+                  <TabsTrigger value="network">{t("editor.tabs.network")}</TabsTrigger>
+                  <TabsTrigger value="advanced">{t("editor.tabs.advanced")}</TabsTrigger>
+                </TabsList>
+                <TabsContent value="general">
+                  <GeneralTab portTouched={portTouched} />
+                </TabsContent>
+                <TabsContent value="authentication">
+                  <AuthTab />
+                </TabsContent>
+                <TabsContent value="network">
+                  <NetworkTab selfId={target?.mode === "edit" ? target.id : null} />
+                </TabsContent>
+                <TabsContent value="advanced">
+                  <AdvancedTab />
+                </TabsContent>
+              </Tabs>
+            )}
           </fieldset>
 
           <SheetFooter className="items-center sm:flex-row sm:justify-between">
-            <Button
-              variant="destructive"
-              onClick={() => setConfirmDeleteOpen(true)}
-              disabled={target?.mode !== "edit"}
-            >
-              {t("common.delete")}
-            </Button>
+            {shown?.mode === "edit" && (
+              <Button variant="destructive" onClick={() => setConfirmDeleteOpen(true)}>
+                {t("common.delete")}
+              </Button>
+            )}
             <div className="flex flex-1 justify-end gap-2">
               <Button variant="outline" onClick={requestClose}>
                 {t("common.cancel")}

@@ -130,7 +130,8 @@ function GroupSelect() {
   };
 
   return (
-    <>
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor="group">{t("editor.fields.group")}</Label>
       <Select
         value={field.value || NONE}
         onValueChange={(value) => {
@@ -141,7 +142,7 @@ function GroupSelect() {
           field.onChange(value === NONE ? "" : value);
         }}
       >
-        <SelectTrigger id="group" aria-label={t("editor.fields.group")}>
+        <SelectTrigger id="group">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -165,7 +166,7 @@ function GroupSelect() {
         onCommit={createGroup}
         onClose={() => setDialogOpen(false)}
       />
-    </>
+    </div>
   );
 }
 

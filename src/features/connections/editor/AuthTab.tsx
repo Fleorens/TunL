@@ -27,14 +27,14 @@ function AuthCard({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50 peer-checked:border-primary peer-checked:bg-primary/5">
+    <label className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50 has-checked:border-primary has-checked:bg-primary/5">
       <input
         type="radio"
         name="ssh-auth"
         value={value}
         checked={checked}
         onChange={() => onChange(value)}
-        className="size-4 accent-primary peer"
+        className="size-4 accent-primary"
       />
       <span className="text-sm font-medium">{label}</span>
     </label>

@@ -53,7 +53,7 @@ function DisplayModeField() {
             <label
               key={mode.value}
               htmlFor={`display-${mode.value}`}
-              className="flex cursor-pointer items-center gap-2 rounded-lg border p-3 transition-colors hover:bg-muted/50 peer-checked:border-primary peer-checked:bg-primary/5"
+              className="flex cursor-pointer items-center gap-2 rounded-lg border p-3 transition-colors hover:bg-muted/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
             >
               <RadioGroupItem id={`display-${mode.value}`} value={mode.value} />
               <span className="text-sm font-medium">{t(`editor.display.${mode.labelKey}`)}</span>

@@ -614,8 +614,8 @@ test("groups can be created, renamed and deleted", async ({ page }) => {
 - [x] Les fichiers de tests sont identiques à la fiche (au formatage Biome près).
 - [x] `grep -rn "DEMO_CONNECTIONS\|DEMO_GROUPS" src` est vide.
 - [x] `grep -rn "localStorage" src --include=*.ts --include=*.tsx | grep -v test` ne montre que `src/lib/theme.ts`.
-- [ ] Visuel : le bouton `⋯` d'un groupe n'apparaît qu'au survol de son en-tête ou au focus clavier.
-- [ ] Visuel : pendant le chargement, la barre latérale montre des lignes squelettes, pas une liste vide.
+- [x] Visuel : le bouton `⋯` d'un groupe n'apparaît qu'au survol de son en-tête ou au focus clavier.
+- [x] Visuel : pendant le chargement, la barre latérale montre des lignes squelettes, pas une liste vide.
 
 ## À regarder par Florian
 

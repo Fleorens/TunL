@@ -1,83 +1,39 @@
-import { useController } from "react-hook-form";
+import { useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Label } from "@/components/ui/label";
 import { useSettings } from "@/features/settings/store";
-import { FieldError } from "./FieldError";
 import { useFormHook } from "./form-context";
+import { StringField } from "./form-fields";
 import { RdpAdvancedFields } from "./RdpAdvancedFields";
 
-/** The Advanced tab: SSH timeouts (with the global setting as placeholder) and the whole RDP section. */
+/**
+ * The Advanced tab, for the edited protocol only: SSH timeouts (an empty field falls back to the global
+ * setting, shown as placeholder), or the whole RDP section.
+ */
 export function AdvancedTab() {
-  const { t } = useTranslation();
   const form = useFormHook();
-  const keepaliveGlobal = useSettings((state) => state.settings?.ssh.keepaliveSecs);
-  const timeoutGlobal = useSettings((state) => state.settings?.ssh.connectTimeoutSecs);
-  const { field: keepalive, fieldState: keepaliveState } = useController({
-    name: "sshKeepaliveSecs",
-    control: form.control,
-  });
-  const { field: timeout, fieldState: timeoutState } = useController({
-    name: "sshConnectTimeoutSecs",
-    control: form.control,
-  });
-
-  const keepalivePlaceholder =
-    keepalive.value === "" ? t("editor.globalDefault", { value: keepaliveGlobal }) : undefined;
-  const timeoutPlaceholder =
-    timeout.value === "" ? t("editor.globalDefault", { value: timeoutGlobal }) : undefined;
-
-  return (
-    <div className="grid gap-4">
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="sshKeepaliveSecs">{t("editor.fields.keepalive")}</Label>
-        <InputNumber
-          id="sshKeepaliveSecs"
-          value={keepalive.value}
-          onChange={keepalive.onChange}
-          onBlur={keepalive.onBlur}
-          placeholder={keepalivePlaceholder}
-          aria-invalid={keepaliveState.invalid}
-        />
-        <FieldError message={keepaliveState.error?.message} />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="sshConnectTimeoutSecs">{t("editor.fields.connectTimeout")}</Label>
-        <InputNumber
-          id="sshConnectTimeoutSecs"
-          value={timeout.value}
-          onChange={timeout.onChange}
-          onBlur={timeout.onBlur}
-          placeholder={timeoutPlaceholder}
-          aria-invalid={timeoutState.invalid}
-        />
-        <FieldError message={timeoutState.error?.message} />
-      </div>
-      <RdpAdvancedFields />
-    </div>
-  );
+  const protocol = useWatch({ name: "protocol", control: form.control });
+  return protocol === "rdp" ? <RdpAdvancedFields /> : <SshAdvancedFields />;
 }
 
-/** A numeric text field, bound to a form field. */
-function InputNumber({
-  id,
-  value,
-  onChange,
-  onBlur,
-  ...props
-}: React.ComponentProps<"input"> & {
-  value: string;
-  onChange: (value: string) => void;
-  onBlur: () => void;
-}) {
+function SshAdvancedFields() {
+  const { t } = useTranslation();
+  const keepaliveGlobal = useSettings((state) => state.settings?.ssh.keepaliveSecs);
+  const timeoutGlobal = useSettings((state) => state.settings?.ssh.connectTimeoutSecs);
+
   return (
-    <input
-      id={id}
-      type="number"
-      inputMode="numeric"
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      onBlur={onBlur}
-      {...props}
-    />
+    <div className="grid gap-4 sm:grid-cols-2">
+      <StringField
+        name="sshKeepaliveSecs"
+        label={t("editor.fields.keepalive")}
+        inputMode="numeric"
+        placeholder={t("editor.globalDefault", { value: keepaliveGlobal })}
+      />
+      <StringField
+        name="sshConnectTimeoutSecs"
+        label={t("editor.fields.connectTimeout")}
+        inputMode="numeric"
+        placeholder={t("editor.globalDefault", { value: timeoutGlobal })}
+      />
+    </div>
   );
 }
