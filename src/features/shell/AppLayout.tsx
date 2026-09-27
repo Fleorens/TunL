@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { usePanelRef } from "react-resizable-panels";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { ConnectionEditor } from "@/features/connections/editor/ConnectionEditor";
 import { HomeView } from "@/features/home/HomeView";
 import { useDemoTabs } from "@/features/shell/demo-data";
 import { StatusBar } from "@/features/shell/StatusBar";
@@ -30,6 +31,7 @@ export function AppLayout() {
 
   const handlers: ShortcutHandlers = {
     "sidebar.toggle": () => toggleSidebar(),
+    "connection.new": () => useUi.getState().openEditor({ mode: "create" }),
     "sidebar.filter": () => {
       if (collapsed) setSidebarCollapsed(false);
       document.getElementById("sidebar-filter")?.focus();
@@ -87,6 +89,7 @@ export function AppLayout() {
         </ResizablePanel>
       </ResizablePanelGroup>
       <StatusBar />
+      <ConnectionEditor />
     </div>
   );
 }

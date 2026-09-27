@@ -13,6 +13,16 @@
     "search": "Rechercher",
     "details": "Détails"
   },
+  "validation": {
+    "required": "Requis",
+    "tooLong": "Trop long",
+    "controlChars": "Contient un caractère interdit",
+    "invalidHost": "Saisissez un nom d'hôte ou une adresse IP",
+    "invalidPort": "Saisissez un port compris entre 1 et 65535",
+    "invalidTag": "Lettres, chiffres, points, tirets et underscores seulement",
+    "tooManyTags": "10 étiquettes au plus",
+    "invalidPath": "Utilisez un chemin absolu ou commençant par ~/"
+  },
   "status": {
     "online": "En ligne",
     "connecting": "Connexion…",
@@ -150,5 +160,41 @@
     "blue": "Bleu",
     "violet": "Violet",
     "pink": "Rose"
+  },
+  "editor": {
+    "createTitle": "Nouvelle connexion",
+    "editTitle": "Modifier {{name}}",
+    "tabs": {
+      "general": "Général",
+      "authentication": "Authentification"
+    },
+    "fields": {
+      "name": "Nom",
+      "host": "Hôte",
+      "port": "Port",
+      "username": "Utilisateur",
+      "group": "Groupe",
+      "tags": "Étiquettes",
+      "color": "Couleur",
+      "notes": "Notes",
+      "keyPath": "Chemin de la clé",
+      "domain": "Domaine"
+    },
+    "auth": {
+      "password": "Mot de passe",
+      "key": "Clé privée",
+      "agent": "Agent SSH",
+      "passwordHint": "On vous demandera le mot de passe lors de la connexion.",
+      "agentHint": "Utilise les clés chargées dans votre agent SSH."
+    },
+    "noGroup": "Sans groupe",
+    "newGroup": "Nouveau groupe…",
+    "removeTag": "Retirer l'étiquette {{tag}}",
+    "saved": "« {{name}} » enregistré",
+    "discardTitle": "Quitter sans enregistrer ?",
+    "discard": "Quitter",
+    "keepEditing": "Continuer l'édition",
+    "discardDescription": "Vous avez des modifications non enregistrées.",
+    "deleteDescription": "Supprimer cette connexion ? Cette action est définitive."
   }
 }

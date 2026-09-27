@@ -518,10 +518,10 @@ test("SSH key authentication needs a usable path", async ({ page }) => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, avec les 14 tests de `form-values.test.ts` et les 7 scénarios de `editor.spec.ts`.
-- [ ] Les fichiers de tests sont identiques à la fiche : `node scripts/contract-tests.mjs T10 --check` affiche `OK` partout.
-- [ ] Aucun fichier de `editor/` ne dépasse 400 lignes, aucune fonction ne dépasse 50 lignes.
-- [ ] `grep -rn "as unknown as\|: any\|@ts-ignore" src/features/connections` est vide.
+- [x] `npm run review` passe, avec les 14 tests de `form-values.test.ts` et les 7 scénarios de `editor.spec.ts`.
+- [x] Les fichiers de tests sont identiques à la fiche : `node scripts/contract-tests.mjs T10 --check` affiche `OK` partout.
+- [x] Aucun fichier de `editor/` ne dépasse 400 lignes, aucune fonction ne dépasse 50 lignes.
+- [x] `grep -rn "as unknown as\|: any\|@ts-ignore" src/features/connections` est vide.
 - [ ] Visuel : feuille de 520 px à droite, pied collant, champs Hôte et Port sur une même ligne.
 - [ ] Visuel : le message d'erreur apparaît sous le champ, en couleur `destructive`, sans décaler le reste du formulaire
       de façon brutale.

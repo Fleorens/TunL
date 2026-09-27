@@ -13,6 +13,16 @@
     "search": "Search",
     "details": "Details"
   },
+  "validation": {
+    "required": "Required",
+    "tooLong": "Too long",
+    "controlChars": "Contains a forbidden character",
+    "invalidHost": "Enter a host name or an IP address",
+    "invalidPort": "Enter a port between 1 and 65535",
+    "invalidTag": "Letters, digits, dots, dashes and underscores only",
+    "tooManyTags": "10 tags at most",
+    "invalidPath": "Use an absolute path or one starting with ~/"
+  },
   "status": {
     "online": "Online",
     "connecting": "Connecting",
@@ -148,5 +158,41 @@
     "blue": "Blue",
     "violet": "Violet",
     "pink": "Pink"
+  },
+  "editor": {
+    "createTitle": "New connection",
+    "editTitle": "Edit {{name}}",
+    "tabs": {
+      "general": "General",
+      "authentication": "Authentication"
+    },
+    "fields": {
+      "name": "Name",
+      "host": "Host",
+      "port": "Port",
+      "username": "Username",
+      "group": "Group",
+      "tags": "Tags",
+      "color": "Color",
+      "notes": "Notes",
+      "keyPath": "Key path",
+      "domain": "Domain"
+    },
+    "auth": {
+      "password": "Password",
+      "key": "Private key",
+      "agent": "SSH agent",
+      "passwordHint": "You will be asked for the password when connecting.",
+      "agentHint": "Uses the keys loaded in your SSH agent."
+    },
+    "noGroup": "No group",
+    "newGroup": "New group…",
+    "removeTag": "Remove tag {{tag}}",
+    "saved": "“{{name}}” saved",
+    "discardTitle": "Discard changes?",
+    "discard": "Discard",
+    "keepEditing": "Keep editing",
+    "discardDescription": "You have unsaved changes.",
+    "deleteDescription": "Delete this connection? This cannot be undone."
   }
 }

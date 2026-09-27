@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/context-menu";
 import { useConnections } from "@/features/connections/store";
 import { notifyComingSoon } from "@/features/shell/coming-soon";
+import { useUi } from "@/features/shell/ui-store";
 import { copyText } from "@/lib/clipboard";
 
 interface ConnectionContextMenuProps extends Omit<ComponentProps<typeof ContextMenu>, "children"> {
@@ -68,6 +69,8 @@ export function ConnectionContextMenu({
     await copyText(address);
   };
 
+  const edit = () => useUi.getState().openEditor({ mode: "edit", id: connection.id });
+
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
@@ -93,7 +96,7 @@ export function ConnectionContextMenu({
 
         <ContextMenuSeparator />
 
-        <ContextMenuItem onClick={notifyComingSoon}>
+        <ContextMenuItem onClick={edit}>
           <Pencil className="size-3.5" />
           {t("connectionMenu.edit")}
         </ContextMenuItem>

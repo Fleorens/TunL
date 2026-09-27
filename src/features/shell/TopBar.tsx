@@ -42,7 +42,7 @@ export function TopBar() {
         </button>
       </div>
 
-      <Button size="sm" onClick={notifyComingSoon}>
+      <Button size="sm" onClick={() => useUi.getState().openEditor({ mode: "create" })}>
         <Plus className="size-4" />
         {t("topbar.newConnection")}
       </Button>

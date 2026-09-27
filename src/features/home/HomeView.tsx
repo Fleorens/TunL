@@ -11,6 +11,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { notifyComingSoon } from "@/features/shell/coming-soon";
+import { useUi } from "@/features/shell/ui-store";
 
 export function HomeView() {
   const { t } = useTranslation();
@@ -28,7 +29,7 @@ export function HomeView() {
           <EmptyDescription>{t("home.welcomeDescription")}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent className="max-w-none flex-row flex-wrap justify-center gap-2">
-          <Button onClick={notifyComingSoon}>
+          <Button onClick={() => useUi.getState().openEditor({ mode: "create" })}>
             <Plus className="size-4" />
             {t("home.newConnection")}
           </Button>
