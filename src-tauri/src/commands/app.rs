@@ -1,5 +1,5 @@
 use serde::Serialize;
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Runtime, State};
 use ts_rs::TS;
 
 use crate::error::AppResult;
@@ -20,7 +20,10 @@ pub struct AppInfo {
 }
 
 #[tauri::command]
-pub async fn app_info(app: AppHandle, state: State<'_, AppState>) -> AppResult<AppInfo> {
+pub async fn app_info<R: Runtime>(
+    app: AppHandle<R>,
+    state: State<'_, AppState>,
+) -> AppResult<AppInfo> {
     let package = app.package_info();
     Ok(AppInfo {
         name: package.name.clone(),

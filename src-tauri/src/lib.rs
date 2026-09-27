@@ -58,25 +58,31 @@ pub fn run() {
             }
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![
-            commands::app::app_info,
-            commands::store::store_load,
-            commands::store::connection_templates,
-            commands::connections::connection_create,
-            commands::connections::connection_update,
-            commands::connections::connection_duplicate,
-            commands::connections::connection_delete,
-            commands::connections::connection_set_favorite,
-            commands::connections::connection_touch,
-            commands::groups::group_create,
-            commands::groups::group_update,
-            commands::groups::group_delete,
-            commands::groups::group_reorder,
-            commands::settings::settings_get,
-            commands::settings::settings_update
-        ])
+        .invoke_handler(invoke_handler())
         .run(tauri::generate_context!())
         .expect("error while running TunL");
+}
+
+/// Every command of the app. Generic over the runtime so `commands/ipc_tests.rs` can drive it with `MockRuntime`.
+pub fn invoke_handler<R: tauri::Runtime>()
+-> impl Fn(tauri::ipc::Invoke<R>) -> bool + Send + Sync + 'static {
+    tauri::generate_handler![
+        commands::app::app_info,
+        commands::store::store_load,
+        commands::store::connection_templates,
+        commands::connections::connection_create,
+        commands::connections::connection_update,
+        commands::connections::connection_duplicate,
+        commands::connections::connection_delete,
+        commands::connections::connection_set_favorite,
+        commands::connections::connection_touch,
+        commands::groups::group_create,
+        commands::groups::group_update,
+        commands::groups::group_delete,
+        commands::groups::group_reorder,
+        commands::settings::settings_get,
+        commands::settings::settings_update,
+    ]
 }
 
 fn focus_main_window(app: &tauri::AppHandle) {

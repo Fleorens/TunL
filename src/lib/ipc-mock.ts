@@ -43,6 +43,9 @@ const HANDLERS: Record<string, Handler> = {
   ...settingsHandlers,
 };
 
+/** The commands the mock answers (checked against `ipc.ts` by `ipc-contract.test.ts`). */
+export const MOCK_COMMANDS: readonly string[] = Object.keys(HANDLERS);
+
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

@@ -124,6 +124,7 @@ Rust édition 2024 · tokio · russh 0.63 · russh-sftp 3 · oo7 0.6 · ts-rs 12
 | Carte cliquable qui contient un radio | `has-checked:` (input natif) ou `has-[[data-state=checked]]:` (Radix) **sur la carte** | `peer-checked:` sur le parent (ne vise que les frères qui suivent le `peer`) |
 | Texte dans un `<button>` | `text-left` sur le libellé (`flex-1 truncate text-left`) | compter sur le `text-left` d'un parent (le bouton recentre) |
 | Champs propres à un protocole | les conditionner à `protocol` (`useWatch`) : une connexion SSH n'affiche aucun réglage RDP, et inversement | tout afficher dans l'onglet |
+| Arguments d'une commande Tauri | un paramètre Rust par clé JSON envoyée par `ipc.ts` (`id: Uuid, input: ConnectionInput` pour `{ id, input }`), et une ligne dans `src-tauri/src/commands/ipc_tests.rs` qui l'appelle avec ces clés | une struct `req: XRequest` (Tauri attend alors `{ req: { … } }` : toutes les modifications échouaient dans la vraie app, le mock le cachait) |
 
 ## Règles de code
 
