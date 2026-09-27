@@ -28,6 +28,11 @@ import { TagsInput } from "./TagsInput";
 const NONE = "__none__";
 const NEW = "__new__";
 
+/** A form field whose value is a plain string, so it can be bound directly to an `<input>`. */
+type StringField = {
+  [K in keyof ConnectionFormValues]: ConnectionFormValues[K] extends string ? K : never;
+}[keyof ConnectionFormValues];
+
 /** A text field: label, input registered with the form, and the validation message below it. */
 function TextField({
   name,
@@ -35,7 +40,7 @@ function TextField({
   required,
   ...inputProps
 }: {
-  name: keyof ConnectionFormValues;
+  name: StringField;
   label: string;
   required?: boolean;
 } & Omit<ComponentProps<typeof Input>, "name" | "value" | "onChange" | "onBlur" | "ref">) {

@@ -21,7 +21,17 @@
     "invalidPort": "Enter a port between 1 and 65535",
     "invalidTag": "Letters, digits, dots, dashes and underscores only",
     "tooManyTags": "10 tags at most",
-    "invalidPath": "Use an absolute path or one starting with ~/"
+    "invalidPath": "Use an absolute path or one starting with ~/",
+    "invalidMac": "Enter a MAC address like AA:BB:CC:DD:EE:FF",
+    "invalidIpv4": "Enter an IPv4 address",
+    "waitRange": "Between 10 and 600 seconds",
+    "keepaliveRange": "Between 0 and 3600 seconds",
+    "timeoutRange": "Between 1 and 120 seconds",
+    "widthRange": "Between 640 and 8192",
+    "heightRange": "Between 480 and 8192",
+    "tooManyArgs": "20 arguments at most",
+    "invalidArg": "Must start with /, + or -",
+    "reservedArg": "TunL sets this argument itself"
   },
   "status": {
     "online": "Online",
@@ -164,7 +174,9 @@
     "editTitle": "Edit {{name}}",
     "tabs": {
       "general": "General",
-      "authentication": "Authentication"
+      "authentication": "Authentication",
+      "network": "Network",
+      "advanced": "Advanced"
     },
     "fields": {
       "name": "Name",
@@ -176,7 +188,44 @@
       "color": "Color",
       "notes": "Notes",
       "keyPath": "Key path",
-      "domain": "Domain"
+      "domain": "Domain",
+      "jumpHost": "Jump host",
+      "wol": "Wake-on-LAN",
+      "mac": "MAC address",
+      "broadcast": "Broadcast address",
+      "wolPort": "UDP port",
+      "wakeBeforeConnect": "Wake before connecting",
+      "waitTimeout": "Wait for the host (seconds)",
+      "keepalive": "Keepalive interval (seconds)",
+      "connectTimeout": "Connection timeout (seconds)",
+      "display": "Display",
+      "width": "Width",
+      "height": "Height",
+      "multimon": "Multiple monitors",
+      "dynamicResolution": "Dynamic resolution",
+      "clipboard": "Clipboard",
+      "shareHome": "Share my home folder",
+      "audio": "Audio",
+      "certificate": "Certificate",
+      "extraArgs": "Extra arguments"
+    },
+    "noJumpHost": "None (direct connection)",
+    "chainYou": "You",
+    "chainThisConnection": "this connection",
+    "globalDefault": "{{value}} (global setting)",
+    "display": {
+      "fit": "Fit to window",
+      "fullscreen": "Full screen",
+      "fixed": "Fixed size"
+    },
+    "audio": {
+      "local": "Local",
+      "remote": "Remote",
+      "off": "Off"
+    },
+    "cert": {
+      "prompt": "Ask",
+      "tofu": "Trust on first use"
     },
     "auth": {
       "password": "Password",

@@ -59,7 +59,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | T08 | Commandes CRUD connexions / groupes / réglages + ipc + mock | T07 | faible | Sonnet 5 · low | livrée |
 | T09 | Stores zustand + Sidebar branchée (sections, filtre, menu contextuel) | T08 | moyen | Sonnet 5 · medium | livrée |
 | T10 | Éditeur de connexion — Général + Authentification | T09 | moyen | Sonnet 5 · medium | livrée |
-| T11 | Éditeur de connexion — Réseau (bastion, WoL) + Avancé (SSH, RDP) | T10 | moyen | Sonnet 5 · medium | prête |
+| T11 | Éditeur de connexion — Réseau (bastion, WoL) + Avancé (SSH, RDP) | T10 | moyen | Sonnet 5 · medium | livrée |
 | T12 | Trousseau (oo7) : `secret_set/has/delete` + UI « Mémoriser » | T10 | moyen | Opus 5 · high | à écrire |
 | T13 | Palette de commandes + connexion rapide + table des raccourcis | T09 | moyen | Sonnet 5 · medium | à écrire |
 | T14 | Accueil : cartes favoris / récents, premier lancement | T09 | faible | Sonnet 5 · low | à écrire |

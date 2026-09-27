@@ -21,7 +21,17 @@
     "invalidPort": "Saisissez un port compris entre 1 et 65535",
     "invalidTag": "Lettres, chiffres, points, tirets et underscores seulement",
     "tooManyTags": "10 étiquettes au plus",
-    "invalidPath": "Utilisez un chemin absolu ou commençant par ~/"
+    "invalidPath": "Utilisez un chemin absolu ou commençant par ~/",
+    "invalidMac": "Saisissez une adresse MAC comme AA:BB:CC:DD:EE:FF",
+    "invalidIpv4": "Saisissez une adresse IPv4",
+    "waitRange": "Compris entre 10 et 600 secondes",
+    "keepaliveRange": "Compris entre 0 et 3600 secondes",
+    "timeoutRange": "Compris entre 1 et 120 secondes",
+    "widthRange": "Compris entre 640 et 8192",
+    "heightRange": "Compris entre 480 et 8192",
+    "tooManyArgs": "20 arguments au plus",
+    "invalidArg": "Doit commencer par /, + ou -",
+    "reservedArg": "TunL définit cet argument lui-même"
   },
   "status": {
     "online": "En ligne",
@@ -166,7 +176,9 @@
     "editTitle": "Modifier {{name}}",
     "tabs": {
       "general": "Général",
-      "authentication": "Authentification"
+      "authentication": "Authentification",
+      "network": "Réseau",
+      "advanced": "Avancé"
     },
     "fields": {
       "name": "Nom",
@@ -178,7 +190,44 @@
       "color": "Couleur",
       "notes": "Notes",
       "keyPath": "Chemin de la clé",
-      "domain": "Domaine"
+      "domain": "Domaine",
+      "jumpHost": "Connexion relais",
+      "wol": "Veille prolongée",
+      "mac": "Adresse MAC",
+      "broadcast": "Adresse de diffusion",
+      "wolPort": "Port UDP",
+      "wakeBeforeConnect": "Réveiller avant la connexion",
+      "waitTimeout": "Attendre l'hôte (secondes)",
+      "keepalive": "Intervalle de veille SSH (secondes)",
+      "connectTimeout": "Délai de connexion (secondes)",
+      "display": "Affichage",
+      "width": "Largeur",
+      "height": "Hauteur",
+      "multimon": "Écrans multiples",
+      "dynamicResolution": "Résolution dynamique",
+      "clipboard": "Presse-papiers",
+      "shareHome": "Partager mon dossier personnel",
+      "audio": "Audio",
+      "certificate": "Certificat",
+      "extraArgs": "Arguments supplémentaires"
+    },
+    "noJumpHost": "Aucune (connexion directe)",
+    "chainYou": "Vous",
+    "chainThisConnection": "cette connexion",
+    "globalDefault": "{{value}} (réglage global)",
+    "display": {
+      "fit": "Ajuster à la fenêtre",
+      "fullscreen": "Plein écran",
+      "fixed": "Taille fixe"
+    },
+    "audio": {
+      "local": "Local",
+      "remote": "Distant",
+      "off": "Éteint"
+    },
+    "cert": {
+      "prompt": "Demander",
+      "tofu": "Faire confiance à la première utilisation"
     },
     "auth": {
       "password": "Mot de passe",

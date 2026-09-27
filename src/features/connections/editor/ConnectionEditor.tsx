@@ -21,6 +21,7 @@ import { useConnections } from "@/features/connections/store";
 import { useUi } from "@/features/shell/ui-store";
 import { notifyError } from "@/lib/errors";
 import { toInput } from "@/lib/to-input";
+import { AdvancedTab } from "./AdvancedTab";
 import { AuthTab } from "./AuthTab";
 import { FormProvider } from "./form-context";
 import type { BackendFieldError, ConnectionFormValues } from "./form-values";
@@ -31,10 +32,14 @@ import {
   toFormValues,
 } from "./form-values";
 import { GeneralTab } from "./GeneralTab";
+import { NetworkTab } from "./NetworkTab";
 import { ProtocolSwitch } from "./ProtocolSwitch";
 
 /** Which tab holds each form field, so a backend error can open that tab. */
-const TAB_BY_FIELD: Record<keyof ConnectionFormValues, "general" | "authentication"> = {
+const TAB_BY_FIELD: Record<
+  keyof ConnectionFormValues,
+  "general" | "authentication" | "network" | "advanced"
+> = {
   protocol: "general",
   name: "general",
   host: "general",
@@ -47,13 +52,34 @@ const TAB_BY_FIELD: Record<keyof ConnectionFormValues, "general" | "authenticati
   sshAuthMethod: "authentication",
   sshKeyPath: "authentication",
   rdpDomain: "authentication",
+  jumpHostId: "network",
+  wolEnabled: "network",
+  wolMac: "network",
+  wolBroadcast: "network",
+  wolPort: "network",
+  wolWakeBeforeConnect: "network",
+  wolWaitTimeoutSecs: "network",
+  sshKeepaliveSecs: "advanced",
+  sshConnectTimeoutSecs: "advanced",
+  rdpDisplayMode: "advanced",
+  rdpWidth: "advanced",
+  rdpHeight: "advanced",
+  rdpMultimon: "advanced",
+  rdpDynamicResolution: "advanced",
+  rdpClipboard: "advanced",
+  rdpShareHome: "advanced",
+  rdpAudio: "advanced",
+  rdpCertPolicy: "advanced",
+  rdpExtraArgs: "advanced",
 };
 
 export function ConnectionEditor() {
   const { t } = useTranslation();
   const portTouched = useRef(false);
   const [savedName, setSavedName] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"general" | "authentication">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "authentication" | "network" | "advanced">(
+    "general",
+  );
   const [discardOpen, setDiscardOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
@@ -166,12 +192,20 @@ export function ConnectionEditor() {
               <TabsList>
                 <TabsTrigger value="general">{t("editor.tabs.general")}</TabsTrigger>
                 <TabsTrigger value="authentication">{t("editor.tabs.authentication")}</TabsTrigger>
+                <TabsTrigger value="network">{t("editor.tabs.network")}</TabsTrigger>
+                <TabsTrigger value="advanced">{t("editor.tabs.advanced")}</TabsTrigger>
               </TabsList>
               <TabsContent value="general">
                 <GeneralTab portTouched={portTouched} />
               </TabsContent>
               <TabsContent value="authentication">
                 <AuthTab />
+              </TabsContent>
+              <TabsContent value="network">
+                <NetworkTab selfId={target?.mode === "edit" ? target.id : null} />
+              </TabsContent>
+              <TabsContent value="advanced">
+                <AdvancedTab />
               </TabsContent>
             </Tabs>
           </fieldset>

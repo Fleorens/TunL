@@ -4,15 +4,35 @@ import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
 import { FieldError } from "./FieldError";
 import { useFormHook } from "./form-context";
+import type { ArrayFieldName } from "./form-values";
 
 /**
- * Tags as chips plus an input. Enter or `,` adds a trimmed, lowercased tag (skipped when empty,
- * already present, or the form is full). Backspace on an empty input removes the last tag.
+ * Tags as chips plus an input. Enter or `,` adds a trimmed tag (skipped when empty, already present, or the form is
+ * full). Backspace on an empty input removes the last tag.
+ *
+ * By default it edits the general `tags` field, labelled « Tags »: each tag is lowercased, de-duplicated and capped at
+ * ten. The RDP extra-arguments field reuses it with `name="rdpExtraArgs"`, `lowercase={false}`, `dedupe={false}` and
+ * `max={20}`: the arguments are case-sensitive, may repeat, and the schema enforces the count
+ * (docs/05-modele-donnees.md §6).
  */
-export function TagsInput() {
+export function TagsInput({
+  name = "tags",
+  label,
+  lowercase = true,
+  dedupe = true,
+  max = 10,
+}: {
+  name?: ArrayFieldName;
+  label?: string;
+  lowercase?: boolean;
+  dedupe?: boolean;
+  max?: number;
+} = {}) {
   const { t } = useTranslation();
   const form = useFormHook();
-  const { field, fieldState } = useController({ name: "tags", control: form.control });
+  const { field, fieldState } = useController({ name, control: form.control });
+  const resolvedLabel = label ?? t("editor.fields.tags");
+  const inputId = `${name}-input`;
   // RHF returns `undefined` for a field with no default yet (the reset effect runs after the
   // templates load), so fall back to an empty array until the form is populated.
   const tags = field.value ?? [];
@@ -31,8 +51,9 @@ export function TagsInput() {
   }, [tags]);
 
   const addTag = () => {
-    const tag = input.trim().toLowerCase();
-    if (!tag || tags.includes(tag) || tags.length >= 10) return;
+    const raw = input.trim();
+    const tag = lowercase ? raw.toLowerCase() : raw;
+    if (!raw || (dedupe && tags.includes(tag)) || tags.length >= max) return;
     field.onChange([...tags, tag]);
     setInput("");
   };
@@ -53,7 +74,7 @@ export function TagsInput() {
 
   return (
     <div className="flex flex-col gap-1.5">
-      <Label htmlFor="tags-input">{t("editor.fields.tags")}</Label>
+      <Label htmlFor={inputId}>{resolvedLabel}</Label>
       <div className="flex flex-wrap items-center gap-1 rounded-lg border border-input bg-transparent px-2 py-1">
         {tags.map((tag) => (
           <span
@@ -72,12 +93,12 @@ export function TagsInput() {
           </span>
         ))}
         <input
-          id="tags-input"
+          id={inputId}
           ref={inputRef}
           value={input}
           onChange={(event) => setInput(event.target.value)}
           onKeyDown={onKeyDown}
-          placeholder={t("editor.fields.tags")}
+          placeholder={resolvedLabel}
           className="min-w-[6rem] flex-1 border-none bg-transparent px-1 py-0.5 text-sm outline-none placeholder:text-muted-foreground"
         />
       </div>

@@ -1,14 +1,15 @@
-import { z } from "zod";
 import type { AccentColor } from "@/bindings/AccentColor";
 import type { AppError } from "@/bindings/AppError";
 import type { ConnectionInput } from "@/bindings/ConnectionInput";
 import type { ConnectionTemplates } from "@/bindings/ConnectionTemplates";
 import type { Protocol } from "@/bindings/Protocol";
 import type { ProtocolSettings } from "@/bindings/ProtocolSettings";
+import type { RdpDisplay } from "@/bindings/RdpDisplay";
 import type { RdpSettings } from "@/bindings/RdpSettings";
 import type { SshAuth } from "@/bindings/SshAuth";
 import type { SshSettings } from "@/bindings/SshSettings";
-import { hasControlChars, isValidHost, isValidPath, TAG_PATTERN } from "./validation";
+import type { WolConfig } from "@/bindings/WolConfig";
+import { normalizeMac } from "./validation";
 
 /**
  * The form only holds strings, booleans and string arrays (an `<input>` accepts no `null`, and a
@@ -27,7 +28,31 @@ export interface ConnectionFormValues {
   sshAuthMethod: "password" | "key" | "agent";
   sshKeyPath: string;
   rdpDomain: string;
+  jumpHostId: string;
+  wolEnabled: boolean;
+  wolMac: string;
+  wolBroadcast: string;
+  wolPort: string;
+  wolWakeBeforeConnect: boolean;
+  wolWaitTimeoutSecs: string;
+  sshKeepaliveSecs: string;
+  sshConnectTimeoutSecs: string;
+  rdpDisplayMode: "fit" | "fullscreen" | "fixed";
+  rdpWidth: string;
+  rdpHeight: string;
+  rdpMultimon: boolean;
+  rdpDynamicResolution: boolean;
+  rdpClipboard: boolean;
+  rdpShareHome: boolean;
+  rdpAudio: "local" | "remote" | "off";
+  rdpCertPolicy: "prompt" | "tofu";
+  rdpExtraArgs: string[];
 }
+
+/** A form field whose value is a string array, i.e. one `TagsInput` can edit (general tags or RDP extra arguments). */
+export type ArrayFieldName = {
+  [K in keyof ConnectionFormValues]: ConnectionFormValues[K] extends readonly unknown[] ? K : never;
+}[keyof ConnectionFormValues];
 
 /** A backend validation error attached to the form field it came from, or `null` (it goes to a toast). */
 export type BackendFieldError = { field: keyof ConnectionFormValues; message: string };
@@ -43,6 +68,15 @@ const FIELD_BY_BACKEND_PATH: Record<string, keyof ConnectionFormValues> = {
   groupId: "groupId",
   "settings.auth.path": "sshKeyPath",
   "settings.domain": "rdpDomain",
+  jumpHostId: "jumpHostId",
+  "wol.mac": "wolMac",
+  "wol.broadcast": "wolBroadcast",
+  "wol.port": "wolPort",
+  "wol.waitTimeoutSecs": "wolWaitTimeoutSecs",
+  "settings.keepaliveSecs": "sshKeepaliveSecs",
+  "settings.connectTimeoutSecs": "sshConnectTimeoutSecs",
+  "settings.display": "rdpWidth",
+  "settings.extraArgs": "rdpExtraArgs",
 };
 
 /** The SSH auth a connection uses: its own when it is SSH, otherwise the SSH template's default. */
@@ -75,6 +109,10 @@ export function toFormValues(
   const inputSettings = input.settings;
   const sshAuth = sshAuthOf(inputSettings, templates.ssh.settings);
   const rdpDomain = rdpDomainOf(inputSettings, templates.rdp.settings);
+  const sshSettings = sshSettingsOf(inputSettings, templates.ssh.settings);
+  const rdpSettings = rdpSettingsOf(inputSettings, templates.rdp.settings);
+  const wol = input.wol ?? templates.wol;
+  const display = rdpSettings.display;
   const protocol: Protocol = inputSettings.protocol;
 
   return {
@@ -90,6 +128,26 @@ export function toFormValues(
     sshAuthMethod: sshAuth.method,
     sshKeyPath: sshAuth.method === "key" ? sshAuth.path : "",
     rdpDomain: rdpDomain ?? "",
+    jumpHostId: input.jumpHostId ?? "",
+    wolEnabled: input.wol !== null,
+    wolMac: wol.mac,
+    wolBroadcast: wol.broadcast,
+    wolPort: String(wol.port),
+    wolWakeBeforeConnect: wol.wakeBeforeConnect,
+    wolWaitTimeoutSecs: String(wol.waitTimeoutSecs),
+    sshKeepaliveSecs: sshSettings.keepaliveSecs === null ? "" : String(sshSettings.keepaliveSecs),
+    sshConnectTimeoutSecs:
+      sshSettings.connectTimeoutSecs === null ? "" : String(sshSettings.connectTimeoutSecs),
+    rdpDisplayMode: display.mode,
+    rdpWidth: display.mode === "fixed" ? String(display.width) : "1920",
+    rdpHeight: display.mode === "fixed" ? String(display.height) : "1080",
+    rdpMultimon: rdpSettings.multimon,
+    rdpDynamicResolution: rdpSettings.dynamicResolution,
+    rdpClipboard: rdpSettings.clipboard,
+    rdpShareHome: rdpSettings.shareHome,
+    rdpAudio: rdpSettings.audio,
+    rdpCertPolicy: rdpSettings.certPolicy,
+    rdpExtraArgs: [...rdpSettings.extraArgs],
   };
 }
 
@@ -154,13 +212,13 @@ function rdpSettingsOf(
 /**
  * Converts the form values (strings only) into a `ConnectionInput` for the backend.
  *
- * `base` is the edited connection (`toInput(connection)`) or the template. `favorite`, `jumpHostId`
- * and `wol` are taken from it because the form does not edit them yet.
+ * `base` is the edited connection (`toInput(connection)`) or the template. Only `favorite` is still taken from it:
+ * the form edits the rest, including `jumpHostId` and `wol`.
  */
 export function toConnectionInput(
   values: ConnectionFormValues,
   base: ConnectionInput,
-  templates: ConnectionTemplates,
+  _templates: ConnectionTemplates,
 ): ConnectionInput {
   const name = values.name.trim();
   const host = values.host.trim();
@@ -168,22 +226,38 @@ export function toConnectionInput(
   const sshKeyPath = values.sshKeyPath.trim();
   const rdpDomain = values.rdpDomain.trim();
   const groupId = values.groupId.trim();
+  const keepalive = values.sshKeepaliveSecs.trim();
+  const timeout = values.sshConnectTimeoutSecs.trim();
 
-  const baseSettings = base.settings;
+  const sshSettings: { protocol: "ssh" } & SshSettings = {
+    protocol: "ssh",
+    auth: authForSsh(values.sshAuthMethod, sshKeyPath),
+    keepaliveSecs: keepalive === "" ? null : Number(keepalive),
+    connectTimeoutSecs: timeout === "" ? null : Number(timeout),
+  };
 
-  const sshStart =
-    values.protocol === baseSettings.protocol && baseSettings.protocol === "ssh"
-      ? baseSettings
-      : sshSettingsOf(baseSettings, templates.ssh.settings);
-  const rdpStart =
-    values.protocol === baseSettings.protocol && baseSettings.protocol === "rdp"
-      ? baseSettings
-      : rdpSettingsOf(baseSettings, templates.rdp.settings);
+  const rdpDisplayMode = values.rdpDisplayMode;
+  const display: RdpDisplay =
+    rdpDisplayMode === "fixed"
+      ? { mode: "fixed", width: Number(values.rdpWidth), height: Number(values.rdpHeight) }
+      : { mode: rdpDisplayMode };
+  const rdpSettings: { protocol: "rdp" } & RdpSettings = {
+    protocol: "rdp",
+    domain: rdpDomain === "" ? null : rdpDomain,
+    display,
+    multimon: values.rdpMultimon,
+    dynamicResolution: values.rdpDynamicResolution,
+    clipboard: values.rdpClipboard,
+    audio: values.rdpAudio,
+    shareHome: values.rdpShareHome,
+    certPolicy: values.rdpCertPolicy,
+    extraArgs: [...values.rdpExtraArgs],
+  };
 
-  const settings: ProtocolSettings =
-    values.protocol === "ssh"
-      ? { ...sshStart, auth: authForSsh(values.sshAuthMethod, sshKeyPath) }
-      : { ...rdpStart, domain: rdpDomain === "" ? null : rdpDomain };
+  const settings: ProtocolSettings = values.protocol === "ssh" ? sshSettings : rdpSettings;
+
+  const jumpHostId = values.jumpHostId === "" ? null : values.jumpHostId;
+  const wol = values.wolEnabled ? wolConfigFrom(values) : null;
 
   return {
     name,
@@ -195,9 +269,20 @@ export function toConnectionInput(
     favorite: base.favorite,
     color: values.color === "" ? null : values.color,
     notes: values.notes.trim() === "" ? null : values.notes,
-    jumpHostId: base.jumpHostId,
-    wol: base.wol,
+    jumpHostId,
+    wol,
     settings,
+  };
+}
+
+/** The Wake-on-LAN config from the form: the MAC is normalized, falling back to the trimmed input. */
+function wolConfigFrom(values: ConnectionFormValues): WolConfig {
+  return {
+    mac: normalizeMac(values.wolMac) ?? values.wolMac.trim(),
+    broadcast: values.wolBroadcast.trim(),
+    port: Number(values.wolPort),
+    wakeBeforeConnect: values.wolWakeBeforeConnect,
+    waitTimeoutSecs: Number(values.wolWaitTimeoutSecs),
   };
 }
 
@@ -214,68 +299,4 @@ export function backendFieldError(error: AppError): BackendFieldError | null {
   return { field, message: error.message.slice(separator + 2) };
 }
 
-/** True when `port` is a whole number between 1 and 65535. Empty fails too (single `invalidPort` code). */
-function isValidPort(port: string): boolean {
-  if (!/^\d+$/.test(port)) return false;
-  const number = Number(port);
-  return number >= 1 && number <= 65535;
-}
-
-/**
- * The form schema. Rules reproduced from the Rust side (docs/05-modele-donnees.md §6).
- *
- * - Every message is a code from `VALIDATION_CODES`, shown by `FieldError` via `t("validation.<code>")`.
- * - An empty field yields only `required`; the next check ignores the empty string. The port is the
- *   exception: it has a single `invalidPort` code, even when empty.
- * - `sshKeyPath` is only required when the protocol is SSH and the method is a key (see `superRefine`).
- */
-export const connectionFormSchema = z
-  .object({
-    protocol: z.enum(["ssh", "rdp"]),
-    name: z
-      .string()
-      .trim()
-      .min(1, { error: "required", abort: true })
-      .max(80, { error: "tooLong" })
-      .refine((value) => !hasControlChars(value), { error: "controlChars" }),
-    host: z
-      .string()
-      .trim()
-      .min(1, { error: "required", abort: true })
-      .refine(isValidHost, { error: "invalidHost" }),
-    port: z.string().trim().refine(isValidPort, { error: "invalidPort" }),
-    username: z
-      .string()
-      .trim()
-      .refine((value) => !hasControlChars(value), { error: "controlChars" }),
-    groupId: z.string(),
-    tags: z
-      .array(z.string().refine((value) => TAG_PATTERN.test(value), { error: "invalidTag" }))
-      .max(10, { error: "tooManyTags" }),
-    color: z.enum([
-      "",
-      "slate",
-      "red",
-      "orange",
-      "amber",
-      "green",
-      "teal",
-      "cyan",
-      "blue",
-      "violet",
-      "pink",
-    ]),
-    notes: z.string(),
-    sshAuthMethod: z.enum(["password", "key", "agent"]),
-    sshKeyPath: z.string(),
-    rdpDomain: z.string().refine((value) => !hasControlChars(value), { error: "controlChars" }),
-  })
-  .superRefine((value, ctx) => {
-    if (value.protocol === "ssh" && value.sshAuthMethod === "key") {
-      if (value.sshKeyPath.trim() === "") {
-        ctx.addIssue({ code: "custom", message: "required", path: ["sshKeyPath"] });
-      } else if (!isValidPath(value.sshKeyPath)) {
-        ctx.addIssue({ code: "custom", message: "invalidPath", path: ["sshKeyPath"] });
-      }
-    }
-  });
+export { connectionFormSchema } from "./schema";
