@@ -9,8 +9,11 @@ Exécute la fiche de tâche **$1** du projet TunL.
 « Fiches contrat » s'appliquent à la lettre.
 
 1. `ls tasks/$1-*.md`, puis `grep -nE '^#{2,4} ' tasks/$1-*.md` : garde cet index (sections et numéros de ligne).
-2. Lis la fiche **une fois**, en entier. Des documents de « Lire avant », lis seulement les sections citées.
-3. Point de départ : `git status` propre, et fiches de « Dépend de » en `livrée`
+2. Lis la fiche **une fois**, **sans** la section « Tests du contrat » (le script l'écrit à l'étape 4) :
+   `awk '/^## Tests du contrat/{s=1} /^## Étapes/{s=0} !s' tasks/$1-*.md`.
+   Un test ne se lit que s'il échoue, dans son fichier, pas dans la fiche.
+   Des documents de « Lire avant », lis seulement les sections citées.
+3. Point de départ : `git status` propre, et fiches de « Dépend de » en `livrée` ou `validée`
    (`grep -n "^| T0X " tasks/README.md`). Sinon, arrête-toi et explique pourquoi.
 4. Tests du contrat : `node scripts/contract-tests.mjs $1`. Tu ne les recopies pas, tu ne les modifies jamais.
 5. Code : fichier par fichier, dans l'ordre des « Étapes ». Pour chacun, relis seulement sa section de la fiche

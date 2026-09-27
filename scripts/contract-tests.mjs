@@ -3,7 +3,8 @@
 //   node scripts/contract-tests.mjs T10          creates every test file given by the sheet
 //   node scripts/contract-tests.mjs T10 --check  compares the files on disk with the sheet
 //
-// The check ignores formatting: both sides go through Biome (TS, JS, JSON) or rustfmt (Rust) first.
+// The check ignores formatting: both sides go through Biome (TS, JS, JSON) or rustfmt (Rust) first;
+// any other file (shell, config) is compared as written, trailing spaces aside.
 // A test file is the first code block after a `### \`path\`` heading of the "## Tests du contrat"
 // section, or after a "## Tests du contrat — `path`" heading.
 
@@ -66,6 +67,10 @@ function normalize(path, content) {
   const options = { input: content, encoding: "utf8", stdio: ["pipe", "pipe", "pipe"] };
   if (path.endsWith(".rs")) {
     return execFileSync("rustfmt", ["--edition", "2024", "--emit", "stdout"], options);
+  }
+  if (!/\.(ts|tsx|js|mjs|json|css)$/.test(path)) {
+    // Shell scripts, Containerfiles, configs: compared as written, trailing spaces aside.
+    return content.replace(/[ \t]+$/gm, "").trimEnd();
   }
   return execFileSync(
     "node_modules/.bin/biome",

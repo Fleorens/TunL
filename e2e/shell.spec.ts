@@ -27,7 +27,7 @@ test("only one connection row is highlighted at a time", async ({ page }) => {
 });
 
 test("placeholder actions show a translated toast, never a raw key", async ({ page }) => {
-  await page.getByRole("button", { name: /Search or connect/ }).click();
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
   await expect(page.getByText("Coming soon")).toBeVisible();
   await expect(page.getByText("shell.notYetAvailable")).toHaveCount(0);
 });

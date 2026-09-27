@@ -56,7 +56,9 @@ export default defineConfig({
 });
 ```
 
-3. `e2e/shell.spec.ts` **à l'identique**. C'est le contrat. Tu ajoutes seulement, à la fin, le test n° 6 décrit
+3. `e2e/shell.spec.ts` **à l'identique**. *(Lot 3 : le test des placeholders vise désormais le bouton « Settings »,
+   et T14 remplace « closing every tab shows the welcome screen » par sa version « home screen » : la référence
+   de ce fichier est la fiche T14.)* C'est le contrat. Tu ajoutes seulement, à la fin, le test n° 6 décrit
    juste après :
 
 ```ts
@@ -83,7 +85,7 @@ test("only one connection row is highlighted at a time", async ({ page }) => {
 });
 
 test("placeholder actions show a translated toast, never a raw key", async ({ page }) => {
-  await page.getByRole("button", { name: /Search or connect/ }).click();
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
   await expect(page.getByText("Coming soon")).toBeVisible();
   await expect(page.getByText("shell.notYetAvailable")).toHaveCount(0);
 });

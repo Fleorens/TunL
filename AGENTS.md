@@ -10,7 +10,7 @@ Un orchestrateur a écrit l'architecture (`docs/`) et découpé le travail en fi
    Rien d'autre sans raison. Ce fichier (`AGENTS.md`) est déjà dans tes instructions : ne le relis pas.
 2. Vérifie le point de départ :
    - `git status` doit être propre ;
-   - les fiches listées dans « Dépend de » sont marquées `livrée` dans `tasks/README.md`
+   - les fiches listées dans « Dépend de » sont marquées `livrée` ou `validée` dans `tasks/README.md`
      (`grep -n "^| T0X " tasks/README.md` suffit).
    Sinon, ARRÊTE et dis-le.
 3. Exécute les étapes **dans l'ordre**. N'ajoute aucune fonctionnalité, dépendance, fichier ou refactorisation
@@ -40,7 +40,9 @@ Ton contexte fait environ 130 000 tokens. Quand il est plein, opencode le **comp
 résumé, et tu perds le détail de tout ce que tu as lu. Une session qui relit tout tourne en boucle (lecture,
 compaction, relecture…). En T09, cela a coûté une heure et trois compactions sans une ligne de code écrite.
 
-- **Une seule lecture complète de la fiche**, au début. Ensuite, relis seulement la section utile, par ses numéros
+- **Une seule lecture de la fiche**, au début, **sans les blocs de « Tests du contrat »** (le script les écrit) :
+  `awk '/^## Tests du contrat/{s=1} /^## Étapes/{s=0} !s' tasks/Txx-*.md`. Un test se lit dans son fichier, et
+  seulement quand il échoue. Ensuite, relis seulement la section utile, par ses numéros
   de ligne : `grep -nE '^#{2,4} ' tasks/Txx-*.md` donne l'index, puis lecture avec offset et limite.
 - **Documents** : seulement les sections citées dans « Lire avant » (`grep -nE '^#{1,3} ' docs/xx.md` pour les
   trouver). Jamais un document entier « au cas où ».

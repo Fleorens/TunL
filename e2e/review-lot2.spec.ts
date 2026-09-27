@@ -93,7 +93,7 @@ test("the selected radio card is highlighted", async ({ page }) => {
   const border = (label: string) =>
     editor(page)
       .locator("label")
-      .filter({ hasText: label })
+      .filter({ hasText: new RegExp(`^${label}$`) })
       .evaluate((card) => getComputedStyle(card).borderColor);
   expect(await border("Password")).not.toBe(await border("SSH agent"));
 });

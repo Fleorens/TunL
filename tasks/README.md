@@ -1,6 +1,6 @@
 # Plan de réalisation — TunL v1
 
-40 fiches en 9 jalons. Chaque fiche tient dans **une session opencode** du modèle local.
+41 fiches en 9 jalons. Chaque fiche tient dans **une session opencode** du modèle local.
 L'orchestrateur (Claude) écrit les fiches détaillées **par lots** : chaque lot est ajusté après relecture de ce que
 le modèle a réellement livré. Une fiche qui cite des signatures de code pas encore écrit finirait par mentir.
 
@@ -60,16 +60,17 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | T09 | Stores zustand + Sidebar branchée (sections, filtre, menu contextuel) | T08 | moyen | Sonnet 5 · medium | validée |
 | T10 | Éditeur de connexion — Général + Authentification | T09 | moyen | Sonnet 5 · medium | validée |
 | T11 | Éditeur de connexion — Réseau (bastion, WoL) + Avancé (SSH, RDP) | T10 | moyen | Sonnet 5 · medium | validée |
-| T12 | Trousseau (oo7) : `secret_set/has/delete` + UI « Mémoriser » | T10 | moyen | Opus 5 · high | à écrire |
-| T13 | Palette de commandes + connexion rapide + table des raccourcis | T09 | moyen | Sonnet 5 · medium | à écrire |
-| T14 | Accueil : cartes favoris / récents, premier lancement | T09 | faible | Sonnet 5 · low | à écrire |
-| T15 | Import `~/.ssh/config` (aperçu, sélection, ProxyJump) | T08 | moyen | Sonnet 5 · medium | à écrire |
+| T12 | Trousseau (oo7) : `secret_set/has/delete` + secrets dans l'éditeur | T11 | moyen | Opus 5 · high | prête |
+| T13 | Palette de commandes + connexion rapide + aide des raccourcis (F1) | T15b | moyen | Sonnet 5 · medium | prête |
+| T14 | Accueil : cartes favoris / récents, premier lancement | T13 | faible | Sonnet 5 · low | prête |
+| T15 | Import `~/.ssh/config` : parseur, aperçu, application (backend + mock) | T12 | moyen | Sonnet 5 · medium | prête |
+| T15b | Import `~/.ssh/config` : dialogue (tableau, sélection, groupe) | T15 | faible | Sonnet 5 · medium | prête |
 
 ### M2 — SSH
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T16 | Environnement de test podman (cible + bastion, clés de test) | T05 | moyen | Sonnet 5 · medium | à écrire |
+| T16 | Environnement de test podman (cible, bastion, hôte caché, clés de test) | T05b | moyen | Sonnet 5 · medium | prête |
 | T17 | Noyau SSH : connexion TCP, handler, known_hosts, PromptBroker, dialogue clé d'hôte | T12, T16 | **élevé** | Opus 5 · high | à écrire |
 | T18 | Authentification : mot de passe, clé + passphrase, agent, keyboard-interactive | T17 | **élevé** | Opus 5 · high | à écrire |
 | T19 | Session shell : PTY, Channel binaire, registre de sessions, write / resize / close | T18 | **élevé** | Opus 5 · high | à écrire |
@@ -131,8 +132,8 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 T01 → T02 → T03 → T04 → T05 → T05b → T06 → T07 → T08 ─┬─ T09 → T10 → T12 → T17 → T18 → T19 → T20 → T21 → T22 ─┬─ T24 → T25 → T26
                                                │                    ↑                                  ├─ T23 → T28
                                                │              T16 ──┘                                  └─ T29
-                                               ├─ T15, T27, T32 (parallélisables après T08)
-                                               └─ T11, T13, T14, T30 (après T09)
+                                               ├─ T27, T32 (parallélisables après T08)
+                                               └─ T11 → T12 → T15 → T15b → T13 → T14 ; T30 (après T09)
 ```
 
 ## Lots d'écriture des fiches
@@ -144,7 +145,7 @@ local qui écrit le code (voir `AGENTS.md`).
 |---|---|---|
 | 1 | T01 → T05b | écrit (T05b déjà au format contrat) |
 | 2 | T06 → T11 | écrit (format contrat), après la revue du lot 1 |
-| 3 | T12 → T16 | à la demande « revue du lot 2 et écris le lot 3 », une fois T11 verte |
+| 3 | T12, T15, T15b, T13, T14, T16 | écrit après la revue du lot 2. Ordre : T12 → T15 → T15b → T13 → T14 ; T16 à tout moment |
 | 4 | T17 → T21 | fin du lot 3 (Claude aura éprouvé russh contre les conteneurs de T16) |
 | 5 | T22 → T30 | fin du lot 4 |
 | 6 | T31 → T40 | fin du lot 5 |

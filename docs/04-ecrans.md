@@ -129,10 +129,11 @@ Légende : `▣` = icône SSH (vert menthe), `▭` = RDP (bleu), `●` = en lign
   couleur (10 pastilles), notes.
 - **Authentification** :
   - SSH : méthode `Mot de passe` / `Clé privée` / `Agent SSH` (radio en cartes).
-    - Mot de passe : champ masqué + « Mémoriser dans le trousseau » (coché par défaut).
-      S'il existe déjà un secret : « Mot de passe enregistré ✓ » + boutons « Remplacer » / « Oublier ».
-    - Clé : chemin + bouton « Parcourir… » (dialogue fichier, dossier `~/.ssh` par défaut), passphrase optionnelle
-      mémorisable.
+    - Mot de passe : champ masqué **facultatif**, écrit dans le trousseau à l'enregistrement (vide = demandé à la
+      connexion ; la case « Mémoriser » vit dans le dialogue de connexion, T18). S'il existe déjà un secret :
+      « Enregistré dans le trousseau ✓ » + boutons « Remplacer » / « Oublier » (appliqués à l'enregistrement). T12.
+    - Clé : chemin + bouton « Parcourir… » (dialogue fichier, dossier `~/.ssh` par défaut), passphrase facultative,
+      même logique.
   - RDP : domaine, mot de passe (même logique de trousseau).
 - **Réseau** : bastion (liste des connexions SSH, sauf elle-même ; affiche la chaîne résultante
   « vous → bastion-01 → web-01 »), Wake-on-LAN (MAC, adresse de diffusion, port, « Réveiller avant de se connecter »,
