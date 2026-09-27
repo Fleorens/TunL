@@ -14,6 +14,16 @@ Un mot de passe ou une passphrase ne doit vivre que dans le trousseau du systèm
 connecter (T18). Dans l'éditeur, l'utilisateur voit si un secret est enregistré, peut le remplacer ou l'oublier, et
 rien ne part vers le trousseau avant « Save ».
 
+## À réutiliser (ne pas réécrire)
+
+- Rust : `AppError::new(ErrorKind::Secret, …)`, `AppError::validation`, `AppError::not_found` (`error.rs`) ;
+  `state.read_store()` pour trouver la connexion (`state.rs`).
+- TS : `ipc` ; `toAppError`, `notifyError` (`lib/errors.ts`) ; `hasControlChars` (`editor/validation.ts`) pour
+  `secretError` ; `useFormHook` (`editor/form-context.ts`) et `useWatch` pour lire protocole et méthode ;
+  `FieldError` (`editor/FieldError.tsx`) ; `Input`, `Button`, `Skeleton` de `components/ui`.
+- Mock : `arg`, `Handler`, `MockState`, `MOCK_IDS` (`lib/mock/data.ts`), et le style des handlers de
+  `lib/mock/connections.ts` (un nouvel état, jamais de mutation).
+
 ## Contrat — Rust
 
 ### Dépendances (`src-tauri/Cargo.toml`, `[dependencies]`)
@@ -296,6 +306,7 @@ fn get_returns_none_when_absent() {
 
 /// Real Secret Service round trip. Never run automatically: `cargo test -- --ignored keyring_round_trip`.
 #[tokio::test]
+// project-rules: allow no-ignored-rust-test — touches the real Secret Service, run by hand only
 #[ignore]
 async fn keyring_round_trip() {
     let store = SecretStore::keyring();
@@ -621,7 +632,8 @@ test("a keyring error means unavailable", async () => {
 ### `e2e/secrets.spec.ts`
 
 ```ts
-import { expect, type Page, test } from "@playwright/test";
+import { expectSaneUi } from "./support/sanity.ts";
+import { expect, type Page, test } from "./support/test.ts";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
@@ -653,6 +665,7 @@ test("a password typed in the editor is saved to the keyring", async ({ page }) 
   await openAuth(page, "vault");
   await expect(editor(page).getByText("Saved in the keyring")).toBeVisible();
   await expect(editor(page).getByLabel("Password (optional)")).toHaveCount(0);
+  await expectSaneUi(page);
 });
 
 test("forgetting a saved password takes effect on save", async ({ page }) => {
@@ -670,6 +683,7 @@ test("Replace then Cancel keeps the saved passphrase", async ({ page }) => {
   await openAuth(page, "db-prod");
   await editor(page).getByRole("button", { name: "Replace", exact: true }).click();
   await expect(editor(page).getByLabel("Key passphrase (optional)")).toBeVisible();
+  await expectSaneUi(page);
   await editor(page).getByRole("button", { name: "Cancel", exact: true }).first().click();
   await expect(editor(page).getByText("Saved in the keyring")).toBeVisible();
 });

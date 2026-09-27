@@ -17,6 +17,11 @@ keyboard-interactive), et on doit pouvoir **changer une clé d'hôte** pour test
 Tout ce qui suit a été prototypé par l'orchestrateur sur le poste de Florian (podman 5.8 sans root, image `debian:13`
 déjà présente) : les commandes et fichiers donnés ici marchent tels quels.
 
+## À réutiliser (ne pas réécrire)
+
+- Le `Containerfile` et `sshd_config` ci-dessous, tels quels ; les commandes du prototype décrites plus bas.
+  Aucun outil à installer : `podman`, `ssh`, `ssh-keygen`, `ssh-keyscan`, `sftp`, `setsid` et `node` sont là.
+
 ## Contrat
 
 ### Constantes

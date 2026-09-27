@@ -13,6 +13,15 @@ La palette est le chemin le plus court vers tout : une machine, une adresse tap�
 une action. Tant que les sessions n'existent pas (T19 à T21), ouvrir une connexion affiche « Coming soon » : le point
 d'entrée unique `openSession` sera rempli plus tard, sans toucher à la palette.
 
+## À réutiliser (ne pas réécrire)
+
+- `filterConnections`, `normalizeForSearch` (`connections/filter.ts`) ; `compareNames` (`connections/sections.ts`) ;
+  `isValidHost` (`editor/validation.ts`) ; `resolveTheme` (`lib/theme.ts`) pour `nextTheme`.
+- `SHORTCUTS`, `ShortcutId` (`shell/shortcuts.ts`) ; `ShortcutHint`, `ProtocolIcon` (`components/`) ;
+  `CommandDialog`, `CommandInput`, `CommandList`, `CommandGroup`, `CommandItem`, `CommandShortcut`, `CommandEmpty`
+  (`components/ui/command`) ; `Dialog`, `Kbd`.
+- `notifyComingSoon` (`shell/coming-soon.ts`) ; `useSettings().update` ; `notifyError`.
+
 ## Contrat
 
 ### `src/features/palette/quick-connect.ts` (pur)
@@ -250,7 +259,8 @@ describe("shortcutRows", () => {
 ### `e2e/palette.spec.ts`
 
 ```ts
-import { expect, type Page, test } from "@playwright/test";
+import { expectSaneUi } from "./support/sanity.ts";
+import { expect, type Page, test } from "./support/test.ts";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
@@ -264,6 +274,7 @@ test("the palette finds a connection by host, and Alt+Enter edits it", async ({ 
   await page.keyboard.press("Control+Shift+P");
   await palette(page).getByRole("combobox").fill("10.0.0.12");
   await expect(palette(page).getByRole("option", { name: /web-01/ })).toBeVisible();
+  await expectSaneUi(page);
   await page.keyboard.press("Alt+Enter");
   await expect(page.getByRole("dialog").getByRole("heading", { name: "Edit web-01" })).toBeVisible();
 });
@@ -301,6 +312,7 @@ test("F1 lists the keyboard shortcuts", async ({ page }) => {
   await expect(dialog.getByRole("heading", { name: "Keyboard shortcuts" })).toBeVisible();
   await expect(dialog.getByText("Command palette")).toBeVisible();
   await expect(dialog.getByText("Go to tab 1…8")).toBeVisible();
+  await expectSaneUi(page);
 });
 ```
 

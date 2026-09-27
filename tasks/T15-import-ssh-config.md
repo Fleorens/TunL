@@ -13,6 +13,14 @@ Presque tout utilisateur de SSH a déjà un `~/.ssh/config`. L'importer évite d
 Deux règles de sécurité : on **n'exécute rien** (S12) et on ne fait pas confiance à ce que renvoie l'interface :
 l'application relit et réanalyse le fichier elle-même.
 
+## À réutiliser (ne pas réécrire)
+
+- `Store::create_connection` (`store/ops.rs`) : c'est lui qui valide et crée ; ne recopie pas la validation.
+- `normalize_connection_input`, `ConnectionInput::template(Protocol::Ssh)` (`model/`) ; `AppError::*` (`error.rs`) ;
+  `state.mutate` / `state.read_store` (`state.rs`) ; `StoreSnapshot` (`commands/store.rs`).
+- Tests IPC : `super::ipc_tests::{mock_app, ok, invoke}` (T12).
+- Mock : `arg`, `Handler`, `MockState`, `MOCK_IDS` (`lib/mock/data.ts`).
+
 ## Contrat — Rust
 
 Module `src-tauri/src/import/` (`pub mod import;` dans `lib.rs`) : `mod.rs` déclare `pub mod ssh_config;` et

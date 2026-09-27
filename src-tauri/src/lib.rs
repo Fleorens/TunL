@@ -60,6 +60,7 @@ pub fn run() {
         })
         .invoke_handler(invoke_handler())
         .run(tauri::generate_context!())
+        // project-rules: allow no-panic-in-app-code — run() has no caller to hand an error to
         .expect("error while running TunL");
 }
 

@@ -28,6 +28,7 @@ function AuthCard({
 }) {
   return (
     <label className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50 has-checked:border-primary has-checked:bg-primary/5">
+      {/* project-rules: allow raw-form-element — native radio inside a card <label>, styled by has-checked */}
       <input
         type="radio"
         name="ssh-auth"

@@ -17,8 +17,8 @@ Exécute la fiche de tâche **$1** du projet TunL.
    (`grep -n "^| T0X " tasks/README.md`). Sinon, arrête-toi et explique pourquoi.
 4. Tests du contrat : `node scripts/contract-tests.mjs $1`. Tu ne les recopies pas, tu ne les modifies jamais.
 5. Code : fichier par fichier, dans l'ordre des « Étapes ». Pour chacun, relis seulement sa section de la fiche
-   (index de l'étape 1). Dès que la logique est écrite : `npm run typecheck` et `npx vitest run <dossier>`, avant
-   l'interface.
+   (index de l'étape 1), et sers-toi de ce que liste « À réutiliser ». Dès que la logique est écrite :
+   `npm run typecheck`, `npm run rules` et `npx vitest run <dossier>`, avant l'interface.
 6. Boucle : `npm run review` → corrige le code → recommence, jusqu'au vert.
 7. Termine : `npm run format`, `npm run review` vert, `node scripts/contract-tests.mjs $1 --check` tout `OK`,
    cases cochées (sauf les critères visuels), statut `livrée`, commit, et compte rendu au format d'`AGENTS.md`.

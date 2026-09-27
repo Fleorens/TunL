@@ -1,21 +1,8 @@
 // Regressions found at the lot 2 review (T06–T11): each scenario pins a defect that `npm run review` had missed.
-import { expect, type Page, test } from "@playwright/test";
-
-let consoleProblems: string[] = [];
+import { expect, type Page, test } from "./support/test.ts";
 
 test.beforeEach(async ({ page }) => {
-  consoleProblems = [];
-  page.on("console", (message) => {
-    if (message.type() === "error" || message.type() === "warning") {
-      consoleProblems.push(message.text());
-    }
-  });
   await page.goto("/");
-});
-
-test.afterEach(() => {
-  // React reports uncontrolled → controlled switches (form rendered before its values) on the console.
-  expect(consoleProblems).toEqual([]);
 });
 
 function editor(page: Page) {

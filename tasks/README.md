@@ -19,8 +19,9 @@ cd ~/Documents/GitHub/TunL && opencode      # une session neuve par fiche
 t'occupes de T10 ») fonctionne aussi, puisque les règles sont dans `AGENTS.md`, mais sans ces rappels.
 
 Après chaque fiche :
-1. **Contrôle rapide, sans Claude** : `npm run review` (1 à 2 minutes), puis `node scripts/contract-tests.mjs T06 --check`
-   (les tests du contrat n'ont pas été retouchés).
+1. **Contrôle rapide, sans Claude** : `npm run review` (1 à 2 minutes). Il inclut `npm run rules` : règles projet,
+   et tests du contrat de toutes les fiches livrées restés intacts. Les e2e échouent aussi sur une erreur console,
+   et `expectSaneUi` vérifie la mise en page sans captures (voir `AGENTS.md`).
    - Vert : jeter un œil à l'app (`npm run tauri dev`, section « À regarder » de la fiche), puis fiche suivante.
    - Rouge, ou modèle arrêté sur un blocage : nouvelle session opencode, puis `/repare T06`. Le modèle relance la
      recette et corrige son code sans toucher aux tests.

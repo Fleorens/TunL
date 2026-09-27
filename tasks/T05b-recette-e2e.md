@@ -62,7 +62,7 @@ export default defineConfig({
    juste après :
 
 ```ts
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./support/test.ts";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");

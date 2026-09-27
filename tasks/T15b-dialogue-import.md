@@ -12,6 +12,13 @@
 T15 sait lire le fichier et créer les connexions. Il manque l'écran où l'utilisateur voit ce qui va être importé,
 décoche ce qu'il ne veut pas, choisit un groupe, et comprend pourquoi une ligne est grisée ou signalée.
 
+## À réutiliser (ne pas réécrire)
+
+- `components/ui` : `Dialog`, `Table`, `Checkbox`, `Select`, `Badge`, `Empty`, `Skeleton`, `Button`, `Tooltip`.
+- `describeError` et `notifyError` (`lib/errors.ts`) pour les erreurs ; `useConnections` (groupes) ; `useUi`.
+- Le sélecteur de groupe avec sentinelle `"__none__"` : même logique que `GroupSelect` dans
+  `editor/GeneralTab.tsx` (lis-le, ne le déplace pas).
+
 ## Contrat
 
 ### `src/features/shell/ui-store.ts`
@@ -216,7 +223,8 @@ test("a missing ~/.ssh/config gets a friendly message, not an error toast", asyn
 ### `e2e/import.spec.ts`
 
 ```ts
-import { expect, type Page, test } from "@playwright/test";
+import { expectSaneUi } from "./support/sanity.ts";
+import { expect, type Page, test } from "./support/test.ts";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
@@ -253,6 +261,7 @@ test("a host with an error cannot be selected", async ({ page }) => {
   await expect(dialog(page).getByRole("checkbox", { name: "Select broken" })).toBeDisabled();
   await expect(dialog(page).getByText("host: must be a valid IPv4, IPv6 address or host name")).toBeVisible();
   await expect(dialog(page).getByText("ProxyCommand is ignored")).toBeVisible();
+  await expectSaneUi(page);
 });
 
 test("select all toggles every selectable host", async ({ page }) => {

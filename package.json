@@ -21,7 +21,8 @@
     "review": "npm run verify && npm run e2e",
     "bindings": "cd src-tauri && cargo test export_bindings",
     "verify:rust": "cd src-tauri && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test",
-    "verify": "npm run typecheck && npm run check && npm run test && npm run verify:rust"
+    "verify": "npm run typecheck && npm run check && npm run rules && npm run test && npm run verify:rust",
+    "rules": "node scripts/project-rules.mjs && node scripts/contract-tests.mjs --all"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",

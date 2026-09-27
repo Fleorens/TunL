@@ -75,6 +75,30 @@ surtout les **tests**. C'est toi qui écris toute l'implémentation.
 - Un scénario e2e qui échoue laisse une trace dans `test-results/`. Lis le message d'erreur (il dit quel élément
   était introuvable ou invisible) plutôt que de deviner.
 
+## Ce que `npm run review` vérifie pour toi (tu n'as pas d'yeux : ces contrôles en tiennent lieu)
+
+- **`npm run rules`** (dans `verify`) :
+  - `scripts/project-rules.mjs` : les règles que ni TypeScript, ni Biome, ni clippy ne voient. Chacune vient d'un
+    défaut réel : casts `as never` / `as any`, `<input>` brut au lieu du composant shadcn, `unwrap()` hors tests,
+    struct `…Request` dans une commande Tauri, commande absente d'`invoke_handler()`, fichier de plus de 400 lignes,
+    **module presque identique à un autre** (tu as réécrit ce qui existait), test désactivé, règles S1 à S13 ;
+  - `contract-tests.mjs --all` : les tests du contrat de **toutes** les fiches livrées sont intacts.
+  Une règle en rouge se corrige dans le code. Si elle est vraiment fausse pour **une** ligne, écris juste au-dessus
+  `// project-rules: allow <règle> — <raison>` (en JSX : `{/* … */}`). L'orchestrateur relit chaque exception :
+  n'en mets jamais une pour faire taire un vrai problème.
+- **Tous les e2e importent `test` et `expect` de `./support/test.ts`**, jamais de `@playwright/test` : un test
+  échoue alors si l'app écrit une erreur ou un avertissement dans la console (avertissements React compris).
+- **`expectSaneUi(page)`** (`e2e/support/sanity.ts`) : clé i18n brute affichée, page plus large que la fenêtre,
+  contrôle sans nom accessible, contrôles qui se chevauchent dans un dialogue, champ collé au bord d'un dialogue.
+  Dans tes propres scénarios e2e, appelle-le dès qu'un nouvel écran ou dialogue est ouvert.
+
+## Réutiliser avant d'écrire
+
+Chaque fiche a une section **« À réutiliser »** : ces fonctions et composants existent, sers-t'en. Avant de créer un
+helper ou un composant qu'elle ne cite pas, cherche s'il existe :
+`grep -rn "export function\|export const" src/features src/lib src/components | grep -i <mot>`.
+Deux modules presque identiques font échouer `npm run rules`.
+
 ## Quand ça bloque
 
 - **3 tentatives ratées sur la même erreur → STOP.** Décris le blocage avec le message d'erreur exact et ce que tu

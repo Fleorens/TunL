@@ -10,7 +10,9 @@ s'appliquent).
 
 1. `node scripts/contract-tests.mjs $1 --check` : un test du contrat modifié se remet d'abord à l'identique avec
    `node scripts/contract-tests.mjs $1`.
-2. Lance `npm run review` et note **chaque** échec : commande, fichier, message exact.
+2. Lance `npm run review` et note **chaque** échec : commande, fichier, message exact. Un échec de
+   `npm run rules` se corrige dans le code (voir « Ce que `npm run review` vérifie pour toi » dans `AGENTS.md`).
+   Un échec `consoleGuard` d'un e2e cite le message de la console : c'est lui qu'il faut faire disparaître.
 3. Ne lis pas toute la fiche : `grep -nE '^#{2,4} ' tasks/$1-*.md` donne l'index, puis lis seulement la section qui
    concerne l'échec.
 4. Corrige le **code**, un échec à la fois, puis relance. Les tests fournis par la fiche ne se modifient pas.

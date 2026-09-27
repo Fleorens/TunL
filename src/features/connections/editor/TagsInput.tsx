@@ -92,6 +92,7 @@ export function TagsInput({
             </button>
           </span>
         ))}
+        {/* project-rules: allow raw-form-element — borderless input inside the chip box, which carries the Input look */}
         <input
           id={inputId}
           ref={inputRef}

@@ -12,6 +12,13 @@
 L'accueil s'affiche dès qu'aucun onglet n'est ouvert. C'est la première chose qu'on voit en lançant TunL : il doit
 donner envie et mener en un geste aux machines du quotidien. Au tout premier lancement, sans connexion, il guide.
 
+## À réutiliser (ne pas réécrire)
+
+- `parseQuickConnect`, `openSession`, `openQuickSession` (T13) ; `compareNames` (`connections/sections.ts`).
+- `ProtocolBadge`, `ProtocolIcon`, `StatusDot`, `SectionHeader`, `ShortcutHint` (`components/`) ; `Empty`,
+  `Skeleton`, `Tooltip`, `Input` (`components/ui`).
+- `useUi` : `openEditor`, `openImport`, `openPalette` ; `SHORTCUTS` pour les touches des indications du bas.
+
 ## Contrat
 
 ### `src/features/home/home-model.ts` (pur)
@@ -218,7 +225,8 @@ test("with no connection at all, the first-launch screen guides the user", () =>
 ### `e2e/home.spec.ts`
 
 ```ts
-import { expect, type Page, test } from "@playwright/test";
+import { expectSaneUi } from "./support/sanity.ts";
+import { expect, type Page, test } from "./support/test.ts";
 
 async function closeAllTabs(page: Page) {
   await page.goto("/");
@@ -235,6 +243,7 @@ test("the home screen greets and lists favorites and recents", async ({ page }) 
   const recent = page.getByRole("region", { name: "Recent", exact: true });
   await expect(recent.getByText("web-01")).toBeVisible();
   await expect(recent.getByText("5 minutes ago")).toBeVisible();
+  await expectSaneUi(page);
 });
 
 test("a card's edit action opens the editor", async ({ page }) => {
@@ -268,7 +277,7 @@ test("clicking a card opens the connection (sessions come later)", async ({ page
 ### `e2e/shell.spec.ts`
 
 ```ts
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./support/test.ts";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");

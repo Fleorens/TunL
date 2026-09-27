@@ -73,13 +73,14 @@ const TAB_BY_FIELD: Record<
   rdpExtraArgs: "advanced",
 };
 
+/** The editor tabs; Radix Tabs hands back a plain string, narrowed to this union. */
+type EditorTab = "general" | "authentication" | "network" | "advanced";
+
 export function ConnectionEditor() {
   const { t } = useTranslation();
   const portTouched = useRef(false);
   const [savedName, setSavedName] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"general" | "authentication" | "network" | "advanced">(
-    "general",
-  );
+  const [activeTab, setActiveTab] = useState<EditorTab>("general");
   const [discardOpen, setDiscardOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   // The target the form was last reset for. Fields render only once it matches the open target:
@@ -195,7 +196,7 @@ export function ConnectionEditor() {
             onKeyDown={onKeyDown}
           >
             {ready && (
-              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as never)}>
+              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as EditorTab)}>
                 <TabsList>
                   <TabsTrigger value="general">{t("editor.tabs.general")}</TabsTrigger>
                   <TabsTrigger value="authentication">

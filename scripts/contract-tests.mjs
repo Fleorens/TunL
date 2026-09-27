@@ -7,12 +7,16 @@
 // any other file (shell, config) is compared as written, trailing spaces aside.
 // A test file is the first code block after a `### \`path\`` heading of the "## Tests du contrat"
 // section, or after a "## Tests du contrat — `path`" heading.
+//
+//   node scripts/contract-tests.mjs --all        checks every sheet marked `livrée` or `validée` in tasks/README.md;
+//                                                when several sheets give the same file, the latest one wins.
+//                                                Prints only the problems (part of `npm run rules`).
 
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
-const USAGE = "usage: node scripts/contract-tests.mjs <Txx> [--check]";
+const USAGE = "usage: node scripts/contract-tests.mjs <Txx> [--check] | --all";
 const TEST_SECTION = "## Tests du contrat";
 
 function findSheet(id) {
@@ -116,7 +120,43 @@ function write(files) {
   return 0;
 }
 
+/** Sheets marked `livrée` or `validée`, in the order of the plan (tasks/README.md). */
+function deliveredSheets() {
+  const rows = readFileSync("tasks/README.md", "utf8").split("\n");
+  return rows
+    .map((row) => row.match(/^\| (T\d+b?) \|.*\| (livrée|validée) \|$/)?.[1])
+    .filter((id) => id !== undefined);
+}
+
+function checkAll() {
+  const latest = new Map();
+  for (const id of deliveredSheets()) {
+    for (const file of extractTestFiles(readFileSync(findSheet(id), "utf8"))) {
+      latest.set(file.path, { ...file, id });
+    }
+  }
+  let failures = 0;
+  for (const { path, content, id } of latest.values()) {
+    if (!existsSync(path)) {
+      console.log(`MISSING    ${path} (contract of ${id})`);
+      failures += 1;
+    } else if (normalize(path, content) !== normalize(path, readFileSync(path, "utf8"))) {
+      const difference = firstDifference(
+        normalize(path, content),
+        normalize(path, readFileSync(path, "utf8")),
+      );
+      console.log(`DIFFERENT  ${path} (contract of ${id}, ${difference})`);
+      failures += 1;
+    }
+  }
+  console.log(
+    `contract tests: ${latest.size - failures}/${latest.size} files identical to their sheet`,
+  );
+  return failures === 0 ? 0 : 1;
+}
+
 function main() {
+  if (process.argv[2] === "--all") return checkAll();
   const [id, flag] = process.argv.slice(2);
   if (!/^T\d+b?$/.test(id ?? "") || (flag !== undefined && flag !== "--check")) {
     console.error(USAGE);
