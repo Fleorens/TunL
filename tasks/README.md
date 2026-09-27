@@ -4,6 +4,15 @@
 L'orchestrateur (Claude) écrit les fiches détaillées **par lots** : chaque lot est ajusté après relecture de ce que
 le modèle a réellement livré. Une fiche qui cite des signatures de code pas encore écrit finirait par mentir.
 
+## Où on en est (2026-09-27)
+
+- Lots 1 et 2 : **validés** (T01 → T11). Lot 3 : **prêt**.
+- Prochaine fiche : **`/tache T12`**, puis T15 → T15b → T13 → T14. T16 peut passer à tout moment.
+- En attente de Florian, dans la vraie app (`npm run tauri dev`) :
+  - T10 et T11 : créer, modifier et supprimer une connexion, avec un bastion (voir « À regarder » des deux fiches) ;
+  - T05 : instance unique, taille de fenêtre retenue.
+- Fin du lot 3 : « revue du lot 3 et écris le lot 4 ».
+
 ## Comment Florian fait tourner une fiche
 
 Objectif fixé par Florian (2026-09-26) : **économiser au maximum le quota Claude** et voir jusqu'où va le modèle
@@ -27,16 +36,16 @@ Après chaque fiche :
      recette et corrige son code sans toucher aux tests.
    - Toujours rouge après `/repare` : prendre le modèle de la colonne **Repli**, ou demander à Claude
      « débloque T06 ».
-2. **En fin de lot**, un seul message à Claude : « revue du lot 2 et écris le lot 3 ». Claude relit tout le lot d'un
-   coup (tests, diff, captures), corrige si besoin, puis écrit les fiches suivantes. Une seule relecture pour tout le
-   lot.
+2. **En fin de lot**, un seul message à Claude : « revue du lot N et écris le lot N+1 ». Claude relit tout le lot
+   d'un coup : recette, exceptions `project-rules: allow`, tableau « Where it stands » du `README.md`, captures ciblées.
+   Il corrige si besoin, transforme chaque défaut trouvé en contrôle automatique, puis écrit les fiches suivantes.
 
 Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : Claude le traitera à la revue de lot.
 
 ## Statuts
 
-`à écrire` (fiche pas encore détaillée) → `prête` → `livrée` (le modèle a fini, `verify` vert) → `validée`
-(relue par Claude, vue par Florian).
+`à écrire` (fiche pas encore détaillée) → `prête` → `livrée` (le modèle a fini, `npm run review` vert) → `validée`
+(relue par Claude à la revue du lot). Ce que Florian doit voir dans la vraie app est listé dans « Où on en est ».
 
 ## Jalons et fiches
 
@@ -130,11 +139,11 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 ## Chemin critique
 
 ```
-T01 → T02 → T03 → T04 → T05 → T05b → T06 → T07 → T08 ─┬─ T09 → T10 → T12 → T17 → T18 → T19 → T20 → T21 → T22 ─┬─ T24 → T25 → T26
-                                               │                    ↑                                  ├─ T23 → T28
-                                               │              T16 ──┘                                  └─ T29
-                                               ├─ T27, T32 (parallélisables après T08)
-                                               └─ T11 → T12 → T15 → T15b → T13 → T14 ; T30 (après T09)
+T01 → T02 → T03 → T04 → T05 → T05b → T06 → T07 → T08 → T09 → T10 → T11 → T12 ─┬─ T17 → T18 → T19 → T20 → T21 → T22 ─┬─ T24 → T25 → T26
+                                                                              │    ↑                                  ├─ T23 → T28
+                                                           T05b ─ T16 ────────┼────┘                                  └─ T29
+                                                                              └─ T15 → T15b → T13 → T14
+T27, T32 : parallélisables après T08 · T30 : après T09
 ```
 
 ## Lots d'écriture des fiches
@@ -144,9 +153,9 @@ local qui écrit le code (voir `AGENTS.md`).
 
 | Lot | Fiches | Écrit quand |
 |---|---|---|
-| 1 | T01 → T05b | écrit (T05b déjà au format contrat) |
-| 2 | T06 → T11 | écrit (format contrat), après la revue du lot 1 |
-| 3 | T12, T15, T15b, T13, T14, T16 | écrit après la revue du lot 2. Ordre : T12 → T15 → T15b → T13 → T14 ; T16 à tout moment |
+| 1 | T01 → T05b | **validé** (T05b déjà au format contrat) |
+| 2 | T06 → T11 | **validé** à la revue du 2026-09-27 (format contrat) |
+| 3 | T12, T15, T15b, T13, T14, T16 | **prêt**, écrit après la revue du lot 2. Ordre : T12 → T15 → T15b → T13 → T14 ; T16 à tout moment |
 | 4 | T17 → T21 | fin du lot 3 (Claude aura éprouvé russh contre les conteneurs de T16) |
 | 5 | T22 → T30 | fin du lot 4 |
 | 6 | T31 → T40 | fin du lot 5 |
