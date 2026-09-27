@@ -85,6 +85,10 @@ surtout les **tests**. C'est toi qui écris toute l'implémentation.
 - Si la fiche contredit le code existant ou un document : signale-le. Ne modifie ni la fiche ni les documents
   (sauf les cases à cocher et le statut).
 - Jamais de `sudo`. S'il manque un paquet système, arrête-toi et donne la commande à lancer à Florian.
+- **Tu restes dans le dépôt** : aucun `cd`, aucune lecture ni écriture hors de lui, `/tmp` compris. opencode les
+  refuse (`Permission denied: external_directory`) : ne cherche pas à contourner ce refus. Pour un essai jetable :
+  `node --input-type=module -e '…'` depuis la racine (les paquets du projet se résolvent), ou un fichier dans le
+  dépôt, supprimé avant le commit.
 
 ## Stack figée (versions vérifiées le 2026-09-26, détail dans `docs/01-architecture.md` §2)
 
