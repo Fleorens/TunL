@@ -4,7 +4,7 @@ import "./index.css";
 import "./i18n";
 import { App } from "./App";
 import { disableNativeContextMenu } from "./lib/native-context-menu";
-import { primeTheme } from "./lib/theme";
+import { primeTheme, readStoredThemeMode } from "./lib/theme";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -12,7 +12,7 @@ if (!rootElement) {
 }
 
 // Apply the theme before the first paint: no flash of the light palette for dark-mode users.
-primeTheme("system");
+primeTheme(readStoredThemeMode());
 
 // In production, suppress WebKit's native context menu everywhere except text fields
 // so the app's own context menus are the only ones. In dev, keep the native menu:

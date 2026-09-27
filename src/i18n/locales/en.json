@@ -39,7 +39,11 @@
     "import": "Import connections",
     "viaBastion": "Via {{name}}",
     "moreActions": "More actions for {{name}}",
-    "createGroup": "Create a group"
+    "createGroup": "Create a group",
+    "newGroup": "New group",
+    "groupActions": "Group actions",
+    "noGroup": "No group",
+    "loadError": "Connections could not be loaded"
   },
   "connectionMenu": {
     "connect": "Connect",
@@ -52,6 +56,27 @@
     "moveToGroup": "Move to group",
     "copyAddress": "Copy user@host",
     "delete": "Delete"
+  },
+  "groupMenu": {
+    "rename": "Rename",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "delete": "Delete group"
+  },
+  "groupDialog": {
+    "createTitle": "New group",
+    "renameTitle": "Rename group",
+    "name": "Name",
+    "color": "Color",
+    "create": "Create"
+  },
+  "confirm": {
+    "deleteConnection": "Delete {{name}}?",
+    "deleteGroup": "Delete the group {{name}}?",
+    "deleteGroupDescription": "Its connections will move to Ungrouped."
+  },
+  "clipboard": {
+    "copied": "Copied to the clipboard"
   },
   "tabs": {
     "label": "Open sessions",
@@ -84,7 +109,8 @@
       "wol": "Wake-on-LAN error",
       "inUse": "Still in use",
       "internal": "Unexpected error"
-    }
+    },
+    "usedBy": "Used by: {{names}}"
   },
   "home": {
     "welcomeTitle": "Welcome to TunL",
@@ -106,5 +132,21 @@
     "system": "System language",
     "en": "English",
     "fr": "Français"
+  },
+  "connections": {
+    "quarantined": "Your connections file could not be read. A copy was kept at {{path}}."
+  },
+  "colors": {
+    "none": "No color",
+    "slate": "Slate",
+    "red": "Red",
+    "orange": "Orange",
+    "amber": "Amber",
+    "green": "Green",
+    "teal": "Teal",
+    "cyan": "Cyan",
+    "blue": "Blue",
+    "violet": "Violet",
+    "pink": "Pink"
   }
 }

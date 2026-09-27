@@ -104,7 +104,7 @@ function buildConnection(spec: DemoSpec): Connection {
   };
 }
 
-export const DEMO_CONNECTION_SPECS: readonly DemoSpec[] = [
+export const MOCK_CONNECTION_SPECS: readonly DemoSpec[] = [
   {
     id: "web01",
     name: "web-01",
@@ -278,16 +278,16 @@ export const DEMO_CONNECTION_SPECS: readonly DemoSpec[] = [
   },
 ];
 
-export const DEMO_GROUPS: readonly Group[] = [
+export const MOCK_GROUPS: readonly Group[] = [
   { id: MOCK_IDS.production, name: "Production", color: "blue" },
   { id: MOCK_IDS.clients, name: "Clients", color: "violet" },
   { id: MOCK_IDS.homelab, name: "Homelab", color: "green" },
 ];
 
-export const DEMO_CONNECTIONS: readonly Connection[] = DEMO_CONNECTION_SPECS.map(buildConnection);
+export const MOCK_CONNECTIONS: readonly Connection[] = MOCK_CONNECTION_SPECS.map(buildConnection);
 
 /** The whole `settings.json` document, at its defaults. `theme` is `"system"` (see note in settings.ts). */
-export const DEMO_SETTINGS: Settings = {
+export const MOCK_SETTINGS: Settings = {
   version: 1,
   language: "system",
   theme: "system",
@@ -364,9 +364,9 @@ export interface MockState {
 /** A pristine copy of the demo data, for the first load and for `resetMockBackend()`. */
 export function freshState(): MockState {
   return structuredClone({
-    groups: [...DEMO_GROUPS],
-    connections: [...DEMO_CONNECTIONS],
-    settings: DEMO_SETTINGS,
+    groups: [...MOCK_GROUPS],
+    connections: [...MOCK_CONNECTIONS],
+    settings: MOCK_SETTINGS,
     quarantined: [],
   });
 }

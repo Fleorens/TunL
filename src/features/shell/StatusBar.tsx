@@ -1,15 +1,30 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ProtocolBadge } from "@/components/ProtocolBadge";
 import { Badge } from "@/components/ui/badge";
-import { DEMO_CONNECTIONS, useDemoTabs } from "@/features/shell/demo-data";
+import { useConnections } from "@/features/connections/store";
+import { useDemoTabs } from "@/features/shell/demo-data";
 import { notifyError } from "@/lib/errors";
 import { ipc, isMockBackend } from "@/lib/ipc";
 
 export function StatusBar() {
   const { t } = useTranslation();
   const activeTab = useDemoTabs((state) => state.tabs.find((tab) => tab.id === state.activeId));
-  const connection = DEMO_CONNECTIONS.find((c) => c.id === activeTab?.connectionId);
+  const connectionId = activeTab?.connectionId ?? null;
+
+  // Only the active connection, looked up in the live store. In Tauri these ids do
+  // not exist yet (until T21), so `connection` is undefined and no address shows.
+  const connections = useConnections((state) => state.connections);
+  const connection = useMemo(
+    () => (connectionId !== null ? connections.find((c) => c.id === connectionId) : undefined),
+    [connections, connectionId],
+  );
+
+  // The bastion is a separate connection, referenced by jumpHostId.
+  const jumpHostName = useMemo(() => {
+    if (!connection?.jumpHostId) return null;
+    return connections.find((c) => c.id === connection.jumpHostId)?.name ?? null;
+  }, [connections, connection]);
 
   const activeCount = useDemoTabs(
     (state) => state.tabs.filter((tab) => tab.status === "online").length,
@@ -45,9 +60,7 @@ export function StatusBar() {
             <>
               <ProtocolBadge protocol={activeTab.protocol} />
               {address && <span>{address}</span>}
-              {connection?.jumpHostName && (
-                <span>{t("statusbar.via", { name: connection.jumpHostName })}</span>
-              )}
+              {jumpHostName && <span>{t("statusbar.via", { name: jumpHostName })}</span>}
             </>
           )}
         </div>

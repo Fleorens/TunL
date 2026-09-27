@@ -61,3 +61,32 @@ function getSnapshot(): ResolvedTheme {
 export function useResolvedTheme(): ResolvedTheme {
   return useSyncExternalStore(subscribe, getSnapshot, () => "dark");
 }
+
+/** The localStorage key for the user's remembered theme mode. Not a secret (S1). */
+export const THEME_STORAGE_KEY = "tunl.themeMode";
+
+/**
+ * The mode previously chosen by the user, or "system" when it is absent, unreadable, or
+ * localStorage itself is unavailable. Used before the settings store loads, to avoid a flash.
+ */
+export function readStoredThemeMode(): ThemeMode {
+  try {
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    if (stored === "system" || stored === "dark" || stored === "light") {
+      return stored;
+    }
+    return "system";
+  } catch {
+    // WebKitGTK can reject localStorage access; the "system" default is harmless here.
+    return "system";
+  }
+}
+
+/** Remember the user's theme choice. Silently ignores an unavailable localStorage. */
+export function rememberThemeMode(mode: ThemeMode): void {
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, mode);
+  } catch {
+    // No persistence is acceptable: the choice is re-read as "system" next time, with no visible harm.
+  }
+}

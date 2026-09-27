@@ -43,9 +43,26 @@ export function toAppError(error: unknown): AppError {
   return { kind: "internal", message: String(error), detail: null };
 }
 
+/**
+ * A human-readable title and description for an error, from translation keys.
+ *
+ * - `title` = `errors.kind.<kind>`;
+ * - `description` = `errors.usedBy` with the blocking names joined by ", " when the error
+ *   blocks a delete, otherwise the technical `message`.
+ */
+export function describeError(error: AppError): { title: string; description: string } {
+  const title = i18n.t(`errors.kind.${error.kind}`);
+  if (error.detail?.type === "inUse") {
+    const description = i18n.t("errors.usedBy", { names: error.detail.names.join(", ") });
+    return { title, description };
+  }
+  return { title, description: error.message };
+}
+
 /** Shows a translated error toast for anything an ipc call rejected with, and returns the normalized error. */
 export function notifyError(error: unknown): AppError {
   const appError = toAppError(error);
-  toast.error(i18n.t(`errors.kind.${appError.kind}`), { description: appError.message });
+  const { title, description } = describeError(appError);
+  toast.error(title, { description });
   return appError;
 }

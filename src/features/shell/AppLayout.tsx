@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { usePanelRef } from "react-resizable-panels";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { HomeView } from "@/features/home/HomeView";
-import { DEMO_CONNECTIONS, DEMO_GROUPS, useDemoTabs } from "@/features/shell/demo-data";
+import { useDemoTabs } from "@/features/shell/demo-data";
 import { StatusBar } from "@/features/shell/StatusBar";
 import { Sidebar } from "@/features/shell/sidebar/Sidebar";
 import { TabBar } from "@/features/shell/TabBar";
@@ -68,7 +68,7 @@ export function AppLayout() {
           collapsedSize={0}
           onResize={(size) => setSidebarCollapsed(size.inPixels === 0)}
         >
-          <Sidebar connections={DEMO_CONNECTIONS} groups={DEMO_GROUPS} />
+          <Sidebar />
         </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel className="flex h-full min-w-0 flex-col">

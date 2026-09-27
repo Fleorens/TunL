@@ -40,7 +40,11 @@
     "import": "Importer des connexions",
     "viaBastion": "Via {{name}}",
     "moreActions": "Autres actions pour {{name}}",
-    "createGroup": "Créer un groupe"
+    "createGroup": "Créer un groupe",
+    "newGroup": "Nouveau groupe",
+    "groupActions": "Actions du groupe",
+    "noGroup": "Sans groupe",
+    "loadError": "Impossible de charger les connexions"
   },
   "connectionMenu": {
     "connect": "Se connecter",
@@ -53,6 +57,27 @@
     "moveToGroup": "Déplacer vers le groupe",
     "copyAddress": "Copier user@hôte",
     "delete": "Supprimer"
+  },
+  "groupMenu": {
+    "rename": "Renommer",
+    "moveUp": "Monter",
+    "moveDown": "Descendre",
+    "delete": "Supprimer le groupe"
+  },
+  "groupDialog": {
+    "createTitle": "Nouveau groupe",
+    "renameTitle": "Renommer le groupe",
+    "name": "Nom",
+    "color": "Couleur",
+    "create": "Créer"
+  },
+  "confirm": {
+    "deleteConnection": "Supprimer {{name}} ?",
+    "deleteGroup": "Supprimer le groupe {{name}} ?",
+    "deleteGroupDescription": "Ses connexions seront déplacées vers Sans groupe."
+  },
+  "clipboard": {
+    "copied": "Copié dans le presse-papiers"
   },
   "tabs": {
     "label": "Sessions ouvertes",
@@ -86,7 +111,8 @@
       "wol": "Erreur Wake-on-LAN",
       "inUse": "Encore utilisé",
       "internal": "Erreur inattendue"
-    }
+    },
+    "usedBy": "Utilisé par : {{names}}"
   },
   "home": {
     "welcomeTitle": "Bienvenue sur TunL",
@@ -108,5 +134,21 @@
     "system": "Langue du système",
     "en": "English",
     "fr": "Français"
+  },
+  "connections": {
+    "quarantined": "Votre fichier de connexions n'a pas pu être lu. Une copie a été conservée à {{path}}."
+  },
+  "colors": {
+    "none": "Aucune couleur",
+    "slate": "Ardoise",
+    "red": "Rouge",
+    "orange": "Orange",
+    "amber": "Ambre",
+    "green": "Vert",
+    "teal": "Canard",
+    "cyan": "Cyan",
+    "blue": "Bleu",
+    "violet": "Violet",
+    "pink": "Rose"
   }
 }

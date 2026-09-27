@@ -1,14 +1,15 @@
 import { Waypoints } from "lucide-react";
 import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
+import type { Connection } from "@/bindings/Connection";
 import { ProtocolIcon } from "@/components/ProtocolIcon";
 import { StatusDot } from "@/components/StatusDot";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import type { DemoConnection } from "@/features/shell/demo-data";
 import { cn } from "@/lib/utils";
 
 interface ConnectionRowProps extends ComponentProps<"button"> {
-  connection: DemoConnection;
+  connection: Connection;
+  jumpHostName: string | null;
   selected: boolean;
   /** Single click: highlight the row. */
   onSelect: () => void;
@@ -22,6 +23,7 @@ interface ConnectionRowProps extends ComponentProps<"button"> {
  */
 export function ConnectionRow({
   connection,
+  jumpHostName,
   selected,
   onSelect,
   onActivate,
@@ -31,6 +33,7 @@ export function ConnectionRow({
   ...buttonProps
 }: ConnectionRowProps) {
   const { t } = useTranslation();
+  const protocol = connection.settings.protocol;
 
   return (
     <button
@@ -55,24 +58,20 @@ export function ConnectionRow({
         className,
       )}
     >
-      {selected && (
-        <span className="absolute top-1.5 bottom-1.5 left-0 w-0.5 rounded-full bg-primary" />
-      )}
-      <ProtocolIcon protocol={connection.protocol} className="size-3.5" />
+      {selected && <span className="absolute inset-y-0 left-0 w-0.5 rounded-full bg-primary" />}
+      <ProtocolIcon protocol={protocol} className="size-3.5" />
       <span className="flex-1 truncate">{connection.name}</span>
-      {connection.jumpHostName && (
+      {jumpHostName && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <span className="inline-flex size-3 text-subtle-foreground">
+            <span className="inline-flex size-3 shrink-0 text-subtle-foreground">
               <Waypoints className="size-3" />
             </span>
           </TooltipTrigger>
-          <TooltipContent>
-            {t("sidebar.viaBastion", { name: connection.jumpHostName })}
-          </TooltipContent>
+          <TooltipContent>{t("sidebar.viaBastion", { name: jumpHostName })}</TooltipContent>
         </Tooltip>
       )}
-      <StatusDot status={connection.status} label={t(`status.${connection.status}`)} />
+      <StatusDot status="unknown" label={t("status.unknown")} />
     </button>
   );
 }
