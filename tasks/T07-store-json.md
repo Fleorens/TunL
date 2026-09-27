@@ -290,10 +290,10 @@ fn invalid_settings_are_quarantined_and_reset() {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, avec les 11 tests de `store/tests.rs`.
-- [ ] `store/tests.rs` est identique à la fiche (au formatage `cargo fmt` près).
-- [ ] `grep -rn "unwrap()\|expect(" src-tauri/src/store --include=*.rs | grep -v tests.rs` est vide.
-- [ ] `grep -rn "let _ =" src-tauri/src/store` est vide : aucune erreur avalée.
+- [x] `npm run review` passe, avec les 11 tests de `store/tests.rs`.
+- [x] `store/tests.rs` est identique à la fiche (au formatage `cargo fmt` près).
+- [x] `grep -rn "unwrap()\|expect(" src-tauri/src/store --include=*.rs | grep -v tests.rs` est vide.
+- [x] `grep -rn "let _ =" src-tauri/src/store` est vide : aucune erreur avalée.
 
 ## À regarder par Florian
 

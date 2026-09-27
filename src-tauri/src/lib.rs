@@ -4,6 +4,7 @@ pub mod error;
 pub mod model;
 pub mod paths;
 pub mod state;
+pub mod store;
 
 use tauri::Manager;
 
