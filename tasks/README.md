@@ -51,7 +51,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 |---|---|---|---|---|---|
 | T06 | Modèle de données Rust + validation + bindings + tests | T05b | moyen | Sonnet 5 · medium | livrée |
 | T07 | Store JSON atomique, `.bak`, `.corrupt`, migrations, permissions 0600 | T06 | moyen | Sonnet 5 · high | livrée |
-| T08 | Commandes CRUD connexions / groupes / réglages + ipc + mock | T07 | faible | Sonnet 5 · low | prête |
+| T08 | Commandes CRUD connexions / groupes / réglages + ipc + mock | T07 | faible | Sonnet 5 · low | livrée |
 | T09 | Stores zustand + Sidebar branchée (sections, filtre, menu contextuel) | T08 | moyen | Sonnet 5 · medium | prête |
 | T10 | Éditeur de connexion — Général + Authentification | T09 | moyen | Sonnet 5 · medium | prête |
 | T11 | Éditeur de connexion — Réseau (bastion, WoL) + Avancé (SSH, RDP) | T10 | moyen | Sonnet 5 · medium | prête |

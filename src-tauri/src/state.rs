@@ -1,7 +1,114 @@
+use tokio::sync::RwLock;
+
+use crate::error::{AppError, AppResult};
+use crate::model::Settings;
 use crate::paths::AppPaths;
+use crate::store::{Store, load_settings, load_store, save_settings, save_store};
 
 /// Shared backend state, registered with `app.manage()` during setup.
 pub struct AppState {
     pub paths: AppPaths,
     pub started_at_ms: i64,
+    /// The in-memory store. Every mutation builds a new value and replaces it here.
+    pub store: RwLock<Store>,
+    /// Set when `connections.json` could not be loaded (newer TunL, I/O error): every store command
+    /// returns it, and nothing is ever written over that file.
+    pub store_blocked: Option<AppError>,
+    pub settings: RwLock<Settings>,
+    /// Files moved aside at startup because they were unreadable (store and settings).
+    pub quarantined: Vec<String>,
 }
+
+impl AppState {
+    /// Load the store and settings from disk, quarantining unreadable files. `now_ms` stamps them.
+    pub fn from_disk(paths: &AppPaths, now_ms: i64) -> AppResult<Self> {
+        let mut quarantined: Vec<String> = Vec::new();
+
+        let store_loaded = load_store(&paths.config_dir, now_ms);
+        let (store, store_blocked) = match store_loaded {
+            Ok(loaded) => {
+                if let Some(path) = loaded.quarantined {
+                    quarantined.push(path.to_string_lossy().into_owned());
+                }
+                (loaded.value, None)
+            }
+            Err(error) => {
+                // `store_blocked` is set: every store command returns it, nothing is written over the file.
+                log::error!("could not load {STORE_FILE}: {error}");
+                (Store::default(), Some(error))
+            }
+        };
+
+        let settings_loaded = load_settings(&paths.config_dir, now_ms);
+        let settings = match settings_loaded {
+            Ok(loaded) => {
+                if let Some(path) = loaded.quarantined {
+                    quarantined.push(path.to_string_lossy().into_owned());
+                }
+                loaded.value
+            }
+            Err(error) => {
+                log::warn!("could not load {SETTINGS_FILE}: {error}; starting with defaults");
+                Settings::default()
+            }
+        };
+
+        Ok(Self {
+            paths: paths.clone(),
+            started_at_ms: now_ms,
+            store: RwLock::new(store),
+            store_blocked,
+            settings: RwLock::new(settings),
+            quarantined,
+        })
+    }
+
+    /// Read the current settings without taking the lock out.
+    pub async fn get_settings(&self) -> Settings {
+        self.settings.read().await.clone()
+    }
+
+    /// Read the current store snapshot.
+    pub async fn get_store(&self) -> Store {
+        self.store.read().await.clone()
+    }
+
+    /// Apply `change` to the store, persist, and replace — holding the write lock until the replacement.
+    pub async fn mutate<T>(
+        &self,
+        change: impl FnOnce(&Store) -> AppResult<(Store, T)>,
+    ) -> AppResult<T> {
+        if let Some(error) = &self.store_blocked {
+            return Err(error.clone());
+        }
+        let mut current = self.store.write().await;
+        let (next, output) = change(&current)?;
+        save_store(&self.paths.config_dir, &next)?;
+        *current = next;
+        Ok(output)
+    }
+
+    /// Read the current store snapshot, or the blocking error when the store could not be loaded.
+    pub async fn read_store(&self) -> AppResult<Store> {
+        if let Some(error) = &self.store_blocked {
+            return Err(error.clone());
+        }
+        Ok(self.get_store().await)
+    }
+
+    /// Apply `change` to the settings, persist, and replace.
+    pub async fn mutate_settings(
+        &self,
+        change: impl FnOnce(&Settings) -> AppResult<Settings>,
+    ) -> AppResult<Settings> {
+        let mut current = self.settings.write().await;
+        let next = change(&current)?;
+        save_settings(&self.paths.config_dir, &next)?;
+        *current = next.clone();
+        Ok(next)
+    }
+}
+
+/// File name of the store, mirrored here so the setup logs match (docs/01-architecture.md §9).
+const STORE_FILE: &str = crate::store::STORE_FILE;
+const SETTINGS_FILE: &str = crate::store::SETTINGS_FILE;

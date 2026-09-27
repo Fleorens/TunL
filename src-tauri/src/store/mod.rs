@@ -9,8 +9,12 @@ use crate::model::{Connection, Group, Settings, normalize_settings};
 
 pub mod file;
 mod migrate;
+pub mod ops;
 
 pub use migrate::migrate_to_current;
+
+#[cfg(test)]
+mod ops_tests;
 
 /// File name of the connections store, inside the config directory (docs/01-architecture.md §9).
 pub const STORE_FILE: &str = "connections.json";

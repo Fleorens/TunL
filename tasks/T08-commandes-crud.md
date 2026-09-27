@@ -468,12 +468,12 @@ describe("mock backend: groups and settings", () => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, avec les 10 tests de `ops_tests.rs` et les 14 tests de `ipc-mock.test.ts`.
-- [ ] Les deux fichiers de tests sont identiques à la fiche (au formatage près).
-- [ ] Les 15 commandes du tableau sont dans `generate_handler!`, dans `ipc.ts` et dans le mock.
-- [ ] `grep -rn "invoke(" src --include=*.ts --include=*.tsx | grep -v "src/lib/ipc.ts"` est vide.
-- [ ] Aucun fichier de `src/lib/mock/` ni de `src-tauri/src/commands/` ne dépasse 400 lignes.
-- [ ] `cd src-tauri && cargo build` passe (l'app démarre avec un store vide si `connections.json` est absent).
+- [x] `npm run review` passe, avec les 10 tests de `ops_tests.rs` et les 14 tests de `ipc-mock.test.ts`.
+- [x] Les deux fichiers de tests sont identiques à la fiche (au formatage près).
+- [x] Les 15 commandes du tableau sont dans `generate_handler!`, dans `ipc.ts` et dans le mock.
+- [x] `grep -rn "invoke(" src --include=*.ts --include=*.tsx | grep -v "src/lib/ipc.ts"` est vide.
+- [x] Aucun fichier de `src/lib/mock/` ni de `src-tauri/src/commands/` ne dépasse 400 lignes.
+- [x] `cd src-tauri && cargo build` passe (l'app démarre avec un store vide si `connections.json` est absent).
 
 ## À regarder par Florian
 
