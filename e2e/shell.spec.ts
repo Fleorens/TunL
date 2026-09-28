@@ -44,11 +44,11 @@ test("keyboard shortcuts drive the sidebar filter and the tabs", async ({ page }
   await expect(page.getByRole("tab", { selected: true })).toContainText("web-01");
 });
 
-test("closing every tab shows the welcome screen", async ({ page }) => {
+test("closing every tab shows the home screen", async ({ page }) => {
   await page.keyboard.press("Control+Shift+W");
   await page.keyboard.press("Control+Shift+W");
-  await expect(page.getByText("Welcome to TunL")).toBeVisible();
-  await expect(page.getByRole("button", { name: "New connection" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.getByPlaceholder("user@host[:port] — quick connect")).toBeVisible();
 });
 
 test("outside Tauri, the status bar flags the mock backend", async ({ page }) => {

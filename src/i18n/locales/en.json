@@ -137,7 +137,29 @@
     "welcomeDescription": "Add your first machine, or bring in the ones already listed in ~/.ssh/config.",
     "newConnection": "New connection",
     "importSshConfig": "Import ~/.ssh/config",
-    "quickConnect": "Quick connect"
+    "quickConnect": "Quick connect",
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening",
+      "night": "Good night"
+    },
+    "count_one": "{{count}} connection",
+    "count_other": "{{count}} connections",
+    "quickPlaceholder": "user@host[:port] — quick connect",
+    "quickInvalid": "Enter an address like deploy@10.0.0.5:22",
+    "favorites": "Favorites",
+    "recent": "Recent",
+    "hints": {
+      "palette": "Command palette",
+      "newConnection": "New connection",
+      "shortcuts": "Keyboard shortcuts"
+    },
+    "card": {
+      "connect": "Connect to {{name}}",
+      "sftp": "Open SFTP on {{name}}",
+      "edit": "Edit {{name}}"
+    }
   },
   "import": {
     "title": "Import ~/.ssh/config",

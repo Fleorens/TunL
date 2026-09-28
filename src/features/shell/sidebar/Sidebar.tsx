@@ -32,7 +32,7 @@ interface PendingDialog {
 // the map index) so the skeleton list has stable keys without linting the index.
 const SKELETON_KEYS = [0, 1, 2, 3, 4, 5];
 
-export function Sidebar() {
+export function Sidebar({ showRecents = true }: { showRecents?: boolean }) {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -198,7 +198,7 @@ export function Sidebar() {
               </section>
             )}
 
-            {sections.recents.length > 0 && (
+            {showRecents && sections.recents.length > 0 && (
               <section aria-label={t("sidebar.recents")}>
                 <SectionHeader title={t("sidebar.recents")} />
                 <ConnectionsList

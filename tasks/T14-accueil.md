@@ -345,8 +345,8 @@ test("outside Tauri, the status bar flags the mock backend", async ({ page }) =>
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T14 --check` affiche `OK` partout.
-- [ ] `HomeView.tsx` et `ConnectionCard.tsx` font chacun moins de 250 lignes.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T14 --check` affiche `OK` partout.
+- [x] `HomeView.tsx` et `ConnectionCard.tsx` font chacun moins de 250 lignes.
 - [ ] Visuel : cartes alignées sur la grille, légère élévation au survol, actions qui apparaissent sans décaler le
       contenu ; le champ de connexion rapide est l'élément le plus visible de l'écran.
 - [ ] Visuel : clair et sombre lisibles, aucune couleur codée en dur.

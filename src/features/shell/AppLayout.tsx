@@ -78,7 +78,7 @@ export function AppLayout() {
           collapsedSize={0}
           onResize={(size) => setSidebarCollapsed(size.inPixels === 0)}
         >
-          <Sidebar />
+          <Sidebar showRecents={activeId !== null} />
         </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel className="flex h-full min-w-0 flex-col">
