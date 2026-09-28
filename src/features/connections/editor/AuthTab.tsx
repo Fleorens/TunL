@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { FieldError } from "./FieldError";
 import { useFormHook } from "./form-context";
 import type { ConnectionFormValues } from "./form-values";
+import { SecretField } from "./SecretField";
 
 type AuthMethod = ConnectionFormValues["sshAuthMethod"];
 
@@ -60,7 +61,7 @@ export function AuthTab() {
           <Input id="rdpDomain" {...field} aria-invalid={fieldState.invalid} />
           <FieldError message={fieldState.error?.message} />
         </div>
-        <p className="text-sm text-muted-foreground">{t("editor.auth.passwordHint")}</p>
+        <SecretField kind="password" />
       </div>
     );
   }
@@ -81,21 +82,26 @@ export function AuthTab() {
       </div>
 
       {field.value === "key" && (
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="sshKeyPath">{t("editor.fields.keyPath")}</Label>
-          <Input
-            id="sshKeyPath"
-            {...sshKeyPathForm.field}
-            placeholder="~/.ssh/id_ed25519"
-            aria-invalid={sshKeyPathForm.fieldState.invalid}
-          />
-          <FieldError message={sshKeyPathForm.fieldState.error?.message} />
-        </div>
+        <>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="sshKeyPath">{t("editor.fields.keyPath")}</Label>
+            <Input
+              id="sshKeyPath"
+              {...sshKeyPathForm.field}
+              placeholder="~/.ssh/id_ed25519"
+              aria-invalid={sshKeyPathForm.fieldState.invalid}
+            />
+            <FieldError message={sshKeyPathForm.fieldState.error?.message} />
+          </div>
+          <SecretField kind="passphrase" />
+        </>
       )}
 
-      <p className="text-sm text-muted-foreground">
-        {field.value === "password" ? t("editor.auth.passwordHint") : t("editor.auth.agentHint")}
-      </p>
+      {field.value === "password" && <SecretField kind="password" />}
+
+      {field.value === "agent" && (
+        <p className="text-sm text-muted-foreground">{t("editor.auth.agentHint")}</p>
+      )}
     </div>
   );
 }

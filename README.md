@@ -8,7 +8,8 @@ A modern SSH, SFTP and RDP connection manager for Linux, built with Tauri 2, Rea
 | Works today | Not yet |
 |---|---|
 | Connections: create, edit, duplicate, delete, favorites, groups, filter | Opening a session: SSH terminal, SFTP, RDP (the menus say “Coming soon”) |
-| Editor: SSH / RDP, authentication method, jump host chain, Wake-on-LAN, RDP display options | Passwords in the system keyring (T12), `~/.ssh/config` import (T15), command palette (T13) |
+| Editor: SSH / RDP, authentication method, jump host chain, Wake-on-LAN, RDP display options | `~/.ssh/config` import (T15), command palette (T13) |
+| Secrets: passwords and SSH key passphrases in the system keyring, saved/replaced/forgotten in the connection editor (T12) | |
 | Storage: `~/.config/io.github.fleorens.TunL/connections.json` (mode 0600, `.bak` copy) | |
 
 The progress of each task is in [`tasks/README.md`](tasks/README.md).

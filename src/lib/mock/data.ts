@@ -359,6 +359,8 @@ export interface MockState {
   connections: Connection[];
   settings: Settings;
   quarantined: string[];
+  /** `"<connectionId>:<kind>"` for every stored secret. Never the value itself (S1). */
+  secrets: string[];
 }
 
 /** A pristine copy of the demo data, for the first load and for `resetMockBackend()`. */
@@ -368,6 +370,7 @@ export function freshState(): MockState {
     connections: [...MOCK_CONNECTIONS],
     settings: MOCK_SETTINGS,
     quarantined: [],
+    secrets: [`${MOCK_IDS.ad01}:password`, `${MOCK_IDS.dbProd}:passphrase`],
   });
 }
 

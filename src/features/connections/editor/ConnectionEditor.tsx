@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { ConnectionInput } from "@/bindings/ConnectionInput";
+import type { SecretKind } from "@/bindings/SecretKind";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +22,7 @@ import { useConnections } from "@/features/connections/store";
 import { toInput } from "@/features/connections/to-input";
 import { useUi } from "@/features/shell/ui-store";
 import { notifyError } from "@/lib/errors";
+import { ipc } from "@/lib/ipc";
 import { AdvancedTab } from "./AdvancedTab";
 import { AuthTab } from "./AuthTab";
 import { FormProvider } from "./form-context";
@@ -34,6 +36,16 @@ import {
 import { GeneralTab } from "./GeneralTab";
 import { NetworkTab } from "./NetworkTab";
 import { ProtocolSwitch } from "./ProtocolSwitch";
+import type { SecretDraft, SecretDrafts } from "./secret-drafts";
+import {
+  secretKindsFor,
+  secretOperations,
+  secretsDirty,
+  secretsValid,
+  UNCHANGED_SECRETS,
+  withDraft,
+} from "./secret-drafts";
+import { SecretEditorProvider } from "./secrets-context";
 
 /** Which tab holds each form field, so a backend error can open that tab. */
 const TAB_BY_FIELD: Record<
@@ -86,6 +98,10 @@ export function ConnectionEditor() {
   // The target the form was last reset for. Fields render only once it matches the open target:
   // before that, every field would be `undefined` (uncontrolled), then controlled after `reset`.
   const [readyFor, setReadyFor] = useState<typeof target>(null);
+  // The secret drafts live out of the form: a secret is written, tested, forgotten — never a form value.
+  const [drafts, setDrafts] = useState<SecretDrafts>(UNCHANGED_SECRETS);
+  const setDraft = (kind: SecretKind, draft: SecretDraft) =>
+    setDrafts((previous) => withDraft(previous, kind, draft));
 
   const target = useUi((state) => state.editor);
   const closeEditor = useUi((state) => state.closeEditor);
@@ -116,6 +132,7 @@ export function ConnectionEditor() {
     setSavedName(target.mode === "edit" ? base.name : null);
     setActiveTab("general");
     setReadyFor(target);
+    setDrafts(UNCHANGED_SECRETS);
   }, [target, templates, form, closeEditor]);
 
   // While the sheet slides out, `target` is already null: keep showing what it was showing.
@@ -123,7 +140,7 @@ export function ConnectionEditor() {
   const ready = shown !== null && readyFor === shown;
 
   const save = async () => {
-    if (!target || !isValid || !templates) return;
+    if (!target || !isValid || !secretsValid(drafts) || !templates) return;
     const connection =
       target.mode === "edit"
         ? useConnections.getState().connections.find((c) => c.id === target.id)
@@ -138,6 +155,8 @@ export function ConnectionEditor() {
         : await useConnections.getState().update(target.id, input);
 
     if (result.ok) {
+      // Apply the drafts to the keyring (S2), in order; stop at the first failure, but close anyway.
+      await applySecrets(result.value.id);
       closeEditor();
       toast.success(t("editor.saved", { name: savedName ?? input.name }));
       return;
@@ -154,13 +173,30 @@ export function ConnectionEditor() {
     setActiveTab(TAB_BY_FIELD[field]);
   }
 
+  /**
+   * Apply the secret drafts to the keyring, for the relevant kinds only, in order.
+   * Reports the first failure but does not rethrow: the connection is saved either way.
+   */
+  async function applySecrets(id: string) {
+    const operations = secretOperations(drafts, secretKindsFor(form.getValues()));
+    for (const operation of operations) {
+      try {
+        if (operation.type === "set") await ipc.secretSet(id, operation.kind, operation.value);
+        else await ipc.secretDelete(id, operation.kind);
+      } catch (error) {
+        notifyError(error);
+        return;
+      }
+    }
+  }
+
   const remove = async () => {
     if (target?.mode !== "edit") return;
     if (await useConnections.getState().remove(target.id)) closeEditor();
   };
 
   const requestClose = () => {
-    if (isDirty) setDiscardOpen(true);
+    if (isDirty || secretsDirty(drafts)) setDiscardOpen(true);
     else closeEditor();
   };
 
@@ -173,108 +209,112 @@ export function ConnectionEditor() {
 
   return (
     <FormProvider value={form}>
-      <Sheet
-        open={target !== null}
-        onOpenChange={(next) => {
-          if (next) return;
-          requestClose();
-        }}
+      <SecretEditorProvider
+        value={{ connectionId: shown?.mode === "edit" ? shown.id : null, drafts, setDraft }}
       >
-        <SheetContent className="flex h-full flex-col gap-4 data-[side=right]:w-full data-[side=right]:sm:max-w-[520px]">
-          <SheetHeader className="items-start gap-3">
-            <SheetTitle>
-              {shown?.mode === "edit" && savedName
-                ? t("editor.editTitle", { name: savedName })
-                : t("editor.createTitle")}
-            </SheetTitle>
-            {ready && <ProtocolSwitch portTouched={portTouched} />}
-          </SheetHeader>
+        <Sheet
+          open={target !== null}
+          onOpenChange={(next) => {
+            if (next) return;
+            requestClose();
+          }}
+        >
+          <SheetContent className="flex h-full flex-col gap-4 data-[side=right]:w-full data-[side=right]:sm:max-w-[520px]">
+            <SheetHeader className="items-start gap-3">
+              <SheetTitle>
+                {shown?.mode === "edit" && savedName
+                  ? t("editor.editTitle", { name: savedName })
+                  : t("editor.createTitle")}
+              </SheetTitle>
+              {ready && <ProtocolSwitch portTouched={portTouched} />}
+            </SheetHeader>
 
-          <fieldset
-            data-slot="editor-scroll"
-            className="min-h-0 flex-1 overflow-y-auto border-none px-4"
-            onKeyDown={onKeyDown}
-          >
-            {ready && (
-              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as EditorTab)}>
-                <TabsList>
-                  <TabsTrigger value="general">{t("editor.tabs.general")}</TabsTrigger>
-                  <TabsTrigger value="authentication">
-                    {t("editor.tabs.authentication")}
-                  </TabsTrigger>
-                  <TabsTrigger value="network">{t("editor.tabs.network")}</TabsTrigger>
-                  <TabsTrigger value="advanced">{t("editor.tabs.advanced")}</TabsTrigger>
-                </TabsList>
-                <TabsContent value="general">
-                  <GeneralTab portTouched={portTouched} />
-                </TabsContent>
-                <TabsContent value="authentication">
-                  <AuthTab />
-                </TabsContent>
-                <TabsContent value="network">
-                  <NetworkTab selfId={target?.mode === "edit" ? target.id : null} />
-                </TabsContent>
-                <TabsContent value="advanced">
-                  <AdvancedTab />
-                </TabsContent>
-              </Tabs>
-            )}
-          </fieldset>
-
-          <SheetFooter className="items-center sm:flex-row sm:justify-between">
-            {shown?.mode === "edit" && (
-              <Button variant="destructive" onClick={() => setConfirmDeleteOpen(true)}>
-                {t("common.delete")}
-              </Button>
-            )}
-            <div className="flex flex-1 justify-end gap-2">
-              <Button variant="outline" onClick={requestClose}>
-                {t("common.cancel")}
-              </Button>
-              <Button onClick={save} disabled={!isValid || isSubmitting}>
-                {t("common.save")}
-              </Button>
-            </div>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
-
-      <AlertDialog open={discardOpen} onOpenChange={setDiscardOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("editor.discardTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>{t("editor.discardDescription")}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDiscardOpen(false)}>
-              {t("editor.keepEditing")}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                setDiscardOpen(false);
-                closeEditor();
-              }}
+            <fieldset
+              data-slot="editor-scroll"
+              className="min-h-0 flex-1 overflow-y-auto border-none px-4"
+              onKeyDown={onKeyDown}
             >
-              {t("editor.discard")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              {ready && (
+                <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as EditorTab)}>
+                  <TabsList>
+                    <TabsTrigger value="general">{t("editor.tabs.general")}</TabsTrigger>
+                    <TabsTrigger value="authentication">
+                      {t("editor.tabs.authentication")}
+                    </TabsTrigger>
+                    <TabsTrigger value="network">{t("editor.tabs.network")}</TabsTrigger>
+                    <TabsTrigger value="advanced">{t("editor.tabs.advanced")}</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="general">
+                    <GeneralTab portTouched={portTouched} />
+                  </TabsContent>
+                  <TabsContent value="authentication">
+                    <AuthTab />
+                  </TabsContent>
+                  <TabsContent value="network">
+                    <NetworkTab selfId={target?.mode === "edit" ? target.id : null} />
+                  </TabsContent>
+                  <TabsContent value="advanced">
+                    <AdvancedTab />
+                  </TabsContent>
+                </Tabs>
+              )}
+            </fieldset>
 
-      <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("common.delete")}</AlertDialogTitle>
-            <AlertDialogDescription>{t("editor.deleteDescription")}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setConfirmDeleteOpen(false)}>
-              {t("common.cancel")}
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={remove}>{t("common.delete")}</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            <SheetFooter className="items-center sm:flex-row sm:justify-between">
+              {shown?.mode === "edit" && (
+                <Button variant="destructive" onClick={() => setConfirmDeleteOpen(true)}>
+                  {t("common.delete")}
+                </Button>
+              )}
+              <div className="flex flex-1 justify-end gap-2">
+                <Button variant="outline" onClick={requestClose}>
+                  {t("common.cancel")}
+                </Button>
+                <Button onClick={save} disabled={!isValid || !secretsValid(drafts) || isSubmitting}>
+                  {t("common.save")}
+                </Button>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+
+        <AlertDialog open={discardOpen} onOpenChange={setDiscardOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("editor.discardTitle")}</AlertDialogTitle>
+              <AlertDialogDescription>{t("editor.discardDescription")}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setDiscardOpen(false)}>
+                {t("editor.keepEditing")}
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  setDiscardOpen(false);
+                  closeEditor();
+                }}
+              >
+                {t("editor.discard")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("common.delete")}</AlertDialogTitle>
+              <AlertDialogDescription>{t("editor.deleteDescription")}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setConfirmDeleteOpen(false)}>
+                {t("common.cancel")}
+              </AlertDialogCancel>
+              <AlertDialogAction onClick={remove}>{t("common.delete")}</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </SecretEditorProvider>
     </FormProvider>
   );
 }

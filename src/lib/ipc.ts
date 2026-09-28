@@ -5,6 +5,7 @@ import type { ConnectionInput } from "@/bindings/ConnectionInput";
 import type { ConnectionTemplates } from "@/bindings/ConnectionTemplates";
 import type { Group } from "@/bindings/Group";
 import type { GroupInput } from "@/bindings/GroupInput";
+import type { SecretKind } from "@/bindings/SecretKind";
 import type { Settings } from "@/bindings/Settings";
 import type { StoreSnapshot } from "@/bindings/StoreSnapshot";
 import { mockInvoke } from "./ipc-mock";
@@ -48,4 +49,12 @@ export const ipc = {
   // Settings
   settingsGet: () => call<Settings>("settings_get"),
   settingsUpdate: (settings: Settings) => call<Settings>("settings_update", { settings }),
+
+  // Secrets: write, test presence, delete — never read (S2).
+  secretSet: (connectionId: string, kind: SecretKind, value: string) =>
+    call<void>("secret_set", { connectionId, kind, value }),
+  secretHas: (connectionId: string, kind: SecretKind) =>
+    call<boolean>("secret_has", { connectionId, kind }),
+  secretDelete: (connectionId: string, kind: SecretKind) =>
+    call<void>("secret_delete", { connectionId, kind }),
 };

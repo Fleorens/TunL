@@ -231,8 +231,19 @@
       "password": "Password",
       "key": "Private key",
       "agent": "SSH agent",
-      "passwordHint": "You will be asked for the password when connecting.",
       "agentHint": "Uses the keys loaded in your SSH agent."
+    },
+    "secret": {
+      "passwordLabel": "Password (optional)",
+      "passphraseLabel": "Key passphrase (optional)",
+      "hint": "Stored in your system keyring. Leave empty to be asked when connecting.",
+      "saved": "Saved in the keyring",
+      "replace": "Replace",
+      "forget": "Forget",
+      "undo": "Undo",
+      "cancel": "Cancel",
+      "willForget": "Will be forgotten when you save",
+      "unavailable": "The system keyring is unavailable: TunL will ask when connecting."
     },
     "noGroup": "No group",
     "newGroup": "New group…",

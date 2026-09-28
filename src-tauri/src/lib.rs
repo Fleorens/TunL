@@ -3,12 +3,17 @@ pub mod commands;
 pub mod error;
 pub mod model;
 pub mod paths;
+pub mod secrets;
 pub mod state;
 pub mod store;
+
+#[cfg(test)]
+mod secrets_tests;
 
 use tauri::Manager;
 
 use crate::paths::AppPaths;
+use crate::secrets::SecretStore;
 use crate::state::AppState;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -39,7 +44,7 @@ pub fn run() {
                 paths.config_dir.display()
             );
             let now_ms = clock::now_ms();
-            match AppState::from_disk(&paths, now_ms) {
+            match AppState::from_disk(&paths, now_ms, SecretStore::keyring()) {
                 Ok(state) => {
                     app.manage(state);
                 }
@@ -53,6 +58,7 @@ pub fn run() {
                         store_blocked: Some(error),
                         settings: tokio::sync::RwLock::new(crate::model::Settings::default()),
                         quarantined: Vec::new(),
+                        secrets: SecretStore::keyring(),
                     });
                 }
             }
@@ -83,6 +89,9 @@ pub fn invoke_handler<R: tauri::Runtime>()
         commands::groups::group_reorder,
         commands::settings::settings_get,
         commands::settings::settings_update,
+        commands::secrets::secret_set,
+        commands::secrets::secret_has,
+        commands::secrets::secret_delete,
     ]
 }
 

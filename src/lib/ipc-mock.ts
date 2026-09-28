@@ -4,6 +4,7 @@ import { connectionHandlers } from "./mock/connections";
 import type { Handler, MockState } from "./mock/data";
 import { freshState, TEMPLATES } from "./mock/data";
 import { groupHandlers } from "./mock/groups";
+import { secretHandlers } from "./mock/secrets";
 import { settingsHandlers } from "./mock/settings";
 
 type Args = Record<string, unknown> | undefined;
@@ -40,6 +41,7 @@ const HANDLERS: Record<string, Handler> = {
   connection_templates: (current) => ({ state: current, result: structuredClone(TEMPLATES) }),
   ...connectionHandlers,
   ...groupHandlers,
+  ...secretHandlers,
   ...settingsHandlers,
 };
 

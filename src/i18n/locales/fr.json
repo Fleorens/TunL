@@ -233,8 +233,19 @@
       "password": "Mot de passe",
       "key": "Clé privée",
       "agent": "Agent SSH",
-      "passwordHint": "On vous demandera le mot de passe lors de la connexion.",
       "agentHint": "Utilise les clés chargées dans votre agent SSH."
+    },
+    "secret": {
+      "passwordLabel": "Mot de passe (facultatif)",
+      "passphraseLabel": "Passphrase de la clé (facultatif)",
+      "hint": "Stocké dans votre trousseau système. Laissez vide pour être demandé lors de la connexion.",
+      "saved": "Enregistré dans le trousseau",
+      "replace": "Remplacer",
+      "forget": "Oublier",
+      "undo": "Annuler l'oubli",
+      "cancel": "Annuler",
+      "willForget": "Sera oublié à l'enregistrement.",
+      "unavailable": "Le trousseau système est indisponible : TunL vous demandera lors de la connexion."
     },
     "noGroup": "Sans groupe",
     "newGroup": "Nouveau groupe…",

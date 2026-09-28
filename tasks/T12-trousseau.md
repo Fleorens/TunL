@@ -708,9 +708,9 @@ test("closing with a typed secret asks first", async ({ page }) => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T12 --check` affiche `OK` partout.
-- [ ] `grep -rn "secret_get" src src-tauri/src` ne trouve rien (S2).
-- [ ] Aucun test automatique n'ouvre le vrai trousseau (seul `keyring_round_trip` le fait, et il est `#[ignore]`).
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T12 --check` affiche `OK` partout.
+- [x] `grep -rn "secret_get" src src-tauri/src` ne trouve rien (S2).
+- [x] Aucun test automatique n'ouvre le vrai trousseau (seul `keyring_round_trip` le fait, et il est `#[ignore]`).
 - [ ] Visuel : l'état « Saved in the keyring » est sur une ligne, icône verte, boutons discrets alignés à droite.
 
 ## À regarder par Florian

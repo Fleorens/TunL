@@ -151,6 +151,7 @@ export const connectionHandlers: Record<string, Handler<Record<string, unknown>>
       state: {
         ..._state,
         connections: _state.connections.filter((connection) => connection.id !== id),
+        secrets: _state.secrets.filter((secret) => !secret.startsWith(`${id}:`)),
       },
       result: null,
     };

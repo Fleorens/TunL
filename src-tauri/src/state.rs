@@ -3,6 +3,7 @@ use tokio::sync::RwLock;
 use crate::error::{AppError, AppResult};
 use crate::model::Settings;
 use crate::paths::AppPaths;
+use crate::secrets::SecretStore;
 use crate::store::{Store, load_settings, load_store, save_settings, save_store};
 
 /// Shared backend state, registered with `app.manage()` during setup.
@@ -17,11 +18,13 @@ pub struct AppState {
     pub settings: RwLock<Settings>,
     /// Files moved aside at startup because they were unreadable (store and settings).
     pub quarantined: Vec<String>,
+    /// The keyring: write, presence test and delete a secret, never read it (S2).
+    pub secrets: SecretStore,
 }
 
 impl AppState {
     /// Load the store and settings from disk, quarantining unreadable files. `now_ms` stamps them.
-    pub fn from_disk(paths: &AppPaths, now_ms: i64) -> AppResult<Self> {
+    pub fn from_disk(paths: &AppPaths, now_ms: i64, secrets: SecretStore) -> AppResult<Self> {
         let mut quarantined: Vec<String> = Vec::new();
 
         let store_loaded = load_store(&paths.config_dir, now_ms);
@@ -60,6 +63,7 @@ impl AppState {
             store_blocked,
             settings: RwLock::new(settings),
             quarantined,
+            secrets,
         })
     }
 

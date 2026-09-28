@@ -57,6 +57,10 @@ pub async fn connection_delete(state: State<'_, AppState>, id: Uuid) -> AppResul
             Ok((next, ()))
         })
         .await?;
+    // Forget its secrets too; the connection is already gone, so a keyring failure only warns.
+    if let Err(error) = state.secrets.delete_all(id).await {
+        log::warn!("could not delete secrets of {id}: {error}");
+    }
     log::info!("connection deleted: {}", id);
     Ok(())
 }
