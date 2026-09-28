@@ -37,13 +37,18 @@ export function ConnectionCard({ connection, jumpHostName }: ConnectionCardProps
     >
       <button
         type="button"
-        className="relative flex w-full flex-col gap-2 text-left after:absolute after:inset-0"
+        className="flex w-full flex-col gap-2 text-left after:absolute after:inset-0 after:rounded-xl"
         aria-label={connection.name}
         onClick={() => openSession(connection)}
       >
         <div className="flex items-center justify-between">
           <ProtocolBadge protocol={protocol} />
-          <StatusDot status="unknown" label={t("status.unknown")} />
+          {/* The hover actions take this corner: the dot hides instead of sitting under them. */}
+          <StatusDot
+            status="unknown"
+            label={t("status.unknown")}
+            className="group-hover:invisible group-focus-within:invisible"
+          />
         </div>
         <span className="font-medium truncate">{connection.name}</span>
         <span className="truncate font-mono text-xs text-muted-foreground">
@@ -64,7 +69,7 @@ export function ConnectionCard({ connection, jumpHostName }: ConnectionCardProps
         </div>
       </button>
 
-      <div className="absolute right-2 top-2 z-10 hidden flex-col gap-1 group-hover:flex group-focus-within:flex">
+      <div className="absolute right-2 top-2 z-10 hidden items-center gap-0.5 group-hover:flex group-focus-within:flex">
         <Action
           ariaLabel={connectLabel}
           onClick={() => openSession(connection)}

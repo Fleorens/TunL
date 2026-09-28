@@ -1,6 +1,7 @@
 // Generic checks that any screen must pass. They catch, without eyes, the layout and wording defects found by the
-// orchestrator's screenshots in lot 2: raw i18n keys, horizontal overflow, controls without an accessible name,
-// controls overlapping each other in a dialog, form fields glued to a dialog's edge.
+// orchestrator's screenshots in lots 2 and 3: raw i18n keys, horizontal overflow, controls without an accessible
+// name, controls overlapping each other in a dialog, form fields glued to a dialog's edge, short buttons stretched
+// across a dialog.
 import { readFileSync } from "node:fs";
 import { expect, type Page } from "./test.ts";
 
@@ -88,6 +89,16 @@ export async function expectSaneUi(page: Page): Promise<void> {
         if (box.left - frame.left < 8 || frame.right - box.right < 8) {
           found.push(`field glued to the dialog edge (< 8px): ${describe(el)}`);
         }
+      }
+      // 6. A short button stretched across the dialog (a Button left in a flex-col, lot 3 review).
+      for (const el of inside.filter((c) => c.matches("button:not([role])"))) {
+        const text = (el.textContent ?? "").trim();
+        if (
+          text !== "" &&
+          text.length <= 24 &&
+          el.getBoundingClientRect().width > frame.width * 0.6
+        )
+          found.push(`button stretched across the dialog: ${describe(el)}`);
       }
     }
     return found;

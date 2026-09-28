@@ -57,7 +57,7 @@ impl SecretValue {
     }
 }
 
-// project-rules: allow no-unsafe-doc — the derived `Debug` of `Zeroizing<String>` would leak the value (S3).
+// Hand-written: the derived `Debug` of `Zeroizing<String>` would print the value (S3).
 impl std::fmt::Debug for SecretValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "SecretValue(***)")

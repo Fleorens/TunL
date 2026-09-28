@@ -1,3 +1,4 @@
+import { Save } from "lucide-react";
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ProtocolIcon } from "@/components/ProtocolIcon";
@@ -117,7 +118,7 @@ export function CommandPalette() {
       onOpenChange={(next) => !next && closePalette()}
       title={t("palette.title")}
       description={t("palette.description")}
-      className="w-[640px] glass shadow-elevated"
+      className="w-[640px] glass shadow-elevated sm:max-w-[640px]"
     >
       <Command
         value={selected}
@@ -231,6 +232,7 @@ function QuickConnectGroup({ target }: { target: QuickTarget }) {
           });
         }}
       >
+        <Save className="size-4" />
         <span className="flex-1 truncate">{t("palette.saveAsConnection")}</span>
       </CommandItem>
     </>

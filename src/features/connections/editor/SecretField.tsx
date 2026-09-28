@@ -73,6 +73,7 @@ export function SecretField({ kind }: { kind: SecretKind }) {
           <Button
             variant="outline"
             size="sm"
+            className="self-end"
             onClick={() => {
               setEditing(false);
               setDraft(kind, { action: "keep" });

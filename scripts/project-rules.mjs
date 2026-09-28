@@ -104,12 +104,44 @@ const LINE_RULES = [
     message: "localStorage only in src/lib/theme.ts (S1: never a secret there)",
   },
   {
+    id: "nested-component",
+    files: own.filter((p) => p.endsWith(".tsx") && !isTest(p)),
+    pattern: /^\s+(export\s+)?(function [A-Z]\w*\s*\(|const [A-Z]\w*\s*=\s*(\(|function\b|memo\())/,
+    message:
+      "declare components at module level: one declared inside another is remounted on every render " +
+      "(a checkbox loses the focus on each toggle)",
+  },
+  {
     id: "e2e-console-guard",
     files: e2e.filter((p) => p.endsWith(".spec.ts")),
     pattern: /from "@playwright\/test"/,
     message: 'import test and expect from "./support/test.ts" (it fails a test on console errors)',
   },
 ];
+
+// Every exception names an existing rule and sits on (or just above) a line that breaks it: a stale or
+// misspelt marker hides nothing and misleads the review.
+const RULE_IDS = new Set([
+  ...LINE_RULES.map((rule) => rule.id),
+  "file-size",
+  "command-registered",
+  "near-duplicate",
+]);
+function checkMarkers(path, fileLines) {
+  fileLines.forEach((line, index) => {
+    const id = line.match(/project-rules: allow ([\w-]+)/)?.[1];
+    if (!id) return;
+    if (!RULE_IDS.has(id)) {
+      report(path, index + 1, "allow-marker", `unknown rule "${id}": remove the marker`);
+      return;
+    }
+    const rule = LINE_RULES.find((r) => r.id === id);
+    const breaks = (l) => l !== undefined && !isComment(l) && rule.pattern.test(l);
+    if (rule && !breaks(line) && !breaks(fileLines[index + 1])) {
+      report(path, index + 1, "allow-marker", `nothing below breaks "${id}": remove the marker`);
+    }
+  });
+}
 
 function allowed(fileLines, index, id) {
   const marker = `project-rules: allow ${id}`;
@@ -128,6 +160,9 @@ for (const rule of LINE_RULES) {
     });
   }
 }
+
+for (const path of [...own, ...rust, ...e2e])
+  checkMarkers(path, readFileSync(path, "utf8").split("\n"));
 
 // File size: split a file before it becomes a wall (AGENTS.md: 400 lines).
 for (const path of [...own, ...rust].filter((p) => !isTest(p))) {

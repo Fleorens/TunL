@@ -82,7 +82,8 @@ surtout les **tests**. C'est toi qui écris toute l'implémentation.
   - `scripts/project-rules.mjs` : les règles que ni TypeScript, ni Biome, ni clippy ne voient. Chacune vient d'un
     défaut réel : casts `as never` / `as any`, `<input>` brut au lieu du composant shadcn, `unwrap()` hors tests,
     struct `…Request` dans une commande Tauri, commande absente d'`invoke_handler()`, fichier de plus de 400 lignes,
-    **module presque identique à un autre** (tu as réécrit ce qui existait), test désactivé, règles S1 à S13 ;
+    **module presque identique à un autre** (tu as réécrit ce qui existait), test désactivé, **composant déclaré dans
+    un autre composant**, exception `project-rules: allow` inconnue ou qui ne couvre rien, règles S1 à S13 ;
   - `contract-tests.mjs --all` : les tests du contrat de **toutes** les fiches livrées sont intacts.
   Une règle en rouge se corrige dans le code. Si elle est vraiment fausse pour **une** ligne, écris juste au-dessus
   `// project-rules: allow <règle> — <raison>` (en JSX : `{/* … */}`). L'orchestrateur relit chaque exception :
@@ -90,7 +91,8 @@ surtout les **tests**. C'est toi qui écris toute l'implémentation.
 - **Tous les e2e importent `test` et `expect` de `./support/test.ts`**, jamais de `@playwright/test` : un test
   échoue alors si l'app écrit une erreur ou un avertissement dans la console (avertissements React compris).
 - **`expectSaneUi(page)`** (`e2e/support/sanity.ts`) : clé i18n brute affichée, page plus large que la fenêtre,
-  contrôle sans nom accessible, contrôles qui se chevauchent dans un dialogue, champ collé au bord d'un dialogue.
+  contrôle sans nom accessible, contrôles qui se chevauchent dans un dialogue, champ collé au bord d'un dialogue,
+  bouton court étiré sur toute la largeur d'un dialogue.
   Dans tes propres scénarios e2e, appelle-le dès qu'un nouvel écran ou dialogue est ouvert.
 
 ## Réutiliser avant d'écrire
@@ -151,6 +153,11 @@ Rust édition 2024 · tokio · russh 0.63 · russh-sftp 3 · oo7 0.6 · ts-rs 12
 | Carte cliquable qui contient un radio | `has-checked:` (input natif) ou `has-[[data-state=checked]]:` (Radix) **sur la carte** | `peer-checked:` sur le parent (ne vise que les frères qui suivent le `peer`) |
 | Texte dans un `<button>` | `text-left` sur le libellé (`flex-1 truncate text-left`) | compter sur le `text-left` d'un parent (le bouton recentre) |
 | Champs propres à un protocole | les conditionner à `protocol` (`useWatch`) : une connexion SSH n'affiche aucun réglage RDP, et inversement | tout afficher dans l'onglet |
+| Sous-composant | déclaré au niveau du module (`function Row(props)` hors du composant parent), ou appelé comme une fonction (`{cell(x)}`) | `function Row()` écrit **dans** le corps d'un composant puis rendu en `<Row />` : nouveau type à chaque rendu, React le démonte et le remonte (une case perd le focus à chaque clic) |
+| Largeur d'un dialogue shadcn | surcharger le plafond au même palier : `className="w-[640px] sm:max-w-[640px]"` | `w-[640px]` seul : `DialogContent` garde `sm:max-w-sm` (384 px) |
+| `Button` dans une colonne `flex-col` | `className="self-end"` (ou `self-start`) sur le bouton | le laisser s'étirer sur toute la largeur |
+| Carte entièrement cliquable (lien étiré) | la carte en `relative`, le `<button>` **sans** `relative`, `after:absolute after:inset-0` ; les actions au-dessus en `z-10`, sur une ligne, et ce qu'elles recouvrent est masqué au survol | un `<button relative>` (le pseudo-élément ne couvre que le bouton, pas le padding de la carte) ; des actions empilées sur une pastille |
+| `Tooltip` / `Popover` en `asChild` sur une case, un interrupteur, un onglet | ne pas les combiner : l'`aria-label` suffit | `<TooltipTrigger asChild><Checkbox/></TooltipTrigger>` : le `data-state` du tooltip (`closed`) écrase celui du contrôle |
 | Arguments d'une commande Tauri | un paramètre Rust par clé JSON envoyée par `ipc.ts` (`id: Uuid, input: ConnectionInput` pour `{ id, input }`), et une ligne dans `src-tauri/src/commands/ipc_tests.rs` qui l'appelle avec ces clés | une struct `req: XRequest` (Tauri attend alors `{ req: { … } }` : toutes les modifications échouaient dans la vraie app, le mock le cachait) |
 
 ## Règles de code

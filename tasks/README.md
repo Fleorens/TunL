@@ -70,17 +70,17 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | T09 | Stores zustand + Sidebar branchée (sections, filtre, menu contextuel) | T08 | moyen | Sonnet 5 · medium | validée |
 | T10 | Éditeur de connexion — Général + Authentification | T09 | moyen | Sonnet 5 · medium | validée |
 | T11 | Éditeur de connexion — Réseau (bastion, WoL) + Avancé (SSH, RDP) | T10 | moyen | Sonnet 5 · medium | validée |
-| T12 | Trousseau (oo7) : `secret_set/has/delete` + secrets dans l'éditeur | T11 | moyen | Opus 5 · high | livrée |
-| T13 | Palette de commandes + connexion rapide + aide des raccourcis (F1) | T15b | moyen | Sonnet 5 · medium | livrée |
-| T14 | Accueil : cartes favoris / récents, premier lancement | T13 | faible | Sonnet 5 · low | livrée |
-| T15 | Import `~/.ssh/config` : parseur, aperçu, application (backend + mock) | T12 | moyen | Sonnet 5 · medium | livrée |
-| T15b | Import `~/.ssh/config` : dialogue (tableau, sélection, groupe) | T15 | faible | Sonnet 5 · medium | livrée |
+| T12 | Trousseau (oo7) : `secret_set/has/delete` + secrets dans l'éditeur | T11 | moyen | Opus 5 · high | validée |
+| T13 | Palette de commandes + connexion rapide + aide des raccourcis (F1) | T15b | moyen | Sonnet 5 · medium | validée |
+| T14 | Accueil : cartes favoris / récents, premier lancement | T13 | faible | Sonnet 5 · low | validée |
+| T15 | Import `~/.ssh/config` : parseur, aperçu, application (backend + mock) | T12 | moyen | Sonnet 5 · medium | validée |
+| T15b | Import `~/.ssh/config` : dialogue (tableau, sélection, groupe) | T15 | faible | Sonnet 5 · medium | validée |
 
 ### M2 — SSH
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T16 | Environnement de test podman (cible, bastion, hôte caché, clés de test) | T05b | moyen | Sonnet 5 · medium | livrée |
+| T16 | Environnement de test podman (cible, bastion, hôte caché, clés de test) | T05b | moyen | Sonnet 5 · medium | validée |
 | T17 | Noyau SSH : connexion TCP, handler, known_hosts, PromptBroker, dialogue clé d'hôte | T12, T16 | **élevé** | Opus 5 · high | à écrire |
 | T18 | Authentification : mot de passe, clé + passphrase, agent, keyboard-interactive | T17 | **élevé** | Opus 5 · high | à écrire |
 | T19 | Session shell : PTY, Channel binaire, registre de sessions, write / resize / close | T18 | **élevé** | Opus 5 · high | à écrire |
