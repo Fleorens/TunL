@@ -216,7 +216,7 @@ SshLink { target: Handle<ClientHandler>, hops: Vec<Handle<ClientHandler>> }  // 
    - **Auth** : selon `settings.auth.method` (voir T18). Le secret vient du trousseau ou d'un prompt.
 4. **Open** : selon l'usage, canal shell + PTY (T19), sous-système `sftp` (T24) ou tunnel local (T23).
 
-Implémentation (lot 4) : `ssh::connect::{tcp_connect, handshake}` (T17), `ssh::auth::authenticate` (T18),
+Implémentation (lot 4) : `ssh::connect::{tcp_connect, handshake}` (T17b), `ssh::auth::authenticate` (T18),
 `ssh::session::run_ssh_session` qui enchaîne les étapes et le shell (T19). Tout reçoit un `SshContext`
 (`known_hosts`, `prompts`, `secrets`, `agent_socket`) plutôt que l'`AppState`, ce qui permet de tester le moteur
 contre les conteneurs de T16 sans Tauri. `ssh::chain` (T22) insérera les sauts avant la cible.

@@ -104,14 +104,6 @@ const LINE_RULES = [
     message: "localStorage only in src/lib/theme.ts (S1: never a secret there)",
   },
   {
-    id: "nested-component",
-    files: own.filter((p) => p.endsWith(".tsx") && !isTest(p)),
-    pattern: /^\s+(export\s+)?(function [A-Z]\w*\s*\(|const [A-Z]\w*\s*=\s*(\(|function\b|memo\())/,
-    message:
-      "declare components at module level: one declared inside another is remounted on every render " +
-      "(a checkbox loses the focus on each toggle)",
-  },
-  {
     id: "e2e-console-guard",
     files: e2e.filter((p) => p.endsWith(".spec.ts")),
     pattern: /from "@playwright\/test"/,

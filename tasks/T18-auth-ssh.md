@@ -3,13 +3,13 @@
 | | |
 |---|---|
 | **Jalon** | M2 — SSH |
-| **Dépend de** | T17 |
+| **Dépend de** | T17b |
 | **Lire avant** | `docs/06-securite.md` §2 (S1, S2, S3, S7, S8), `docs/05-modele-donnees.md` §7 |
 | **Livrable** | Module `ssh/auth.rs` ; 2 tests Rust, 15 tests d'intégration contre podman |
 
 ## Pourquoi
 
-Une fois la clé du serveur acceptée (T17), il faut prouver qui l'on est. TunL connaît trois méthodes enregistrées
+Une fois la clé du serveur acceptée (T17b), il faut prouver qui l'on est. TunL connaît trois méthodes enregistrées
 (`SshAuth` : `Password`, `Key { path }`, `Agent`) et une quatrième pour la connexion rapide, qui n'a rien
 d'enregistré (`Auto`). Les secrets viennent du trousseau (T12) ou d'un prompt, et ne sont enregistrés que si
 l'utilisateur coche « mémoriser », **après** une authentification réussie.
@@ -19,9 +19,9 @@ ed25519, RSA et chiffrée, agent. Les comportements notés ici sont ceux observ�
 
 ## À réutiliser (ne pas réécrire)
 
-- `SshContext` (`ssh/mod.rs`) : `prompts` (`ask`), `secrets` (`get`, `set`), `agent_socket` ; `ClientHandler`,
-  `map_russh_error` (T17) ; `SecretKind`, `SecretValue` (T12) ; `SshAuth` (`model`).
-- Les tests d'intégration réutilisent `tests/support/mod.rs` (T17) **sans le modifier**.
+- `SshContext` (`ssh/mod.rs`, T17b) : `prompts` (`ask`), `secrets` (`get`, `set`), `agent_socket` ; `ClientHandler`
+  (T17b), `map_russh_error` (T17) ; `SecretKind`, `SecretValue` (T12) ; `SshAuth` (`model`).
+- Les tests d'intégration réutilisent `tests/support/mod.rs` (T17b) **sans le modifier**.
 
 ## Contrat — Rust
 
@@ -117,7 +117,7 @@ l'hôte, le résultat. Jamais une valeur.
 - `authenticate_password` attend des `Into<String>` : passer `value.expose()` (une `&str`), jamais une copie gardée.
 - sshd (Debian, PAM) fait attendre ~2 s après chaque mot de passe faux : le test des trois essais dure ~6 s, c'est normal.
 - `std::env::set_var` est `unsafe` en Rust 2024 : l'agent se trouve par `ctx.agent_socket`, jamais en relisant
-  `SSH_AUTH_SOCK` dans `auth.rs` (c'est `AppState::ssh_context` qui le lit, T17).
+  `SSH_AUTH_SOCK` dans `auth.rs` (c'est `AppState::ssh_context` qui le lit, T17b).
 
 ## Tests du contrat
 

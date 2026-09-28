@@ -40,12 +40,12 @@ il s'arrête et le signale.
 | `npm run check` / `npm run format` | Biome : vérifier / corriger |
 | `npm run test` | Vitest (une passe) |
 | `npm run bindings` | régénère `src/bindings/` depuis les types Rust (`cargo test export_bindings`) |
-| `npm run verify:rust` | `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test` (clippy en `--all-features` à partir de T17) |
-| `npm run test:ssh` | à partir de T17 : `test-env:up`, puis les tests d'intégration SSH (`src-tauri/tests/ssh_*.rs`, feature `test-env`) contre les conteneurs |
+| `npm run verify:rust` | `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test` (clippy en `--all-features` à partir de T17b) |
+| `npm run test:ssh` | à partir de T17b : `test-env:up`, puis les tests d'intégration SSH (`src-tauri/tests/ssh_*.rs`, feature `test-env`) contre les conteneurs |
 | `npm run rules` | règles projet (`scripts/project-rules.mjs`) et tests du contrat de toutes les fiches livrées (`contract-tests.mjs --all`) |
 | `npm run verify` | typecheck + check + rules + test + verify:rust |
 | `npm run e2e` | scénarios Playwright dans le Chromium du système (`e2e/`), serveur Vite lancé automatiquement (T05b). Un test échoue aussi sur une erreur console (`e2e/support/test.ts`) |
-| `npm run review` | **tout** : `verify`, `test:ssh` (à partir de T17), puis `e2e`. C'est la recette d'une fiche |
+| `npm run review` | **tout** : `verify`, `test:ssh` (à partir de T17b), puis `e2e`. C'est la recette d'une fiche |
 
 ## 3. Boucle de travail de l'agent
 

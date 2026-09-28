@@ -1,6 +1,7 @@
 // Writes, or checks, the contract test files of a task sheet (`tasks/Txx-*.md`).
 //
-//   node scripts/contract-tests.mjs T10          creates every test file given by the sheet
+//   node scripts/contract-tests.mjs T10          creates every test file given by the sheet, and refuses (exit 3)
+//                                                when a sheet of its "Dépend de" row is not delivered yet
 //   node scripts/contract-tests.mjs T10 --check  compares the files on disk with the sheet
 //
 // The check ignores formatting: both sides go through Biome (TS, JS, JSON) or rustfmt (Rust) first;
@@ -128,6 +129,13 @@ function deliveredSheets() {
     .filter((id) => id !== undefined);
 }
 
+/** The sheets of the "Dépend de" row not yet `livrée` or `validée`: the task must not start (T13 once did). */
+function missingDependencies(markdown) {
+  const row = markdown.split("\n").find((line) => line.startsWith("| **Dépend de** |")) ?? "";
+  const delivered = new Set(deliveredSheets());
+  return [...row.matchAll(/\bT\d+b?\b/g)].map((m) => m[0]).filter((dep) => !delivered.has(dep));
+}
+
 function checkAll() {
   const latest = new Map();
   for (const id of deliveredSheets()) {
@@ -163,7 +171,16 @@ function main() {
     return 2;
   }
   const sheet = findSheet(id);
-  const files = extractTestFiles(readFileSync(sheet, "utf8"));
+  const markdown = readFileSync(sheet, "utf8");
+  const missing = flag === "--check" ? [] : missingDependencies(markdown);
+  if (missing.length > 0) {
+    console.error(
+      `${id} depends on ${missing.join(", ")}, not delivered yet (tasks/README.md). ` +
+        "STOP: write no code and no placeholder, and report it.",
+    );
+    return 3;
+  }
+  const files = extractTestFiles(markdown);
   if (files.length === 0) {
     console.error(`no test file found in the "${TEST_SECTION}" section of ${sheet}`);
     return 1;

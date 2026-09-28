@@ -10,9 +10,10 @@ Un orchestrateur a écrit l'architecture (`docs/`) et découpé le travail en fi
    Rien d'autre sans raison. Ce fichier (`AGENTS.md`) est déjà dans tes instructions : ne le relis pas.
 2. Vérifie le point de départ :
    - `git status` doit être propre ;
-   - les fiches listées dans « Dépend de » sont marquées `livrée` ou `validée` dans `tasks/README.md`
-     (`grep -n "^| T0X " tasks/README.md` suffit).
-   Sinon, ARRÊTE et dis-le.
+   - les fiches listées dans « Dépend de » sont `livrée` ou `validée` : `node scripts/contract-tests.mjs Txx` le
+     vérifie avant d'écrire les tests, et refuse sinon (code 3, « STOP »).
+   Sinon, ARRÊTE et dis-le. **Pas de bouchon pour remplacer une fiche pas encore livrée** : en T13, un bouchon posé
+   « en attendant T15b » a été écrit contre cette règle.
 3. Exécute les étapes **dans l'ordre**. N'ajoute aucune fonctionnalité, dépendance, fichier ou refactorisation
    non demandés.
 4. Écris les fichiers par morceaux raisonnables : **jamais plus d'environ 300 lignes par écriture**.
@@ -82,13 +83,13 @@ surtout les **tests**. C'est toi qui écris toute l'implémentation.
   - `scripts/project-rules.mjs` : les règles que ni TypeScript, ni Biome, ni clippy ne voient. Chacune vient d'un
     défaut réel : casts `as never` / `as any`, `<input>` brut au lieu du composant shadcn, `unwrap()` hors tests,
     struct `…Request` dans une commande Tauri, commande absente d'`invoke_handler()`, fichier de plus de 400 lignes,
-    **module presque identique à un autre** (tu as réécrit ce qui existait), test désactivé, **composant déclaré dans
-    un autre composant**, exception `project-rules: allow` inconnue ou qui ne couvre rien, règles S1 à S13 ;
+    **module presque identique à un autre** (tu as réécrit ce qui existait), test désactivé, exception
+    `project-rules: allow` inconnue ou qui ne couvre rien, règles S1 à S13 ;
   - `contract-tests.mjs --all` : les tests du contrat de **toutes** les fiches livrées sont intacts.
   Une règle en rouge se corrige dans le code. Si elle est vraiment fausse pour **une** ligne, écris juste au-dessus
   `// project-rules: allow <règle> — <raison>` (en JSX : `{/* … */}`). L'orchestrateur relit chaque exception :
   n'en mets jamais une pour faire taire un vrai problème.
-- **`npm run test:ssh`** (dans `review` à partir de T17) : démarre les serveurs SSH de test (podman, T16) puis lance
+- **`npm run test:ssh`** (dans `review` à partir de T17b) : démarre les serveurs SSH de test (podman, T16) puis lance
   les tests d'intégration `src-tauri/tests/ssh_*.rs` (feature Cargo `test-env`). Podman absent ou conteneur qui ne
   démarre pas : arrête-toi et donne le message exact, ne saute pas ces tests.
 - **Tous les e2e importent `test` et `expect` de `./support/test.ts`**, jamais de `@playwright/test` : un test
@@ -157,7 +158,7 @@ plugins Tauri `opener` et `clipboard-manager` (T20).
 | Carte cliquable qui contient un radio | `has-checked:` (input natif) ou `has-[[data-state=checked]]:` (Radix) **sur la carte** | `peer-checked:` sur le parent (ne vise que les frères qui suivent le `peer`) |
 | Texte dans un `<button>` | `text-left` sur le libellé (`flex-1 truncate text-left`) | compter sur le `text-left` d'un parent (le bouton recentre) |
 | Champs propres à un protocole | les conditionner à `protocol` (`useWatch`) : une connexion SSH n'affiche aucun réglage RDP, et inversement | tout afficher dans l'onglet |
-| Sous-composant | déclaré au niveau du module (`function Row(props)` hors du composant parent), ou appelé comme une fonction (`{cell(x)}`) | `function Row()` écrit **dans** le corps d'un composant puis rendu en `<Row />` : nouveau type à chaque rendu, React le démonte et le remonte (une case perd le focus à chaque clic) |
+| Sous-composant (Biome `noNestedComponentDefinitions` le refuse) | déclaré au niveau du module (`function Row(props)` hors du composant parent), ou appelé comme une fonction (`{cell(x)}`) | `function Row()` écrit **dans** le corps d'un composant puis rendu en `<Row />` : nouveau type à chaque rendu, React le démonte et le remonte (une case perd le focus à chaque clic) |
 | Largeur d'un dialogue shadcn | surcharger le plafond au même palier : `className="w-[640px] sm:max-w-[640px]"` | `w-[640px]` seul : `DialogContent` garde `sm:max-w-sm` (384 px) |
 | `Button` dans une colonne `flex-col` | `className="self-end"` (ou `self-start`) sur le bouton | le laisser s'étirer sur toute la largeur |
 | Carte entièrement cliquable (lien étiré) | la carte en `relative`, le `<button>` **sans** `relative`, `after:absolute after:inset-0` ; les actions au-dessus en `z-10`, sur une ligne, et ce qu'elles recouvrent est masqué au survol | un `<button relative>` (le pseudo-élément ne couvre que le bouton, pas le padding de la carte) ; des actions empilées sur une pastille |

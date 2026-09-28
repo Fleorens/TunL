@@ -9,7 +9,7 @@
 
 ## Pourquoi
 
-T17 et T18 savent ouvrir et authentifier une connexion. Il reste à y lancer un shell avec un pseudo-terminal, à
+T17, T17b et T18 savent ouvrir et authentifier une connexion. Il reste à y lancer un shell avec un pseudo-terminal, à
 faire circuler les octets dans les deux sens, et à **suivre chaque session** (un onglet = une session = une
 connexion SSH, D11) pour pouvoir lui écrire, la redimensionner et la fermer. Le frontend reçoit tout par deux
 `Channel` Tauri passés à l'ouverture : les **événements** (étapes, connecté, fin, erreur) en JSON, et la **sortie**
@@ -19,7 +19,7 @@ Le PTY, le redimensionnement et le code de sortie ont été vérifiés au protot
 
 ## À réutiliser (ne pas réécrire)
 
-- T17 : `tcp_connect`, `handshake`, `client_config`, `HostKeyTarget`, `SshContext`, `AppState::ssh_context` ;
+- T17b : `tcp_connect`, `handshake`, `client_config`, `HostKeyTarget`, `SshContext`, `AppState::ssh_context` ;
   T18 : `authenticate`, `AuthTarget`, `plan_for`.
 - `model::normalize_connection_input` et `ConnectionInput::template(Protocol::Ssh)` pour valider une cible rapide
   (hôte, port, utilisateur) exactement comme une connexion ; `SshDefaults` (`model`), `state.read_store()`,
