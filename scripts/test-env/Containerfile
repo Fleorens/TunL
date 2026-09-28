@@ -1,0 +1,10 @@
+FROM docker.io/library/debian:13
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openssh-server \
+ && rm -rf /var/lib/apt/lists/* /etc/ssh/ssh_host_* \
+ && mkdir -p /run/sshd \
+ && useradd --create-home --shell /bin/bash tunl \
+ && echo 'tunl:tunl-password' | chpasswd
+COPY sshd_config /etc/ssh/sshd_config.d/tunl.conf
+CMD ["/usr/sbin/sshd", "-D", "-e"]

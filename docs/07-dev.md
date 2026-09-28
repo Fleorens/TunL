@@ -71,8 +71,17 @@ il s'arrête et le signale.
 
 ## 5. Environnement de test SSH (à partir de T16)
 
-`scripts/test-env/up.sh` démarre avec podman :
-- un serveur OpenSSH **cible** (mot de passe + clé) ;
-- un **bastion**, qui seul peut joindre la cible.
+Un environnement podman (sans root) fournit, pour T17→T26, un serveur **cible**, un **bastion** et un **hôte caché**
+(joignable seulement via le bastion), avec toutes les authentifications (mot de passe, clé, clé avec passphrase,
+keyboard-interactive). `podman` et `ssh-keygen` suffisent.
 
-`scripts/test-env/down.sh` arrête tout. Détails dans la fiche T16.
+```bash
+npm run test-env:up        # construit l'image, recrée les 3 conteneurs, écrit l'état (.state/, ignoré)
+npm run test-env:check     # vérifie que tout marche (doit afficher « all checks passed »)
+npm run test-env:down      # arrête conteneurs et réseaux (garde l'image et .state/)
+```
+
+- Cible `127.0.0.1:2222`, bastion `127.0.0.1:2223` ; l'hôte caché n'en publie aucun. Utilisateur `tunl` / `tunl-password`.
+- Changer une clé d'hôte pour tester le refus (S6) : `scripts/test-env/rotate-host-key.sh <target|bastion|hidden>`.
+- Tout effacer (conteneurs, réseaux, image, `.state/`) : `npm run test-env:down -- --purge`.
+- `scripts/test-env/.state/env.json` (chemins absolus, empreintes des clés d'hôte) est lu par les tests Rust du lot 4.

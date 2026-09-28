@@ -80,7 +80,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T16 | Environnement de test podman (cible, bastion, hôte caché, clés de test) | T05b | moyen | Sonnet 5 · medium | prête |
+| T16 | Environnement de test podman (cible, bastion, hôte caché, clés de test) | T05b | moyen | Sonnet 5 · medium | livrée |
 | T17 | Noyau SSH : connexion TCP, handler, known_hosts, PromptBroker, dialogue clé d'hôte | T12, T16 | **élevé** | Opus 5 · high | à écrire |
 | T18 | Authentification : mot de passe, clé + passphrase, agent, keyboard-interactive | T17 | **élevé** | Opus 5 · high | à écrire |
 | T19 | Session shell : PTY, Channel binaire, registre de sessions, write / resize / close | T18 | **élevé** | Opus 5 · high | à écrire |

@@ -265,12 +265,12 @@ printf '\nall checks passed\n'
 
 ## Critères d'acceptation
 
-- [ ] `npm run test-env:up` puis `npm run test-env:check` : `all checks passed` (20 lignes `ok`).
-- [ ] `node scripts/contract-tests.mjs T16 --check` affiche `OK`.
-- [ ] Après `rotate-host-key.sh target`, la connexion à `tunl-target` échoue avec « REMOTE HOST IDENTIFICATION HAS CHANGED ».
-- [ ] `down.sh --purge` ne laisse ni conteneur, ni réseau, ni image `tunl-test-*` (`podman ps -a`, `podman network ls`,
+- [x] `npm run test-env:up` puis `npm run test-env:check` : `all checks passed` (20 lignes `ok`).
+- [x] `node scripts/contract-tests.mjs T16 --check` affiche `OK`.
+- [x] Après `rotate-host-key.sh target`, la connexion à `tunl-target` échoue avec « REMOTE HOST IDENTIFICATION HAS CHANGED ».
+- [x] `down.sh --purge` ne laisse ni conteneur, ni réseau, ni image `tunl-test-*` (`podman ps -a`, `podman network ls`,
       `podman images`).
-- [ ] `git status` ne montre rien de `.state/`.
+- [x] `git status` ne montre rien de `.state/`.
 
 ## À regarder par Florian
 

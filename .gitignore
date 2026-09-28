@@ -30,3 +30,6 @@ dist-ssr
 # Playwright e2e output
 test-results/
 playwright-report/
+
+# SSH test environment (T16): generated state (keys, known_hosts, env.json)
+scripts/test-env/.state/

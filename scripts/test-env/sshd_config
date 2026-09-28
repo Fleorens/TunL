@@ -1,0 +1,7 @@
+HostKey /etc/ssh/tunl/ssh_host_ed25519_key
+AuthorizedKeysFile /etc/ssh/tunl/authorized_keys
+PasswordAuthentication yes
+KbdInteractiveAuthentication yes
+PermitRootLogin no
+AllowTcpForwarding yes
+LogLevel VERBOSE
