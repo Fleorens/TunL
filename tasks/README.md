@@ -73,7 +73,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | T12 | Trousseau (oo7) : `secret_set/has/delete` + secrets dans l'éditeur | T11 | moyen | Opus 5 · high | livrée |
 | T13 | Palette de commandes + connexion rapide + aide des raccourcis (F1) | T15b | moyen | Sonnet 5 · medium | livrée |
 | T14 | Accueil : cartes favoris / récents, premier lancement | T13 | faible | Sonnet 5 · low | prête |
-| T15 | Import `~/.ssh/config` : parseur, aperçu, application (backend + mock) | T12 | moyen | Sonnet 5 · medium | prête |
+| T15 | Import `~/.ssh/config` : parseur, aperçu, application (backend + mock) | T12 | moyen | Sonnet 5 · medium | livrée |
 | T15b | Import `~/.ssh/config` : dialogue (tableau, sélection, groupe) | T15 | faible | Sonnet 5 · medium | prête |
 
 ### M2 — SSH

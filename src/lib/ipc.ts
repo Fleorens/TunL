@@ -5,6 +5,7 @@ import type { ConnectionInput } from "@/bindings/ConnectionInput";
 import type { ConnectionTemplates } from "@/bindings/ConnectionTemplates";
 import type { Group } from "@/bindings/Group";
 import type { GroupInput } from "@/bindings/GroupInput";
+import type { ImportPreview } from "@/bindings/ImportPreview";
 import type { SecretKind } from "@/bindings/SecretKind";
 import type { Settings } from "@/bindings/Settings";
 import type { StoreSnapshot } from "@/bindings/StoreSnapshot";
@@ -49,6 +50,12 @@ export const ipc = {
   // Settings
   settingsGet: () => call<Settings>("settings_get"),
   settingsUpdate: (settings: Settings) => call<Settings>("settings_update", { settings }),
+
+  // Import: preview a `~/.ssh/config`, then apply the selected candidates.
+  importSshConfigPreview: (path: string | null) =>
+    call<ImportPreview>("import_ssh_config_preview", { path }),
+  importSshConfigApply: (path: string | null, aliases: string[], groupId: string | null) =>
+    call<StoreSnapshot>("import_ssh_config_apply", { path, aliases, groupId }),
 
   // Secrets: write, test presence, delete — never read (S2).
   secretSet: (connectionId: string, kind: SecretKind, value: string) =>

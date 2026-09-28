@@ -617,9 +617,9 @@ test("a missing file can be simulated", async () => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T15 --check` affiche `OK` partout.
-- [ ] `grep -rn "Command::new\|std::process" src-tauri/src/import src-tauri/src/commands/import.rs` ne trouve rien (S12).
-- [ ] Aucun fichier de `import/` ne dépasse 400 lignes.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T15 --check` affiche `OK` partout.
+- [x] `grep -rn "Command::new\|std::process" src-tauri/src/import src-tauri/src/commands/import.rs` ne trouve rien (S12).
+- [x] Aucun fichier de `import/` ne dépasse 400 lignes.
 
 ## À regarder par Florian
 

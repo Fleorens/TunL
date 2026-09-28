@@ -1,6 +1,7 @@
 pub mod clock;
 pub mod commands;
 pub mod error;
+pub mod import;
 pub mod model;
 pub mod paths;
 pub mod secrets;
@@ -89,6 +90,8 @@ pub fn invoke_handler<R: tauri::Runtime>()
         commands::groups::group_reorder,
         commands::settings::settings_get,
         commands::settings::settings_update,
+        commands::import::import_ssh_config_preview,
+        commands::import::import_ssh_config_apply,
         commands::secrets::secret_set,
         commands::secrets::secret_has,
         commands::secrets::secret_delete,
