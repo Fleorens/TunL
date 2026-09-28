@@ -283,8 +283,8 @@ test("select all toggles every selectable host", async ({ page }) => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T15b --check` affiche `OK` partout.
-- [ ] `grep -rn "notifyComingSoon" src/features/shell/sidebar/Sidebar.tsx` ne trouve plus le bouton d'import.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T15b --check` affiche `OK` partout.
+- [x] `grep -rn "notifyComingSoon" src/features/shell/sidebar/Sidebar.tsx` ne trouve plus le bouton d'import.
 - [ ] Visuel : le tableau tient dans le dialogue, les colonnes sont alignées, les avertissements ne cassent pas la hauteur
       des lignes au point de les rendre illisibles.
 - [ ] Visuel : une ligne « Already present » est visiblement décochée, une ligne en erreur est grisée.

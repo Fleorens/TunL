@@ -10,6 +10,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { openImport } from "@/features/connections/open-import";
 import { notifyComingSoon } from "@/features/shell/coming-soon";
 import { useUi } from "@/features/shell/ui-store";
 
@@ -33,7 +34,7 @@ export function HomeView() {
             <Plus className="size-4" />
             {t("home.newConnection")}
           </Button>
-          <Button variant="outline" onClick={notifyComingSoon}>
+          <Button variant="outline" onClick={() => openImport()}>
             <FileInput className="size-4" />
             {t("home.importSshConfig")}
           </Button>

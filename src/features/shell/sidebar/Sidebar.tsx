@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { filterConnections } from "@/features/connections/filter";
+import { openImport } from "@/features/connections/open-import";
 import { buildSidebarSections, compareNames } from "@/features/connections/sections";
 import { useConnections } from "@/features/connections/store";
 import { notifyComingSoon } from "@/features/shell/coming-soon";
@@ -257,7 +258,7 @@ export function Sidebar() {
           variant="ghost"
           size="icon"
           aria-label={t("sidebar.import")}
-          onClick={notifyComingSoon}
+          onClick={() => openImport()}
         >
           <Import className="size-4" />
         </Button>

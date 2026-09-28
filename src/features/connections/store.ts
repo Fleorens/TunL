@@ -37,6 +37,8 @@ interface ConnectionsState {
   moveToGroup: (id: string, groupId: string | null) => Promise<boolean>;
   /** Replaces both groups and connections (the group's connections become ungrouped). */
   removeGroup: (id: string) => Promise<boolean>;
+  /** Replaces `groups` and `connections` from a snapshot at once (import apply, group delete). */
+  replaceSnapshot: (snapshot: StoreSnapshot) => void;
   moveGroup: (id: string, delta: -1 | 1) => Promise<boolean>;
 }
 
@@ -47,6 +49,10 @@ export const useConnections = create<ConnectionsState>()((set) => ({
   connections: [],
   templates: null,
   quarantined: [],
+
+  replaceSnapshot(snapshot) {
+    set({ groups: snapshot.groups, connections: snapshot.connections });
+  },
 
   async load() {
     set({ status: "loading", loadError: null });
@@ -182,7 +188,7 @@ export const useConnections = create<ConnectionsState>()((set) => ({
     try {
       // group_delete returns a full snapshot: replace both groups and connections at once.
       const snapshot = await ipc.groupDelete(id);
-      set({ groups: snapshot.groups, connections: snapshot.connections });
+      useConnections.getState().replaceSnapshot(snapshot);
       return true;
     } catch (error) {
       notifyError(error);

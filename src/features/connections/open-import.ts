@@ -1,11 +1,11 @@
-import { notifyComingSoon } from "@/features/shell/coming-soon";
+import { useUi } from "@/features/shell/ui-store";
 
 /**
- * Entry point to import a `~/.ssh/config` file. Until T15b: `notifyComingSoon()`.
+ * Entry point to import a `~/.ssh/config` file.
  *
- * The palette's "Import ~/.ssh/config" action calls this so there is a single place that decides
- * what importing does; T15b replaces the body without touching the callers.
+ * The palette, sidebar, and home screen all call this so there is a single place that decides
+ * what importing does; T15b opened the real dialog here without touching the callers.
  */
 export function openImport(): void {
-  notifyComingSoon();
+  useUi.getState().openImport();
 }

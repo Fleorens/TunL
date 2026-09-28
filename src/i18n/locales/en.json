@@ -139,6 +139,29 @@
     "importSshConfig": "Import ~/.ssh/config",
     "quickConnect": "Quick connect"
   },
+  "import": {
+    "title": "Import ~/.ssh/config",
+    "into": "Import into",
+    "noGroup": "No group",
+    "selectAll": "Select all",
+    "select": "Select {{alias}}",
+    "alreadyPresent": "Already present",
+    "retry": "Retry",
+    "columns": {
+      "host": "Host",
+      "address": "Address",
+      "key": "Key",
+      "jump": "Jump host",
+      "notes": "Notes"
+    },
+    "submit_one": "Import {{count}} connection",
+    "submit_other": "Import {{count}} connections",
+    "done_one": "Imported {{count}} connection",
+    "done_other": "Imported {{count}} connections",
+    "notFoundTitle": "No SSH config found",
+    "notFoundDescription": "TunL reads ~/.ssh/config.",
+    "empty": "Nothing to import"
+  },
   "shell": {
     "notYetAvailable": "Coming soon",
     "sessionPlaceholder": "The session “{{name}}” will be displayed here."

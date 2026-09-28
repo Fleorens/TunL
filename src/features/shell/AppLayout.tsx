@@ -4,6 +4,7 @@ import { usePanelRef } from "react-resizable-panels";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { ConnectionEditor } from "@/features/connections/editor/ConnectionEditor";
 import { HomeView } from "@/features/home/HomeView";
+import { ImportDialog } from "@/features/import/ImportDialog";
 import { CommandPalette } from "@/features/palette/CommandPalette";
 import { ShortcutsDialog } from "@/features/palette/ShortcutsDialog";
 import { notifyComingSoon } from "@/features/shell/coming-soon";
@@ -97,6 +98,7 @@ export function AppLayout() {
       </ResizablePanelGroup>
       <StatusBar />
       <ConnectionEditor />
+      <ImportDialog />
       <CommandPalette />
       <ShortcutsDialog />
     </div>

@@ -34,6 +34,11 @@ interface UiState {
   shortcutsOpen: boolean;
   openShortcuts: () => void;
   closeShortcuts: () => void;
+
+  /** The import `~/.ssh/config` dialog. */
+  importOpen: boolean;
+  openImport: () => void;
+  closeImport: () => void;
 }
 
 export const useUi = create<UiState>()((set) => ({
@@ -51,4 +56,8 @@ export const useUi = create<UiState>()((set) => ({
   shortcutsOpen: false,
   openShortcuts: () => set({ shortcutsOpen: true }),
   closeShortcuts: () => set({ shortcutsOpen: false }),
+
+  importOpen: false,
+  openImport: () => set({ importOpen: true }),
+  closeImport: () => set({ importOpen: false }),
 }));
