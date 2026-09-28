@@ -88,6 +88,9 @@ surtout les **tests**. C'est toi qui écris toute l'implémentation.
   Une règle en rouge se corrige dans le code. Si elle est vraiment fausse pour **une** ligne, écris juste au-dessus
   `// project-rules: allow <règle> — <raison>` (en JSX : `{/* … */}`). L'orchestrateur relit chaque exception :
   n'en mets jamais une pour faire taire un vrai problème.
+- **`npm run test:ssh`** (dans `review` à partir de T17) : démarre les serveurs SSH de test (podman, T16) puis lance
+  les tests d'intégration `src-tauri/tests/ssh_*.rs` (feature Cargo `test-env`). Podman absent ou conteneur qui ne
+  démarre pas : arrête-toi et donne le message exact, ne saute pas ces tests.
 - **Tous les e2e importent `test` et `expect` de `./support/test.ts`**, jamais de `@playwright/test` : un test
   échoue alors si l'app écrit une erreur ou un avertissement dans la console (avertissements React compris).
 - **`expectSaneUi(page)`** (`e2e/support/sanity.ts`) : clé i18n brute affichée, page plus large que la fenêtre,
@@ -123,7 +126,8 @@ Deux modules presque identiques font échouer `npm run rules`.
 
 Tauri 2.11 · React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · shadcn CLI 4 (style `radix-nova`) · zustand 5 ·
 motion 13 · xterm.js 6 · zod 4 · react-hook-form 7 · i18next 26 · Biome 2 · Vitest 5 ·
-Rust édition 2024 · tokio · russh 0.63 · russh-sftp 3 · oo7 0.6 · ts-rs 12 · thiserror 2.
+Rust édition 2024 · tokio · tokio-util 0.7 · russh 0.63 · russh-sftp 3 · oo7 0.6 · ts-rs 12 · thiserror 2 ·
+plugins Tauri `opener` et `clipboard-manager` (T20).
 
 ## Pièges connus : tes réflexes datent peut-être d'une ancienne version
 
@@ -158,6 +162,8 @@ Rust édition 2024 · tokio · russh 0.63 · russh-sftp 3 · oo7 0.6 · ts-rs 12
 | `Button` dans une colonne `flex-col` | `className="self-end"` (ou `self-start`) sur le bouton | le laisser s'étirer sur toute la largeur |
 | Carte entièrement cliquable (lien étiré) | la carte en `relative`, le `<button>` **sans** `relative`, `after:absolute after:inset-0` ; les actions au-dessus en `z-10`, sur une ligne, et ce qu'elles recouvrent est masqué au survol | un `<button relative>` (le pseudo-élément ne couvre que le bouton, pas le padding de la carte) ; des actions empilées sur une pastille |
 | `Tooltip` / `Popover` en `asChild` sur une case, un interrupteur, un onglet | ne pas les combiner : l'`aria-label` suffit | `<TooltipTrigger asChild><Checkbox/></TooltipTrigger>` : le `data-state` du tooltip (`closed`) écrase celui du contrôle |
+| `Channel` de Tauri côté JS | construit **seulement** dans `src/lib/ipc.ts`, et seulement dans Tauri : le mock reçoit les fonctions de rappel | `new Channel()` dans un composant ou un test (son constructeur plante hors de Tauri) |
+| Tests SSH contre podman | `src-tauri/tests/ssh_*.rs` avec `#![cfg(feature = "test-env")]`, lancés par `npm run test:ssh` | `#[ignore]`, ou un test qui « passe » quand les conteneurs sont absents |
 | Arguments d'une commande Tauri | un paramètre Rust par clé JSON envoyée par `ipc.ts` (`id: Uuid, input: ConnectionInput` pour `{ id, input }`), et une ligne dans `src-tauri/src/commands/ipc_tests.rs` qui l'appelle avec ces clés | une struct `req: XRequest` (Tauri attend alors `{ req: { … } }` : toutes les modifications échouaient dans la vraie app, le mock le cachait) |
 
 ## Règles de code
@@ -186,7 +192,8 @@ Rust édition 2024 · tokio · russh 0.63 · russh-sftp 3 · oo7 0.6 · ts-rs 12
 ## Commandes utiles
 
 `npm run dev` (UI seule dans le navigateur, IPC simulé) · `npm run tauri dev` (app complète) ·
-`npm run verify` (types, lint, tests, Rust) · `npm run e2e` (scénarios Playwright) · `npm run review` (les deux) · `npm run bindings` (types TS depuis Rust) · `cd src-tauri && cargo check` (rapide) ·
+`npm run verify` (types, lint, tests, Rust) · `npm run test:ssh` (SSH contre podman) · `npm run e2e` (scénarios
+Playwright) · `npm run review` (les trois) · `npm run bindings` (types TS depuis Rust) · `cd src-tauri && cargo check` (rapide) ·
 `node scripts/contract-tests.mjs Txx` (écrit les tests du contrat) · `node scripts/contract-tests.mjs Txx --check`
 (vérifie qu'ils n'ont pas bougé).
 

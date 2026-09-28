@@ -41,7 +41,9 @@ npm run review
 
 It runs, in order: TypeScript, Biome, the project rules (`scripts/project-rules.mjs`) and the contract tests of every
 delivered task, Vitest, `cargo fmt` / `clippy` / `test` (including every Tauri command driven through the real IPC
-layer), then the Playwright end-to-end scenarios in the system Chromium. Every script: [`docs/07-dev.md`](docs/07-dev.md) §2.
+layer), then the Playwright end-to-end scenarios in the system Chromium. From task T17 on, it also starts three
+disposable SSH servers with podman (`npm run test-env:up`) and runs the SSH integration tests against them
+(`npm run test:ssh`). Every script: [`docs/07-dev.md`](docs/07-dev.md) §2.
 
 ## Layout
 

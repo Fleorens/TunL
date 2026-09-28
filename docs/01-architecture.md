@@ -124,7 +124,7 @@ TunL/
         ├── secrets.rs
         ├── prompts.rs                    PromptBroker
         ├── sessions.rs                   SessionRegistry
-        ├── ssh/    (mod, handler, known_hosts, auth, connect, chain, shell, forward)
+        ├── ssh/    (mod, error, handler, known_hosts, connect, auth, session, shell, chain, forward)
         ├── sftp/   (mod, ops, transfer)
         ├── rdp/    (mod, detect, args, launch)
         ├── wol.rs  probe.rs
@@ -215,6 +215,11 @@ SshLink { target: Handle<ClientHandler>, hops: Vec<Handle<ClientHandler>> }  // 
      Clé différente : **refus** avec une erreur `ErrorKind::HostKeyChanged` (aucune option « continuer quand même »).
    - **Auth** : selon `settings.auth.method` (voir T18). Le secret vient du trousseau ou d'un prompt.
 4. **Open** : selon l'usage, canal shell + PTY (T19), sous-système `sftp` (T24) ou tunnel local (T23).
+
+Implémentation (lot 4) : `ssh::connect::{tcp_connect, handshake}` (T17), `ssh::auth::authenticate` (T18),
+`ssh::session::run_ssh_session` qui enchaîne les étapes et le shell (T19). Tout reçoit un `SshContext`
+(`known_hosts`, `prompts`, `secrets`, `agent_socket`) plutôt que l'`AppState`, ce qui permet de tester le moteur
+contre les conteneurs de T16 sans Tauri. `ssh::chain` (T22) insérera les sauts avant la cible.
 
 ⚠ Le timeout de connexion s'applique **au TCP seulement**. Il ne doit pas englober `connect_stream` :
 l'utilisateur peut mettre une minute à lire l'empreinte d'une clé d'hôte.

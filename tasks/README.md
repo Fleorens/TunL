@@ -1,17 +1,20 @@
 # Plan de réalisation — TunL v1
 
-41 fiches en 9 jalons. Chaque fiche tient dans **une session opencode** du modèle local.
+42 fiches en 9 jalons. Chaque fiche tient dans **une session opencode** du modèle local.
 L'orchestrateur (Claude) écrit les fiches détaillées **par lots** : chaque lot est ajusté après relecture de ce que
 le modèle a réellement livré. Une fiche qui cite des signatures de code pas encore écrit finirait par mentir.
 
-## Où on en est (2026-09-27)
+## Où on en est (2026-09-28)
 
-- Lots 1 et 2 : **validés** (T01 → T11). Lot 3 : **prêt**.
-- Prochaine fiche : **`/tache T12`**, puis T15 → T15b → T13 → T14. T16 peut passer à tout moment.
+- Lots 1, 2 et 3 : **validés** (T01 → T16). Lot 4 : **prêt** (T17 → T21b, le client SSH).
+- Prochaine fiche : **`/tache T17`**, puis T18 → T19 → T20 → T21 → T21b, dans cet ordre.
+- À partir de T17, `npm run review` démarre aussi les conteneurs SSH de test (podman, `npm run test:ssh`).
 - En attente de Florian, dans la vraie app (`npm run tauri dev`) :
   - T10 et T11 : créer, modifier et supprimer une connexion, avec un bastion (voir « À regarder » des deux fiches) ;
-  - T05 : instance unique, taille de fenêtre retenue.
-- Fin du lot 3 : « revue du lot 3 et écris le lot 4 ».
+  - T05 : instance unique, taille de fenêtre retenue ;
+  - T12 et T15b : un mot de passe dans KWallet, l'import de ton vrai `~/.ssh/config` ;
+  - après T21 : **la première vraie session SSH** (sans bastion jusqu'à T22).
+- Fin du lot 4 : « revue du lot 4 et écris le lot 5 ».
 
 ## Comment Florian fait tourner une fiche
 
@@ -81,17 +84,18 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
 | T16 | Environnement de test podman (cible, bastion, hôte caché, clés de test) | T05b | moyen | Sonnet 5 · medium | validée |
-| T17 | Noyau SSH : connexion TCP, handler, known_hosts, PromptBroker, dialogue clé d'hôte | T12, T16 | **élevé** | Opus 5 · high | à écrire |
-| T18 | Authentification : mot de passe, clé + passphrase, agent, keyboard-interactive | T17 | **élevé** | Opus 5 · high | à écrire |
-| T19 | Session shell : PTY, Channel binaire, registre de sessions, write / resize / close | T18 | **élevé** | Opus 5 · high | à écrire |
-| T20 | Composant terminal xterm.js 6 (webgl, fit, recherche, liens, thèmes, copier / coller, zoom) | T19 | moyen | Sonnet 5 · medium | à écrire |
-| T21 | Onglets de session : overlay « tunnel », erreurs, reconnexion, StatusBar | T20 | moyen | Sonnet 5 · medium | à écrire |
+| T17 | Noyau SSH : TCP, poignée de main, `known_hosts`, `PromptBroker` (Rust, tests contre podman) | T12, T16 | **élevé** | Opus 5 · high | prête |
+| T18 | Authentification : mot de passe, clé + passphrase, agent, keyboard-interactive | T17 | **élevé** | Opus 5 · high | prête |
+| T19 | Session shell : PTY, flux d'octets, registre de sessions, `ssh_open` / `write` / `resize` / `close`, mock | T18 | **élevé** | Opus 5 · high | prête |
+| T20 | Composant terminal xterm.js 6 (thèmes, ajustement, recherche, liens, copier / coller, zoom) | T19 | moyen | Sonnet 5 · medium | prête |
+| T21 | Onglets de session : terminal branché, étapes, erreur, fin, reconnexion, StatusBar | T20 | moyen | Sonnet 5 · medium | prête |
+| T21b | Prompts (clé d'hôte, mot de passe, passphrase, 2FA) et clé d'hôte changée | T21 | moyen | Sonnet 5 · medium | prête |
 
 ### M3 — Bastion
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T22 | Chaîne de bastions : résolution, cycles, direct-tcpip + connect_stream, étapes | T21 | **élevé** | Opus 5 · high | à écrire |
+| T22 | Chaîne de bastions : résolution, cycles, direct-tcpip + connect_stream, étapes | T21b | **élevé** | Opus 5 · high | à écrire |
 | T23 | Tunnel local 127.0.0.1:port → cible via la chaîne (moteur pour le RDP) | T22 | **élevé** | Opus 5 · high | à écrire |
 
 ### M4 — SFTP
@@ -139,10 +143,10 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 ## Chemin critique
 
 ```
-T01 → T02 → T03 → T04 → T05 → T05b → T06 → T07 → T08 → T09 → T10 → T11 → T12 ─┬─ T17 → T18 → T19 → T20 → T21 → T22 ─┬─ T24 → T25 → T26
-                                                                              │    ↑                                  ├─ T23 → T28
-                                                           T05b ─ T16 ────────┼────┘                                  └─ T29
-                                                                              └─ T15 → T15b → T13 → T14
+T01 → … → T11 → T12 ─┬─ T17 → T18 → T19 → T20 → T21 → T21b → T22 ─┬─ T24 → T25 → T26
+                     │    ↑                                        ├─ T23 → T28
+       T05b ─ T16 ───┼────┘                                        └─ T29
+                     └─ T15 → T15b → T13 → T14                        (tous validés jusqu'à T16)
 T27, T32 : parallélisables après T08 · T30 : après T09
 ```
 
@@ -155,7 +159,7 @@ local qui écrit le code (voir `AGENTS.md`).
 |---|---|---|
 | 1 | T01 → T05b | **validé** (T05b déjà au format contrat) |
 | 2 | T06 → T11 | **validé** à la revue du 2026-09-27 (format contrat) |
-| 3 | T12, T15, T15b, T13, T14, T16 | **prêt**, écrit après la revue du lot 2. Ordre : T12 → T15 → T15b → T13 → T14 ; T16 à tout moment |
-| 4 | T17 → T21 | fin du lot 3 (Claude aura éprouvé russh contre les conteneurs de T16) |
+| 3 | T12, T15, T15b, T13, T14, T16 | **validé** à la revue du 2026-09-28 |
+| 4 | T17 → T21b | **prêt**, écrit après la revue du lot 3 (russh 0.63 prototypé contre les conteneurs de T16) |
 | 5 | T22 → T30 | fin du lot 4 |
 | 6 | T31 → T40 | fin du lot 5 |

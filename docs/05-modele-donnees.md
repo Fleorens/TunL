@@ -241,7 +241,8 @@ pub enum ErrorKind { NotFound, Validation, Io, Store, Secret, Network, Timeout, 
                      HostKeyRejected, HostKeyChanged, Cancelled, Sftp, RdpClientMissing, Rdp, Wol, InUse, Internal }
 #[serde(tag = "type", rename_all = "camelCase", rename_all_fields = "camelCase")]
 pub enum ErrorDetail {
-    HostKeyChanged { host: String, port: u16, key_type: String, fingerprint: String, known_hosts_path: String, line: u32 },
+    HostKeyChanged { host: String, port: u16, key_type: String, fingerprint: String, known_fingerprint: String,
+                     known_hosts_path: String, line: u32, removable: bool },   // removable: in TunL's own file (T17)
     InUse { names: Vec<String> },   // ex. supprimer un bastion encore utilisé
 }
 
@@ -255,15 +256,18 @@ pub struct PromptRequest { pub id: Uuid, pub session_id: Option<Uuid>, pub promp
 #[serde(tag = "kind", rename_all = "camelCase", rename_all_fields = "camelCase")]
 pub enum PromptKind {
     HostKeyUnknown { host: String, port: u16, key_type: String, fingerprint: String },
-    Password { connection_name: String, username: String, host: String, can_save: bool },
-    Passphrase { key_path: String, can_save: bool },
+    Password { connection_name: String, username: String, host: String, can_save: bool, retry: bool },
+    Passphrase { connection_name: String, key_path: String, can_save: bool, retry: bool },
     KeyboardInteractive { connection_name: String, name: String, instructions: String, prompts: Vec<InteractivePrompt> },
 }
 pub struct InteractivePrompt { pub text: String, pub echo: bool }
 #[serde(tag = "kind", rename_all = "camelCase", rename_all_fields = "camelCase")]
-pub enum PromptAnswer { Accept, Reject, Secret { value: String, save: bool }, Responses { values: Vec<String> }, Cancel }
+pub enum PromptAnswer { Accept, Reject, Secret { value: SecretValue, save: bool }, Responses { values: Vec<SecretValue> }, Cancel }
+// SecretValue: Zeroizing<String> whose Debug prints *** (S3); "string" côté TS
 
 // Sessions
+#[serde(tag = "type", rename_all = "camelCase", rename_all_fields = "camelCase")]
+pub enum SessionTarget { Saved { connection_id: Uuid }, Quick { host: String, port: u16, username: Option<String> } }  // ssh_open (T19)
 #[serde(tag = "type", rename_all = "camelCase", rename_all_fields = "camelCase")]
 pub enum SessionEvent {
     Step { step: StepKind, label: String, state: StepState },
