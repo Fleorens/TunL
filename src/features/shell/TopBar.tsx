@@ -33,7 +33,7 @@ export function TopBar() {
       <div className="flex flex-1 justify-center">
         <button
           type="button"
-          onClick={notifyComingSoon}
+          onClick={() => useUi.getState().openPalette("all")}
           className="flex h-8 w-full max-w-115 items-center gap-2 rounded-md border bg-background/60 px-3 text-muted-foreground transition-colors duration-120 hover:border-border-strong hover:text-foreground"
         >
           <Search className="size-4" />

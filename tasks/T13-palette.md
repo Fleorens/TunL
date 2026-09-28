@@ -325,8 +325,8 @@ test("F1 lists the keyboard shortcuts", async ({ page }) => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T13 --check` affiche `OK` partout.
-- [ ] `openSession` et `openQuickSession` sont les **seuls** endroits du code qui décident quoi faire d'une connexion
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T13 --check` affiche `OK` partout.
+- [x] `openSession` et `openQuickSession` sont les **seuls** endroits du code qui décident quoi faire d'une connexion
       à ouvrir : la palette ne contient aucun `notifyComingSoon` pour ça.
 - [ ] Visuel : la palette est centrée à un tiers de la hauteur, 640 px de large, effet `glass`, et la surbrillance
       suit les flèches.

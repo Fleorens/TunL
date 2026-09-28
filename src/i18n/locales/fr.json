@@ -145,6 +145,55 @@
     "notYetAvailable": "Bientôt disponible",
     "sessionPlaceholder": "La session « {{name}} » s'affichera ici."
   },
+  "palette": {
+    "title": "Palette de commandes",
+    "description": "Rechercher une connexion, taper une adresse ou lancer une action",
+    "placeholder": "Rechercher des connexions et des actions…",
+    "quickPlaceholder": "user@host[:port]",
+    "groups": {
+      "connections": "Connexions",
+      "quickConnect": "Connexion rapide",
+      "actions": "Actions"
+    },
+    "quickConnectTo": "{{protocol}} vers {{target}}",
+    "saveAsConnection": "Enregistrer comme nouvelle connexion…",
+    "noResults": "Aucun résultat",
+    "actions": {
+      "newConnection": "Nouvelle connexion",
+      "importSshConfig": "Importer ~/.ssh/config",
+      "toggleTheme": "Basculer le thème",
+      "shortcuts": "Raccourcis clavier",
+      "settings": "Paramètres"
+    }
+  },
+  "shortcuts": {
+    "title": "Raccourcis clavier",
+    "labels": {
+      "palette.open": "Palette de commandes",
+      "palette.quickConnect": "Connexion rapide",
+      "connection.new": "Nouvelle connexion",
+      "tab.close": "Fermer l'onglet",
+      "tab.next": "Onglet suivant",
+      "tab.previous": "Onglet précédent",
+      "tab.goTo1": "Aller à l'onglet 1…8",
+      "tab.goTo2": "Aller à l'onglet 2",
+      "tab.goTo3": "Aller à l'onglet 3",
+      "tab.goTo4": "Aller à l'onglet 4",
+      "tab.goTo5": "Aller à l'onglet 5",
+      "tab.goTo6": "Aller à l'onglet 6",
+      "tab.goTo7": "Aller à l'onglet 7",
+      "tab.goTo8": "Aller à l'onglet 8",
+      "tab.goTo9": "Aller au dernier onglet",
+      "sidebar.toggle": "Basculer la barre latérale",
+      "sidebar.filter": "Filtrer les connexions",
+      "settings.open": "Paramètres",
+      "help.shortcuts": "Raccourcis clavier"
+    }
+  },
+  "protocols": {
+    "ssh": "SSH",
+    "rdp": "RDP"
+  },
   "theme": {
     "system": "Système",
     "dark": "Sombre",

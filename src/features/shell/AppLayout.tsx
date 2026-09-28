@@ -4,6 +4,9 @@ import { usePanelRef } from "react-resizable-panels";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { ConnectionEditor } from "@/features/connections/editor/ConnectionEditor";
 import { HomeView } from "@/features/home/HomeView";
+import { CommandPalette } from "@/features/palette/CommandPalette";
+import { ShortcutsDialog } from "@/features/palette/ShortcutsDialog";
+import { notifyComingSoon } from "@/features/shell/coming-soon";
 import { useDemoTabs } from "@/features/shell/demo-data";
 import { StatusBar } from "@/features/shell/StatusBar";
 import { Sidebar } from "@/features/shell/sidebar/Sidebar";
@@ -32,6 +35,10 @@ export function AppLayout() {
   const handlers: ShortcutHandlers = {
     "sidebar.toggle": () => toggleSidebar(),
     "connection.new": () => useUi.getState().openEditor({ mode: "create" }),
+    "palette.open": () => useUi.getState().openPalette("all"),
+    "palette.quickConnect": () => useUi.getState().openPalette("quickConnect"),
+    "help.shortcuts": () => useUi.getState().openShortcuts(),
+    "settings.open": () => notifyComingSoon(),
     "sidebar.filter": () => {
       if (collapsed) setSidebarCollapsed(false);
       document.getElementById("sidebar-filter")?.focus();
@@ -90,6 +97,8 @@ export function AppLayout() {
       </ResizablePanelGroup>
       <StatusBar />
       <ConnectionEditor />
+      <CommandPalette />
+      <ShortcutsDialog />
     </div>
   );
 }

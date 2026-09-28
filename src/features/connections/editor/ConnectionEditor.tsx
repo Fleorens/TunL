@@ -128,7 +128,19 @@ export function ConnectionEditor() {
       }
       base = toInput(found);
     }
-    form.reset(toFormValues(base, templates));
+    // Prefill a create target before the reset, so the prefilled values are the form's initial
+    // values (it is not "modified"): the quick-connect address fills name, host, port and username.
+    const values = toFormValues(base, templates);
+    if (target.mode === "create" && target.prefill) {
+      const { host, port, username } = target.prefill;
+      values.name = host;
+      values.host = host;
+      values.port = String(port);
+      values.username = username ?? "";
+      // A port that differs from the template stays when switching protocol.
+      if (port !== base.port) portTouched.current = true;
+    }
+    form.reset(values);
     setSavedName(target.mode === "edit" ? base.name : null);
     setActiveTab("general");
     setReadyFor(target);
