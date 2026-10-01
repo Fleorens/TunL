@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Vérifications automatiques de Tunl : le pipeline « npm run verify » du projet.
+# Code 0 = tout passe. Les tests e2e (Playwright) n'y sont pas : ils demandent l'application lancée.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+# Dépendances : seulement si node_modules manque ou si le lock a changé
+if [[ ! -f node_modules/.package-lock.json || package-lock.json -nt node_modules/.package-lock.json ]]; then
+  npm ci --no-audit --no-fund
+fi
+npm run verify
