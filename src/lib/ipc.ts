@@ -6,6 +6,7 @@ import type { ConnectionTemplates } from "@/bindings/ConnectionTemplates";
 import type { Group } from "@/bindings/Group";
 import type { GroupInput } from "@/bindings/GroupInput";
 import type { ImportPreview } from "@/bindings/ImportPreview";
+import type { PromptAnswer } from "@/bindings/PromptAnswer";
 import type { SecretKind } from "@/bindings/SecretKind";
 import type { Settings } from "@/bindings/Settings";
 import type { StoreSnapshot } from "@/bindings/StoreSnapshot";
@@ -64,4 +65,9 @@ export const ipc = {
     call<boolean>("secret_has", { connectionId, kind }),
   secretDelete: (connectionId: string, kind: SecretKind) =>
     call<void>("secret_delete", { connectionId, kind }),
+
+  // Prompts (T17): answer the question the backend posed, and forget a known host.
+  promptAnswer: (id: string, answer: PromptAnswer) => call<void>("prompt_answer", { id, answer }),
+  knownHostRemove: (host: string, port: number) =>
+    call<number>("known_host_remove", { host, port }),
 };

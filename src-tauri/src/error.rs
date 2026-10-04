@@ -39,8 +39,12 @@ pub enum ErrorDetail {
         port: u16,
         key_type: String,
         fingerprint: String,
+        /// The key recorded in `known_hosts` (the one that changed).
+        known_fingerprint: String,
         known_hosts_path: String,
         line: u32,
+        /// True when the record is in TunL's own file (removable via `known_host_remove`).
+        removable: bool,
     },
     InUse {
         names: Vec<String>,
@@ -143,9 +147,11 @@ mod tests {
             host: "db.internal".into(),
             port: 22,
             key_type: "ssh-ed25519".into(),
-            fingerprint: "SHA256:abc".into(),
+            fingerprint: "SHA256:new".into(),
+            known_fingerprint: "SHA256:old".into(),
             known_hosts_path: "/tmp/known_hosts".into(),
             line: 3,
+            removable: true,
         };
         let value = serde_json::to_value(changed).unwrap();
         assert_eq!(value["type"], "hostKeyChanged");

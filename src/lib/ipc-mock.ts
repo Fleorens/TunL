@@ -5,6 +5,7 @@ import type { Handler, MockState } from "./mock/data";
 import { freshState, TEMPLATES } from "./mock/data";
 import { groupHandlers } from "./mock/groups";
 import { importHandlers } from "./mock/import";
+import { promptHandlers } from "./mock/prompts";
 import { secretHandlers } from "./mock/secrets";
 import { settingsHandlers } from "./mock/settings";
 
@@ -43,6 +44,7 @@ const HANDLERS: Record<string, Handler> = {
   ...connectionHandlers,
   ...groupHandlers,
   ...importHandlers,
+  ...promptHandlers,
   ...secretHandlers,
   ...settingsHandlers,
 };

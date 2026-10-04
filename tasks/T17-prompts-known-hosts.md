@@ -738,9 +738,9 @@ fn prompt_commands_accept_the_arguments_sent_by_ipc_ts() {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T17 --check` affiche `OK` partout.
-- [ ] `grep -rn "learn_known_hosts" src-tauri/src` ne trouve rien (voir les pièges).
-- [ ] Aucun secret ni texte d'erreur russh dans un `AppError.message` (tests `ssh::error_tests`).
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T17 --check` affiche `OK` partout.
+- [x] `grep -rn "learn_known_hosts" src-tauri/src` ne trouve rien (voir les pièges).
+- [x] Aucun secret ni texte d'erreur russh dans un `AppError.message` (tests `ssh::error_tests`).
 
 ## À regarder par Florian
 

@@ -3,4 +3,12 @@
 /**
  * Structured context for the errors the UI renders specially.
  */
-export type ErrorDetail = { "type": "hostKeyChanged", host: string, port: number, keyType: string, fingerprint: string, knownHostsPath: string, line: number, } | { "type": "inUse", names: Array<string>, };
+export type ErrorDetail = { "type": "hostKeyChanged", host: string, port: number, keyType: string, fingerprint: string, 
+/**
+ * The key recorded in `known_hosts` (the one that changed).
+ */
+knownFingerprint: string, knownHostsPath: string, line: number, 
+/**
+ * True when the record is in TunL's own file (removable via `known_host_remove`).
+ */
+removable: boolean, } | { "type": "inUse", names: Array<string>, };
