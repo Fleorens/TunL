@@ -4,14 +4,18 @@ pub mod error;
 pub mod import;
 pub mod model;
 pub mod paths;
+pub mod prompts;
 pub mod secrets;
+pub mod ssh;
 pub mod state;
 pub mod store;
 
 #[cfg(test)]
+mod prompts_tests;
+#[cfg(test)]
 mod secrets_tests;
 
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 use crate::paths::AppPaths;
 use crate::secrets::SecretStore;
@@ -45,24 +49,24 @@ pub fn run() {
                 paths.config_dir.display()
             );
             let now_ms = clock::now_ms();
-            match AppState::from_disk(&paths, now_ms, SecretStore::keyring()) {
-                Ok(state) => {
-                    app.manage(state);
-                }
+            let state = match AppState::from_disk(&paths, now_ms, SecretStore::keyring()) {
+                Ok(state) => state,
                 Err(error) => {
                     // `from_disk` already logged why; surface it so a broken launch is not silent.
                     log::error!("TunL could not start its backend: {error}");
-                    app.manage(AppState {
-                        paths,
-                        started_at_ms: now_ms,
-                        store: tokio::sync::RwLock::new(crate::store::Store::default()),
-                        store_blocked: Some(error),
-                        settings: tokio::sync::RwLock::new(crate::model::Settings::default()),
-                        quarantined: Vec::new(),
-                        secrets: SecretStore::keyring(),
-                    });
+                    AppState::blocked(&paths, now_ms, error, SecretStore::keyring())
                 }
-            }
+            };
+            // The prompt emitter forwards each request to the UI as a global event. A clone is kept
+            // before `manage` consumes `state`, and the handle is 'static so the emitter outlives setup.
+            let prompts = state.prompts.clone();
+            let handle = app.handle().clone();
+            prompts.set_emitter(Box::new(move |request| {
+                if let Err(error) = handle.emit(crate::prompts::PROMPT_EVENT, request) {
+                    log::warn!("cannot emit prompt event: {error}");
+                }
+            }));
+            app.manage(state);
             Ok(())
         })
         .invoke_handler(invoke_handler())
@@ -92,6 +96,8 @@ pub fn invoke_handler<R: tauri::Runtime>()
         commands::settings::settings_update,
         commands::import::import_ssh_config_preview,
         commands::import::import_ssh_config_apply,
+        commands::prompts::prompt_answer,
+        commands::prompts::known_host_remove,
         commands::secrets::secret_set,
         commands::secrets::secret_has,
         commands::secrets::secret_delete,

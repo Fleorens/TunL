@@ -1,9 +1,13 @@
+use std::sync::Arc;
+
 use tokio::sync::RwLock;
 
 use crate::error::{AppError, AppResult};
 use crate::model::Settings;
 use crate::paths::AppPaths;
+use crate::prompts::PromptBroker;
 use crate::secrets::SecretStore;
+use crate::ssh::known_hosts::KnownHosts;
 use crate::store::{Store, load_settings, load_store, save_settings, save_store};
 
 /// Shared backend state, registered with `app.manage()` during setup.
@@ -18,8 +22,13 @@ pub struct AppState {
     pub settings: RwLock<Settings>,
     /// Files moved aside at startup because they were unreadable (store and settings).
     pub quarantined: Vec<String>,
-    /// The keyring: write, presence test and delete a secret, never read it (S2).
-    pub secrets: SecretStore,
+    /// The keyring: write, presence test and delete a secret, never read it (S2). Shared because a
+    /// command holds it across an `.await`, so it cannot be moved out of `state`.
+    pub secrets: Arc<SecretStore>,
+    /// Poses questions to the user and collects their answers (T17).
+    pub prompts: Arc<PromptBroker>,
+    /// TunL's known_hosts plus the user OpenSSH file to fall back on (T17).
+    pub known_hosts: Arc<KnownHosts>,
 }
 
 impl AppState {
@@ -63,8 +72,27 @@ impl AppState {
             store_blocked,
             settings: RwLock::new(settings),
             quarantined,
-            secrets,
+            secrets: Arc::new(secrets),
+            prompts: Arc::new(PromptBroker::new()),
+            known_hosts: Arc::new(KnownHosts::for_app(&paths.config_dir)),
         })
+    }
+
+    /// The fallback state `lib.rs` builds when the store could not be loaded: a blocked store,
+    /// default settings. New fields live here, not in `lib.rs`, so a new field cannot leave `lib.rs`
+    /// out of date.
+    pub fn blocked(paths: &AppPaths, now_ms: i64, error: AppError, secrets: SecretStore) -> Self {
+        Self {
+            paths: paths.clone(),
+            started_at_ms: now_ms,
+            store: RwLock::new(Store::default()),
+            store_blocked: Some(error),
+            settings: RwLock::new(Settings::default()),
+            quarantined: Vec::new(),
+            secrets: Arc::new(secrets),
+            prompts: Arc::new(PromptBroker::new()),
+            known_hosts: Arc::new(KnownHosts::for_app(&paths.config_dir)),
+        }
     }
 
     /// Read the current settings without taking the lock out.
