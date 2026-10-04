@@ -211,3 +211,17 @@ Playwright) · `npm run review` (les trois) · `npm run bindings` (types TS depu
 | `docs/06-securite.md` | toute fiche qui touche aux secrets, au réseau, aux fichiers, aux processus |
 | `docs/07-dev.md` | installation, scripts, dépannage |
 | `tasks/README.md` | plan, dépendances, statuts |
+
+## Agent skills
+
+### Issue tracker
+
+Les tickets sont les fiches `tasks/Txx-*.md`, statut dans `tasks/README.md`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Seuls `needs-triage` (`à écrire`) et `ready-for-agent` (`prête`) sont mappés ; les autres rôles ne sont pas utilisés. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context : `CONTEXT.md` (créé au besoin) + décisions dans `docs/02-decisions.md`. See `docs/agents/domain.md`.
