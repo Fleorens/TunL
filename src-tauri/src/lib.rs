@@ -6,6 +6,7 @@ pub mod model;
 pub mod paths;
 pub mod prompts;
 pub mod secrets;
+pub mod sessions;
 pub mod ssh;
 pub mod state;
 pub mod store;
@@ -14,6 +15,8 @@ pub mod store;
 mod prompts_tests;
 #[cfg(test)]
 mod secrets_tests;
+#[cfg(test)]
+mod sessions_tests;
 
 use tauri::{Emitter, Manager};
 
@@ -98,6 +101,10 @@ pub fn invoke_handler<R: tauri::Runtime>()
         commands::import::import_ssh_config_apply,
         commands::prompts::prompt_answer,
         commands::prompts::known_host_remove,
+        commands::ssh::ssh_open,
+        commands::ssh::ssh_write,
+        commands::ssh::ssh_resize,
+        commands::ssh::session_close,
         commands::secrets::secret_set,
         commands::secrets::secret_has,
         commands::secrets::secret_delete,

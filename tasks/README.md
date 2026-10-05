@@ -88,7 +88,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | T17 | Prompts et `known_hosts` : `PromptBroker`, fichier des clés d'hôte, erreurs SSH (Rust) | T12 | moyen | Opus 5 · high | livrée |
 | T17b | Poignée de main SSH : TCP, confiance dans la clé d'hôte, tests contre podman | T17, T16 | **élevé** | Opus 5 · high | livrée |
 | T18 | Authentification : mot de passe, clé + passphrase, agent, keyboard-interactive | T17b | **élevé** | Opus 5 · high | livrée |
-| T19 | Session shell : PTY, flux d'octets, registre de sessions, `ssh_open` / `write` / `resize` / `close`, mock | T18 | **élevé** | Opus 5 · high | prête |
+| T19 | Session shell : PTY, flux d'octets, registre de sessions, `ssh_open` / `write` / `resize` / `close`, mock | T18 | **élevé** | Opus 5 · high | livrée |
 | T20 | Composant terminal xterm.js 6 (thèmes, ajustement, recherche, liens, copier / coller, zoom) | T19 | moyen | Sonnet 5 · medium | prête |
 | T21 | Onglets de session : terminal branché, étapes, erreur, fin, reconnexion, StatusBar | T20 | moyen | Sonnet 5 · medium | prête |
 | T21b | Prompts (clé d'hôte, mot de passe, passphrase, 2FA) et clé d'hôte changée | T21 | moyen | Sonnet 5 · medium | prête |

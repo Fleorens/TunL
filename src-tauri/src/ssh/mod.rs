@@ -5,6 +5,8 @@ pub mod connect;
 pub mod error;
 pub mod handler;
 pub mod known_hosts;
+pub mod session;
+pub mod shell;
 
 #[cfg(test)]
 mod auth_tests;
@@ -12,6 +14,8 @@ mod auth_tests;
 mod error_tests;
 #[cfg(test)]
 mod known_hosts_tests;
+#[cfg(test)]
+mod session_tests;
 
 use std::path::PathBuf;
 use std::sync::Arc;

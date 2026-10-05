@@ -1138,9 +1138,9 @@ describe("mock SSH sessions", () => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T19 --check` affiche `OK` partout.
-- [ ] `grep -rn "new Channel" src` ne trouve que `src/lib/ipc.ts`.
-- [ ] Aucun log ne contient d'octets du terminal : `grep -rn "log::" src-tauri/src/ssh/shell.rs` ne cite jamais `data`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T19 --check` affiche `OK` partout.
+- [x] `grep -rn "new Channel" src` ne trouve que `src/lib/ipc.ts`.
+- [x] Aucun log ne contient d'octets du terminal : `grep -rn "log::" src-tauri/src/ssh/shell.rs` ne cite jamais `data`.
 
 ## À regarder par Florian
 

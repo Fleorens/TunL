@@ -1,4 +1,4 @@
-import { invoke, isTauri } from "@tauri-apps/api/core";
+import { Channel, invoke, isTauri } from "@tauri-apps/api/core";
 import type { AppInfo } from "@/bindings/AppInfo";
 import type { Connection } from "@/bindings/Connection";
 import type { ConnectionInput } from "@/bindings/ConnectionInput";
@@ -8,6 +8,8 @@ import type { GroupInput } from "@/bindings/GroupInput";
 import type { ImportPreview } from "@/bindings/ImportPreview";
 import type { PromptAnswer } from "@/bindings/PromptAnswer";
 import type { SecretKind } from "@/bindings/SecretKind";
+import type { SessionEvent } from "@/bindings/SessionEvent";
+import type { SessionTarget } from "@/bindings/SessionTarget";
 import type { Settings } from "@/bindings/Settings";
 import type { StoreSnapshot } from "@/bindings/StoreSnapshot";
 import { mockInvoke } from "./ipc-mock";
@@ -19,6 +21,31 @@ export const isMockBackend = !isTauri();
 
 function call<T>(command: string, args?: Args): Promise<T> {
   return isMockBackend ? mockInvoke<T>(command, args) : invoke<T>(command, args);
+}
+
+/** Where a shell session reports back to the UI: its events, and its shell bytes. */
+export interface SessionCallbacks {
+  onEvent: (event: SessionEvent) => void;
+  onOutput: (bytes: Uint8Array) => void;
+}
+
+/** A terminal size, in columns and rows. */
+export interface TerminalSize {
+  cols: number;
+  rows: number;
+}
+
+/**
+ * The two Tauri `Channel`s the backend reads keystrokes and output through (only built inside Tauri: a
+ * `Channel` cannot be constructed outside the window). With the mock, the callbacks pass through as-is.
+ */
+function sessionChannels(callbacks: SessionCallbacks) {
+  return isMockBackend
+    ? { onEvent: callbacks.onEvent, onOutput: callbacks.onOutput }
+    : {
+        onEvent: new Channel<SessionEvent>(callbacks.onEvent),
+        onOutput: new Channel<ArrayBuffer>((buffer) => callbacks.onOutput(new Uint8Array(buffer))),
+      };
 }
 
 /**
@@ -65,6 +92,26 @@ export const ipc = {
     call<boolean>("secret_has", { connectionId, kind }),
   secretDelete: (connectionId: string, kind: SecretKind) =>
     call<void>("secret_delete", { connectionId, kind }),
+
+  // Sessions (T19): open a shell, write to it, resize it, close it. The events and bytes come back
+  // through the two `Channel`s built by `sessionChannels`.
+  sshOpen: (
+    sessionId: string,
+    target: SessionTarget,
+    size: TerminalSize,
+    callbacks: SessionCallbacks,
+  ) =>
+    call<void>("ssh_open", {
+      sessionId,
+      target,
+      cols: size.cols,
+      rows: size.rows,
+      ...sessionChannels(callbacks),
+    }),
+  sshWrite: (sessionId: string, data: string) => call<void>("ssh_write", { sessionId, data }),
+  sshResize: (sessionId: string, size: TerminalSize) =>
+    call<void>("ssh_resize", { sessionId, cols: size.cols, rows: size.rows }),
+  sessionClose: (sessionId: string) => call<void>("session_close", { sessionId }),
 
   // Prompts (T17): answer the question the backend posed, and forget a known host.
   promptAnswer: (id: string, answer: PromptAnswer) => call<void>("prompt_answer", { id, answer }),
