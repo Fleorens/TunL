@@ -1,9 +1,13 @@
 //! SSH building blocks that build and test without a server (T17).
+pub mod auth;
+pub mod auth_secret;
 pub mod connect;
 pub mod error;
 pub mod handler;
 pub mod known_hosts;
 
+#[cfg(test)]
+mod auth_tests;
 #[cfg(test)]
 mod error_tests;
 #[cfg(test)]
