@@ -8,6 +8,10 @@ repository = "https://github.com/Fleorens/TunL"
 edition = "2024"
 rust-version = "1.90"
 
+[features]
+# Integration tests against the podman servers of T16 (`npm run test:ssh`).
+test-env = []
+
 [lib]
 name = "tunl_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]

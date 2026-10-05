@@ -21,9 +21,10 @@
     "format": "biome check --write .",
     "test": "vitest run",
     "e2e": "playwright test",
-    "review": "npm run verify && npm run e2e",
+    "test:ssh": "npm run test-env:up && cd src-tauri && cargo test --features test-env --test 'ssh_*'",
+    "verify:rust": "cd src-tauri && cargo fmt --check && cargo clippy --all-targets --all-features -- -D warnings && cargo test",
+    "review": "npm run verify && npm run test:ssh && npm run e2e",
     "bindings": "cd src-tauri && cargo test export_bindings",
-    "verify:rust": "cd src-tauri && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test",
     "verify": "npm run typecheck && npm run check && npm run rules && npm run test && npm run verify:rust",
     "rules": "node scripts/project-rules.mjs && node scripts/contract-tests.mjs --all"
   },

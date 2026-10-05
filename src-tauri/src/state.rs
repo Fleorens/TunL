@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use tokio::sync::RwLock;
@@ -92,6 +93,17 @@ impl AppState {
             secrets: Arc::new(secrets),
             prompts: Arc::new(PromptBroker::new()),
             known_hosts: Arc::new(KnownHosts::for_app(&paths.config_dir)),
+        }
+    }
+
+    /// Everything a connection needs besides its target: the shared building blocks, cloned cheaply
+    /// so the connection engine can be tested without Tauri (T17b).
+    pub fn ssh_context(&self) -> crate::ssh::SshContext {
+        crate::ssh::SshContext {
+            known_hosts: self.known_hosts.clone(),
+            prompts: self.prompts.clone(),
+            secrets: self.secrets.clone(),
+            agent_socket: std::env::var_os("SSH_AUTH_SOCK").map(PathBuf::from),
         }
     }
 
