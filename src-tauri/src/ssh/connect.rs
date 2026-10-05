@@ -14,8 +14,8 @@ use crate::error::{AppError, AppResult, ErrorKind};
 use crate::ssh::SshContext;
 use crate::ssh::handler::{ClientHandler, HostKeyTarget};
 
-/// The russh client config: no inactivity timeout (the prompt can take a while), a keepalive, and
-/// Nagle off for a responsive shell.
+/// The russh client config: no inactivity timeout (the prompt can take a while) and a keepalive.
+/// Nagle is turned off on the socket by `tcp_connect`.
 pub fn client_config(keepalive_secs: u32) -> Arc<Config> {
     Arc::new(Config {
         inactivity_timeout: None,
@@ -34,8 +34,8 @@ pub async fn tcp_connect(host: &str, port: u16, timeout: Duration) -> AppResult<
             AppError::new(
                 ErrorKind::Timeout,
                 format!(
-                    "no answer from {host}:{port} within {} s",
-                    timeout.as_secs()
+                    "no answer from {host}:{port} within {:.1} s",
+                    timeout.as_secs_f32()
                 ),
             )
         })?;

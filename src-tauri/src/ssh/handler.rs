@@ -30,6 +30,53 @@ impl ClientHandler {
     pub fn new(target: HostKeyTarget, ctx: SshContext) -> Self {
         Self { target, ctx }
     }
+
+    /// The error for a key that differs from the recorded one: refused, no « continue anyway » (S6).
+    fn changed_error(
+        &self,
+        key: &russh::keys::PublicKey,
+        path: &std::path::Path,
+        line: usize,
+        known_fingerprint: String,
+        removable: bool,
+    ) -> SshError {
+        AppError::new(ErrorKind::HostKeyChanged, "host key changed")
+            .with_detail(ErrorDetail::HostKeyChanged {
+                host: self.target.host.clone(),
+                port: self.target.port,
+                key_type: key.algorithm().as_str().to_string(),
+                fingerprint: fingerprint(key),
+                known_fingerprint,
+                known_hosts_path: path.to_string_lossy().into_owned(),
+                line: line as u32,
+                removable,
+            })
+            .into()
+    }
+
+    /// An unknown key: ask the user, then remember the answer for this session.
+    async fn ask_unknown(&self, key: &russh::keys::PublicKey) -> Result<bool, SshError> {
+        let kind = PromptKind::HostKeyUnknown {
+            host: self.target.host.clone(),
+            port: self.target.port,
+            key_type: key.algorithm().as_str().to_string(),
+            fingerprint: fingerprint(key),
+        };
+        let answer = self.ctx.prompts.ask(self.target.session_id, kind).await?;
+        if !matches!(answer, PromptAnswer::Accept) {
+            // Rejected, cancelled, or any other answer: stop the connection.
+            return Err(AppError::new(ErrorKind::HostKeyRejected, "host key rejected").into());
+        }
+        // A write failure is logged, not fatal: the key is still trusted this session.
+        if let Err(error) = self
+            .ctx
+            .known_hosts
+            .learn(&self.target.host, self.target.port, key)
+        {
+            log::warn!("cannot learn host key: {error}");
+        }
+        Ok(true)
+    }
 }
 
 impl russh::client::Handler for ClientHandler {
@@ -51,59 +98,13 @@ impl russh::client::Handler for ClientHandler {
                 {
                     // Recorded as-is: trust it, no prompt.
                     HostKeyStatus::Known => Ok(true),
-                    // The recorded key differs: refuse, no « continue anyway » (S6).
                     HostKeyStatus::Changed {
                         path,
                         line,
                         known_fingerprint,
                         removable,
-                    } => Err(AppError::new(ErrorKind::HostKeyChanged, "host key changed")
-                        .with_detail(ErrorDetail::HostKeyChanged {
-                            host: self.target.host.clone(),
-                            port: self.target.port,
-                            key_type: key.algorithm().as_str().to_string(),
-                            fingerprint: fingerprint(key),
-                            known_fingerprint,
-                            known_hosts_path: path.to_string_lossy().into_owned(),
-                            line: line as u32,
-                            removable,
-                        })
-                        .into()),
-                    // Unknown: ask the user, then remember the answer for this session.
-                    HostKeyStatus::Unknown => {
-                        let answer = self
-                            .ctx
-                            .prompts
-                            .ask(
-                                self.target.session_id,
-                                PromptKind::HostKeyUnknown {
-                                    host: self.target.host.clone(),
-                                    port: self.target.port,
-                                    key_type: key.algorithm().as_str().to_string(),
-                                    fingerprint: fingerprint(key),
-                                },
-                            )
-                            .await?;
-                        match answer {
-                            PromptAnswer::Accept => {
-                                // A write failure is logged, not fatal: the key is still trusted this session.
-                                if let Err(error) = self.ctx.known_hosts.learn(
-                                    &self.target.host,
-                                    self.target.port,
-                                    key,
-                                ) {
-                                    log::warn!("cannot learn host key: {error}");
-                                }
-                                Ok(true)
-                            }
-                            // Rejected, cancelled, or any other answer: stop the connection.
-                            _ => Err(AppError::new(
-                                ErrorKind::HostKeyRejected,
-                                "host key rejected",
-                            )
-                            .into()),
-                        }
-                    }
+                    } => Err(self.changed_error(key, &path, line, known_fingerprint, removable)),
+                    HostKeyStatus::Unknown => self.ask_unknown(key).await,
                 }
             }
         }

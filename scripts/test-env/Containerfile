@@ -1,20 +1,10 @@
 FROM docker.io/library/debian:13
 ARG DEBIAN_FRONTEND=noninteractive
-# On kernel 7.x, root's setgroups(65534) fails inside a rootless container, breaking apt's
-# download helper. Download the .debs as a non-root user, then unpack+configure as root with
-# raw `dpkg` (no apt download step, so no setgroups in the download helper).
-RUN useradd --create-home --shell /bin/bash tunl \
- && useradd --create-home --shell /bin/bash build \
- && chmod -R 777 /var/lib/apt /var/cache/apt /var/lib/dpkg
-USER build
-RUN apt-get update
-RUN apt-get install -y --no-install-recommends --download-only openssh-server systemd-standalone-sysusers
-USER root
-RUN dpkg -i /var/cache/apt/archives/*.deb \
- && dpkg --configure -a \
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openssh-server \
  && rm -rf /var/lib/apt/lists/* /etc/ssh/ssh_host_* \
  && mkdir -p /run/sshd \
- && echo 'tunl:tunl-password' | chpasswd tunl \
- && usermod -g 0 sshd
+ && useradd --create-home --shell /bin/bash tunl \
+ && echo 'tunl:tunl-password' | chpasswd
 COPY sshd_config /etc/ssh/sshd_config.d/tunl.conf
 CMD ["/usr/sbin/sshd", "-D", "-e"]
