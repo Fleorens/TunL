@@ -601,8 +601,8 @@ async fn keyboard_interactive_rejects_a_wrong_number_of_answers() {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T18 --check` affiche `OK` partout.
-- [ ] `grep -rn "expose()" src-tauri/src/ssh` ne montre que des passages directs à russh ou au trousseau (aucun
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T18 --check` affiche `OK` partout.
+- [x] `grep -rn "expose()" src-tauri/src/ssh` ne montre que des passages directs à russh ou au trousseau (aucun
       `format!`, aucun log).
 
 ## À regarder par Florian
