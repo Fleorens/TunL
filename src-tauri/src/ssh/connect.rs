@@ -20,7 +20,7 @@ pub fn client_config(keepalive_secs: u32) -> Arc<Config> {
     Arc::new(Config {
         inactivity_timeout: None,
         keepalive_interval: (keepalive_secs > 0)
-            .then(|| Duration::from_secs(keepalive_secs as u64)),
+            .then(|| Duration::from_secs(u64::from(keepalive_secs))),
         keepalive_max: 3,
         ..Default::default()
     })
@@ -49,10 +49,13 @@ pub async fn tcp_connect(host: &str, port: u16, timeout: Duration) -> AppResult<
             ErrorKind::Network,
             format!("connection refused by {host}:{port}"),
         )),
-        Err(_) => Err(AppError::new(
-            ErrorKind::Network,
-            format!("cannot reach {host}:{port}"),
-        )),
+        Err(error) => {
+            log::warn!("tcp connect to {host}:{port} failed: {error}");
+            Err(AppError::new(
+                ErrorKind::Network,
+                format!("cannot reach {host}:{port}"),
+            ))
+        }
     }
 }
 
