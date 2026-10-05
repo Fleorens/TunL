@@ -24,6 +24,7 @@ tauri = { version = "2.11", features = [] }
 tauri-plugin-log = "2.9"
 tauri-plugin-single-instance = "2.4"
 tauri-plugin-window-state = "2.4"
+tokio-util = "0.7"
 tokio = { version = "1.53", features = ["rt-multi-thread", "macros", "net", "sync", "time", "io-util", "fs"] }
 thiserror = "2.0"
 uuid = { version = "1.26", features = ["v4", "serde"] }

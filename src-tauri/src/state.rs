@@ -8,6 +8,7 @@ use crate::model::Settings;
 use crate::paths::AppPaths;
 use crate::prompts::PromptBroker;
 use crate::secrets::SecretStore;
+use crate::sessions::SessionRegistry;
 use crate::ssh::known_hosts::KnownHosts;
 use crate::store::{Store, load_settings, load_store, save_settings, save_store};
 
@@ -30,6 +31,8 @@ pub struct AppState {
     pub prompts: Arc<PromptBroker>,
     /// TunL's known_hosts plus the user OpenSSH file to fall back on (T17).
     pub known_hosts: Arc<KnownHosts>,
+    /// Every live session, one per tab id (T19).
+    pub sessions: Arc<SessionRegistry>,
 }
 
 impl AppState {
@@ -76,6 +79,7 @@ impl AppState {
             secrets: Arc::new(secrets),
             prompts: Arc::new(PromptBroker::new()),
             known_hosts: Arc::new(KnownHosts::for_app(&paths.config_dir)),
+            sessions: Arc::new(SessionRegistry::new()),
         })
     }
 
@@ -93,6 +97,7 @@ impl AppState {
             secrets: Arc::new(secrets),
             prompts: Arc::new(PromptBroker::new()),
             known_hosts: Arc::new(KnownHosts::for_app(&paths.config_dir)),
+            sessions: Arc::new(SessionRegistry::new()),
         }
     }
 

@@ -7,6 +7,7 @@ import { groupHandlers } from "./mock/groups";
 import { importHandlers } from "./mock/import";
 import { promptHandlers } from "./mock/prompts";
 import { secretHandlers } from "./mock/secrets";
+import { resetMockSessions, sessionHandlers } from "./mock/sessions";
 import { settingsHandlers } from "./mock/settings";
 
 type Args = Record<string, unknown> | undefined;
@@ -47,6 +48,7 @@ const HANDLERS: Record<string, Handler> = {
   ...promptHandlers,
   ...secretHandlers,
   ...settingsHandlers,
+  ...sessionHandlers,
 };
 
 /** The commands the mock answers (checked against `ipc.ts` by `ipc-contract.test.ts`). */
@@ -65,6 +67,7 @@ export function failNextCall(command: string, error: AppError): void {
 export function resetMockBackend(): void {
   state = freshState();
   pendingFailure = null;
+  resetMockSessions();
 }
 
 /** Browser-only fake backend used by `npm run dev` outside Tauri, and by the tests. */
