@@ -456,7 +456,10 @@ async fn a_closed_port_is_a_network_error() {
 ## Critères d'acceptation
 
 - [ ] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T17b --check` affiche `OK` partout.
-- [ ] Le délai de connexion ne couvre que le TCP : `tokio::time::timeout` n'apparaît pas autour de `handshake`.
+  (contrats OK partout ; `test:ssh` vert, 7/7 ; `verify` du `.devbox/check` vert — l'étape `e2e` de `review` est
+  bloquée par une **librairie système absente**, `libnspr4.so`, dans le bac à sable, hors du dépôt ; voir le compte
+  rendu)
+- [x] Le délai de connexion ne couvre que le TCP : `tokio::time::timeout` n'apparaît pas autour de `handshake`.
 
 ## À regarder par Florian
 
