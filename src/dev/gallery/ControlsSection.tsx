@@ -59,6 +59,7 @@ export function ControlsSection() {
           <Switch
             checked={airplaneMode}
             onCheckedChange={(checked) => setAirplaneMode(checked === true)}
+            aria-label="Airplane mode"
           />
           <span className="text-sm">Airplane mode</span>
         </div>

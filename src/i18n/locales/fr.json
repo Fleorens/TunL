@@ -233,6 +233,15 @@
       "sidebar.filter": "Filtrer les connexions",
       "settings.open": "Paramètres",
       "help.shortcuts": "Raccourcis clavier"
+    },
+    "terminal": {
+      "title": "Terminal",
+      "copy": "Copier",
+      "paste": "Coller",
+      "search": "Rechercher dans le terminal",
+      "zoomIn": "Zoom avant",
+      "zoomOut": "Zoom arrière",
+      "zoomReset": "Réinitialiser le zoom"
     }
   },
   "protocols": {
@@ -350,5 +359,17 @@
     "keepEditing": "Continuer l'édition",
     "discardDescription": "Vous avez des modifications non enregistrées.",
     "deleteDescription": "Supprimer cette connexion ? Cette action est définitive."
+  },
+  "terminal": {
+    "title": "Terminal",
+    "search": {
+      "label": "Recher dans le terminal",
+      "count": "{{current}} sur {{total}}",
+      "none": "Aucun résultat",
+      "next": "Correspondance suivante",
+      "previous": "Correspondance précédente",
+      "caseSensitive": "Respecter la casse",
+      "regex": "Expression régulière"
+    }
   }
 }

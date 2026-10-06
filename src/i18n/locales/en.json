@@ -231,6 +231,15 @@
       "sidebar.filter": "Filter connections",
       "settings.open": "Settings",
       "help.shortcuts": "Keyboard shortcuts"
+    },
+    "terminal": {
+      "title": "Terminal",
+      "copy": "Copy",
+      "paste": "Paste",
+      "search": "Search the terminal",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "zoomReset": "Reset zoom"
     }
   },
   "protocols": {
@@ -348,5 +357,17 @@
     "keepEditing": "Keep editing",
     "discardDescription": "You have unsaved changes.",
     "deleteDescription": "Delete this connection? This cannot be undone."
+  },
+  "terminal": {
+    "title": "Terminal",
+    "search": {
+      "label": "Search the terminal",
+      "count": "{{current}} of {{total}}",
+      "none": "No results",
+      "next": "Next match",
+      "previous": "Previous match",
+      "caseSensitive": "Match case",
+      "regex": "Regular expression"
+    }
   }
 }
