@@ -363,7 +363,7 @@
   "terminal": {
     "title": "Terminal",
     "search": {
-      "label": "Recher dans le terminal",
+      "label": "Rechercher dans le terminal",
       "count": "{{current}} sur {{total}}",
       "none": "Aucun résultat",
       "next": "Correspondance suivante",

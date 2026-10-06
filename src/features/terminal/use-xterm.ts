@@ -9,7 +9,8 @@ import type { TerminalPort } from "@/features/terminal/port";
 import type { TerminalKeyAction } from "@/features/terminal/terminal-keys";
 import { isOpenableUrl, terminalKeyAction } from "@/features/terminal/terminal-keys";
 import { resolveTerminalTheme } from "@/features/terminal/themes";
-import { writeClipboardText } from "@/lib/clipboard";
+import { readClipboardText, writeClipboardText } from "@/lib/clipboard";
+import { notifyError } from "@/lib/errors";
 import { isMockBackend } from "@/lib/ipc";
 import { openExternal } from "@/lib/opener";
 import type { ResolvedTheme } from "@/lib/theme";
@@ -29,6 +30,8 @@ interface UseXtermOptions {
 interface UseXterm {
   term: Terminal | null;
   search: SearchAddon | null;
+  /** Paste the clipboard; keys typed while it is read are sent after the pasted text. */
+  paste: () => void;
 }
 
 /**
@@ -37,86 +40,59 @@ interface UseXterm {
  * zoom; this hook only owns the xterm instance.
  *
  * The terminal is created once, the first time the settings are available; later settings, size and
- * theme changes are applied live (never recreated, so the scrollback is kept).
+ * theme changes are applied live (never recreated, so the scrollback is kept). `containerRef` is the
+ * element xterm opens in, dedicated to it.
  */
 export function useXterm(options: UseXtermOptions): UseXterm {
   const { port, containerRef, settings, resolvedTheme, fontSize, active, copyOnSelect, onAction } =
     options;
   const [term, setTerm] = useState<Terminal | null>(null);
   const [search, setSearch] = useState<SearchAddon | null>(null);
-  // The live terminal, so the settings/active effects can reach it without recreating it.
-  const termRef = useRef<Terminal | null>(null);
-  // The fit addon, so the settings effect can refit after applying the options.
-  const fitRef = useRef<FitAddon | null>(null);
+  // Fit to the container (only when it has a width: a hidden tab would shrink the PTY to nothing),
+  // then tell the port the size (it ignores an unchanged one).
+  const fitRef = useRef<() => void>(() => undefined);
+  // Paste the clipboard into the live terminal (set at creation).
+  const pasteRef = useRef<() => void>(() => undefined);
   // The action to run on a terminal key press, always up to date.
   const onActionRef = useRef(onAction);
   onActionRef.current = onAction;
-  // The resolved theme, always up to date (the one-time creation reads it without depending on it).
-  const resolvedThemeRef = useRef(resolvedTheme);
-  resolvedThemeRef.current = resolvedTheme;
-  // Guard the one-time creation against the settings loading after mount.
-  const createdRef = useRef(false);
+  // The latest settings, theme and size: the one-time creation reads them without depending on them.
+  const initialRef = useRef({ settings, resolvedTheme, fontSize });
+  initialRef.current = { settings, resolvedTheme, fontSize };
+  const ready = settings !== null;
 
-  // Create the terminal once, the first time the settings are available.
+  // Create the terminal once the settings are available; recreate it only when the port changes.
   useEffect(() => {
-    if (!settings || createdRef.current) {
-      return;
-    }
-    createdRef.current = true;
-
     const host = containerRef.current;
-    if (host === null) {
+    const initial = initialRef.current;
+    if (!ready || host === null || initial.settings === null) {
       return;
     }
-
-    const term = new Terminal({
-      fontFamily: `"${settings.fontFamily}", monospace`,
-      fontSize: settings.fontSize,
-      lineHeight: settings.lineHeight,
-      cursorStyle: settings.cursorStyle,
-      cursorBlink: settings.cursorBlink,
-      scrollback: settings.scrollback,
-      theme: resolveTerminalTheme(settings.theme, resolvedThemeRef.current === "dark"),
-      allowProposedApi: true,
-    });
-    termRef.current = term;
-
+    const term = createTerminal(initial.settings, initial.resolvedTheme, initial.fontSize);
     const fit = new FitAddon();
     const search = new SearchAddon();
-    fitRef.current = fit;
     term.loadAddon(fit);
     term.loadAddon(search);
     term.loadAddon(
       new WebLinksAddon(
-        (event, uri) => event.ctrlKey && isOpenableUrl(uri) && void openExternal(uri),
+        (event, uri) =>
+          event.ctrlKey && isOpenableUrl(uri) && void openExternal(uri).catch(notifyError),
       ),
     );
-    // WebGL is off in the mock: the e2e read the text out of the DOM.
-    if (!isMockBackend) {
-      try {
-        const gl = new WebglAddon();
-        // On context loss, fall back to the DOM renderer by disposing the terminal.
-        gl.onContextLoss(() => term.dispose());
-        term.loadAddon(gl);
-      } catch {
-        // WebGL unavailable: keep the DOM renderer.
-      }
-    }
-    setTerm(term);
-    setSearch(search);
 
-    // Fit on the next frame, but only when the container has a non-zero width (not hidden).
     const fitNow = (): void => {
-      if (containerRef.current?.clientWidth === 0) {
+      if (host.clientWidth === 0) {
         return;
       }
       fit.fit();
+      port.resize(term.cols, term.rows);
     };
+    fitRef.current = fitNow;
 
-    term.onData((data) => port.write(data));
+    const pasting = wirePaste(term, port);
+    pasteRef.current = pasting.paste;
     const unsubscribe = port.subscribe((bytes) => term.write(bytes));
     term.onResize(({ cols, rows }) => port.resize(cols, rows));
-
     term.attachCustomKeyEventHandler((event) => {
       if (event.type !== "keydown") {
         return true;
@@ -132,6 +108,9 @@ export function useXterm(options: UseXtermOptions): UseXterm {
     });
 
     term.open(host);
+    loadWebgl(term);
+    setTerm(term);
+    setSearch(search);
 
     const observer = new ResizeObserver(() => requestAnimationFrame(fitNow));
     observer.observe(host);
@@ -139,55 +118,118 @@ export function useXterm(options: UseXtermOptions): UseXterm {
     void document.fonts.ready.then(fitNow);
 
     return () => {
-      // Allow a remount (tab switch) to recreate the terminal.
-      createdRef.current = false;
+      fitRef.current = () => undefined;
+      pasteRef.current = () => undefined;
       observer.disconnect();
       unsubscribe();
+      pasting.dispose();
       term.dispose();
+      setTerm(null);
+      setSearch(null);
     };
-    // Re-run only when the port changes (before the settings load): keep the terminal otherwise.
-  }, [port, containerRef, settings]);
+  }, [port, containerRef, ready]);
 
-  // Apply the settings live: change an option, then refit.
+  // Apply the settings live: change the options, then refit (the scrollback is kept).
   useEffect(() => {
-    const term = termRef.current;
-    if (!term) {
+    if (!term || !settings) {
       return;
     }
-    term.options.fontFamily = `"${settings?.fontFamily}", monospace`;
+    term.options.fontFamily = `"${settings.fontFamily}", monospace`;
     term.options.fontSize = fontSize;
-    term.options.lineHeight = settings?.lineHeight ?? 1;
-    term.options.cursorStyle = settings?.cursorStyle;
-    term.options.cursorBlink = settings?.cursorBlink ?? true;
-    term.options.scrollback = settings?.scrollback ?? 1000;
-    term.options.theme = resolveTerminalTheme(settings?.theme ?? "auto", resolvedTheme === "dark");
-    requestAnimationFrame(() => fitRef.current?.fit());
-  }, [settings, resolvedTheme, fontSize]);
+    term.options.lineHeight = settings.lineHeight;
+    term.options.cursorStyle = settings.cursorStyle;
+    term.options.cursorBlink = settings.cursorBlink;
+    term.options.scrollback = settings.scrollback;
+    term.options.theme = resolveTerminalTheme(settings.theme, resolvedTheme === "dark");
+    requestAnimationFrame(() => fitRef.current());
+  }, [term, settings, resolvedTheme, fontSize]);
 
   // Copy on selection: write the selection when it is not empty.
   useEffect(() => {
-    const term = termRef.current;
     if (!term || !copyOnSelect) {
       return;
     }
     const off = term.onSelectionChange(() => {
       const selection = term.getSelection();
       if (selection.length > 0) {
-        void writeClipboardText(selection);
+        writeClipboardText(selection).catch(notifyError);
       }
     });
     return () => off.dispose();
-  }, [copyOnSelect]);
+  }, [term, copyOnSelect]);
 
   // When the tab becomes active, fit (it was hidden) and focus the terminal.
   useEffect(() => {
-    const term = termRef.current;
     if (!term || !active) {
       return;
     }
-    fitRef.current?.fit();
+    requestAnimationFrame(() => fitRef.current());
     term.focus();
-  }, [active]);
+  }, [term, active]);
 
-  return { term, search };
+  return { term, search, paste: () => pasteRef.current() };
+}
+
+function createTerminal(
+  settings: TerminalSettings,
+  resolvedTheme: ResolvedTheme,
+  fontSize: number,
+): Terminal {
+  return new Terminal({
+    fontFamily: `"${settings.fontFamily}", monospace`,
+    fontSize,
+    lineHeight: settings.lineHeight,
+    cursorStyle: settings.cursorStyle,
+    cursorBlink: settings.cursorBlink,
+    scrollback: settings.scrollback,
+    theme: resolveTerminalTheme(settings.theme, resolvedTheme === "dark"),
+    allowProposedApi: true,
+  });
+}
+
+/** WebGL rendering, except with the mock (the e2e read the text out of the DOM rows). */
+function loadWebgl(term: Terminal): void {
+  if (isMockBackend) {
+    return;
+  }
+  try {
+    const gl = new WebglAddon();
+    // On context loss, drop the addon only: xterm falls back to the DOM renderer.
+    gl.onContextLoss(() => gl.dispose());
+    term.loadAddon(gl);
+  } catch {
+    // WebGL unavailable: keep the DOM renderer.
+  }
+}
+
+/**
+ * Send the typed keys to the port, and paste the clipboard. The clipboard is read asynchronously: the
+ * keys typed meanwhile are held, then sent after the pasted text, so they keep their order.
+ */
+function wirePaste(term: Terminal, port: TerminalPort): { paste: () => void; dispose: () => void } {
+  let held: string[] | null = null;
+  const onData = term.onData((data) => (held ? held.push(data) : port.write(data)));
+  const release = (text: string): void => {
+    const keys = held ?? [];
+    held = null;
+    if (text.length > 0) {
+      term.paste(text);
+    }
+    for (const data of keys) {
+      port.write(data);
+    }
+  };
+  const paste = (): void => {
+    if (held) {
+      return;
+    }
+    held = [];
+    readClipboardText()
+      .then(release)
+      .catch((error) => {
+        release("");
+        notifyError(error);
+      });
+  };
+  return { paste, dispose: () => onData.dispose() };
 }

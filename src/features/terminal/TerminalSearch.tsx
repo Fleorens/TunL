@@ -66,9 +66,9 @@ export function TerminalSearch({ search, open, onClose, onFocusTerminal }: Termi
       return;
     }
     if (previous) {
-      search.findPrevious(query, { caseSensitive, regex });
+      search.findPrevious(query, { caseSensitive, regex, decorations });
     } else {
-      search.findNext(query, { caseSensitive, regex });
+      search.findNext(query, { caseSensitive, regex, decorations });
     }
   };
 
@@ -80,6 +80,8 @@ export function TerminalSearch({ search, open, onClose, onFocusTerminal }: Termi
     } else if (event.key === "Escape") {
       event.preventDefault();
       search.clearDecorations();
+      // Reopening starts from an empty query rather than a stale, unsearched one.
+      setQuery("");
       onClose();
       onFocusTerminal();
     }

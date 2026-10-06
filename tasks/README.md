@@ -152,12 +152,6 @@ T01 → … → T11 → T12 ─┬─ T17 → T17b → T18 → T19 → T20 → T
 T27, T32 : parallélisables après T08 · T30 : après T09
 ```
 
-## Where it stands
-
-| Works today (dans `/#gallery`) |
-|---|
-| **Terminal xterm.js** : taper, adaptation au thème + marge, zoom (`Ctrl+=` / `Ctrl+-` / `Ctrl+0`), recherche dans le scrollback (`Ctrl+Shift+F`), copier / coller (`Ctrl+Shift+C` / `V`), `Ctrl+C` / `Ctrl+V` sans Shift laissé au shell, raccourcis affichés en F1 |
-
 ## Lots d'écriture des fiches
 
 À partir du lot 2, les fiches sont au format **contrat** (types, comportement, pièges, tests) : c'est le modèle
