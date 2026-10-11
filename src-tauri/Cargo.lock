@@ -5716,11 +5716,13 @@ dependencies = [
 name = "tunl"
 version = "0.1.0"
 dependencies = [
+ "hmac 0.13.0",
  "log",
  "oo7",
  "russh",
  "serde",
  "serde_json",
+ "sha1",
  "tauri",
  "tauri-build",
  "tauri-plugin-clipboard-manager",

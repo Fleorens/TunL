@@ -860,11 +860,11 @@ async fn a_hashed_user_file_is_trusted_without_a_prompt() {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T19b --check` affiche `OK`
+- [x] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T19b --check` affiche `OK`
       partout.
-- [ ] `known_host_keys_path` n'apparaît plus dans `src-tauri/src/`.
-- [ ] `grep -rnE "unreachable!|todo!|unimplemented!" src-tauri/src` ne trouve rien hors des fichiers de test.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `known_host_keys_path` n'apparaît plus dans `src-tauri/src/`.
+- [x] `grep -rnE "unreachable!|todo!|unimplemented!" src-tauri/src` ne trouve rien hors des fichiers de test.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 

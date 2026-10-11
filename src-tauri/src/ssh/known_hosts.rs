@@ -1,16 +1,17 @@
 //! TunL's `known_hosts` file (docs/01-architecture.md §9, docs/06-securite.md, S6, S9).
 //!
-//! `check` asks "is this server key known, unknown, or changed?" against TunL's own file and, as a
-//! fallback, the user's OpenSSH file. `learn` records a key; `remove` drops one (TunL's file only,
-//! D10). All three read and write the file in OpenSSH format, line by line.
+//! `check` asks "is this server key known, unknown, changed, or revoked?" against TunL's own file and,
+//! as a fallback, the user's OpenSSH file. `learn` records a key; `remove` drops one (TunL's file only,
+//! D10). Reading a line like OpenSSH — comments, tabs, hashed names, wildcards, markers — lives in
+//! `known_hosts_file`; this file only decides the verdict (T19b).
 use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
 use std::path::{Path, PathBuf};
 
-use russh::keys::known_hosts::known_host_keys_path;
-use russh::keys::{HashAlg, PublicKey};
+use russh::keys::{Algorithm, HashAlg, PublicKey};
 
+use super::known_hosts_file::{HostLine, host_lines};
 use crate::error::{AppError, AppResult, ErrorKind};
 
 /// File name of TunL's own known_hosts, in its data directory.
@@ -27,6 +28,11 @@ pub enum HostKeyStatus {
         line: usize,
         known_fingerprint: String,
         removable: bool,
+    },
+    /// The key is listed as `@revoked`: refused whatever else the files say.
+    Revoked {
+        path: PathBuf,
+        line: usize,
     },
 }
 
@@ -51,34 +57,62 @@ impl KnownHosts {
         Self::new(own, user)
     }
 
-    /// Classify `key` for `(host, port)`: TunL's file first, then the user's.
+    /// Classify `key` for `(host, port)`: TunL's file first, then the user's (T19b).
     pub fn check(&self, host: &str, port: u16, key: &PublicKey) -> HostKeyStatus {
-        let own = self.read_status(&self.own, host, port, key, true);
+        let own = self.read_file(&self.own, host, port, key, true);
 
         let user = self
             .user
             .as_ref()
-            .map(|path| self.read_status(path, host, port, key, false));
+            .map(|path| self.read_file(path, host, port, key, false));
 
+        // A revoked key is refused without a question: TunL's file first, then the user's.
+        if own.revoked {
+            return HostKeyStatus::Revoked {
+                path: self.own.clone(),
+                line: own.revoked_line,
+            };
+        }
+        if let Some(user) = &user
+            && user.revoked
+        {
+            return HostKeyStatus::Revoked {
+                path: user.path.clone(),
+                line: user.revoked_line,
+            };
+        }
         // An exact match in either file wins over a change recorded in the other.
         if own.matched || user.as_ref().is_some_and(|user| user.matched) {
             return HostKeyStatus::Known;
         }
-        // Otherwise a changed key in TunL's own file (removable) beats the user's.
-        if let Some(change) = own.change {
-            return change;
-        }
-        if let Some(user) = user
-            && let Some(change) = user.change
-        {
-            return change;
-        }
-        HostKeyStatus::Unknown
+        // Otherwise a changed key in TunL's own file (removable) beats the user's (not removable).
+        own.change
+            .or(user.and_then(|user| user.change))
+            .unwrap_or(HostKeyStatus::Unknown)
     }
 
-    /// Record `key` for `(host, port)` in TunL's own file, appending an OpenSSH line.
+    /// The key types recorded for `(host, port)` in both files (revoked lines aside), own file first,
+    /// no duplicates. Used to ask russh for the key types already recorded (T19b).
+    pub fn algorithms(&self, host: &str, port: u16) -> Vec<Algorithm> {
+        let mut out: Vec<Algorithm> = Vec::new();
+        for line in host_lines(&self.own, host, port) {
+            if !line.revoked && !out.contains(&line.key.algorithm()) {
+                out.push(line.key.algorithm());
+            }
+        }
+        if let Some(user) = &self.user {
+            for line in host_lines(user, host, port) {
+                if !line.revoked && !out.contains(&line.key.algorithm()) {
+                    out.push(line.key.algorithm());
+                }
+            }
+        }
+        out
+    }
+
+    /// Record `key` for `(host, port)` in TunL's own file, appending an OpenSSH line (T19b).
     pub fn learn(&self, host: &str, port: u16, key: &PublicKey) -> AppResult<()> {
-        let pattern = host_pattern(host, port);
+        let pattern = host_pattern(&host.to_lowercase(), port);
         let openssh = key
             .to_openssh()
             .map_err(|error| AppError::internal(format!("cannot encode host key: {error}")))?;
@@ -110,7 +144,7 @@ impl KnownHosts {
 
     /// Drop every line of `(host, port)` from TunL's own file (D10). Returns the lines removed.
     pub fn remove(&self, host: &str, port: u16) -> AppResult<usize> {
-        let pattern = host_pattern(host, port);
+        let pattern = host_pattern(&host.to_lowercase(), port);
         let text = match fs::read_to_string(&self.own) {
             Ok(text) => text,
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(0),
@@ -131,7 +165,21 @@ impl KnownHosts {
         } else {
             format!("{}\n", kept.join("\n"))
         };
-        fs::write(&self.own, next).map_err(|error| write_error(&self.own, error))?;
+
+        // Write through a temporary file renamed over the own file: never a half-written file, and no
+        // `.tmp` left behind (S9).
+        let tmp = self.own.with_extension("tmp");
+        let mut file = OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .mode(0o600)
+            .open(&tmp)
+            .map_err(|error| write_error(&self.own, error))?;
+        file.write_all(next.as_bytes())
+            .map_err(|error| write_error(&self.own, error))?;
+        file.sync_all()
+            .map_err(|error| write_error(&self.own, error))?;
+        fs::rename(&tmp, &self.own).map_err(|error| write_error(&self.own, error))?;
         fs::set_permissions(&self.own, fs::Permissions::from_mode(0o600))
             .map_err(|error| write_error(&self.own, error))?;
         Ok(removed)
@@ -145,8 +193,8 @@ impl KnownHosts {
         )
     }
 
-    /// The status of `key` in a single file: an exact match, or the first same-algorithm change.
-    fn read_status(
+    /// The status of `key` in a single file: a revoked line, an exact match, or the first change.
+    fn read_file(
         &self,
         path: &Path,
         host: &str,
@@ -154,53 +202,61 @@ impl KnownHosts {
         key: &PublicKey,
         removable: bool,
     ) -> ReadStatus {
-        let entries = match known_host_keys_path(host, port, path) {
-            Ok(entries) => entries,
-            Err(error) => {
-                // A matching line whose key does not parse counts this file as empty (not fatal).
-                log::warn!("cannot read {}: {error}", path.display());
-                return ReadStatus::empty();
-            }
-        };
+        let lines = host_lines(path, host, port);
+        let key_data = key.key_data();
 
-        if entries.iter().any(|(_, recorded)| recorded == key) {
-            return ReadStatus {
-                matched: true,
-                change: None,
-            };
+        // A revoked line that carries this exact key.
+        let revoked_line = lines
+            .iter()
+            .find(|line| line.revoked && line.key.key_data() == key_data)
+            .map(|line| line.line)
+            .unwrap_or(0);
+
+        // A non-revoked line that carries this exact key.
+        let matched = lines
+            .iter()
+            .any(|line| !line.revoked && line.key.key_data() == key_data);
+
+        let change = first_change(&lines, key, path, removable);
+
+        ReadStatus {
+            path: path.to_path_buf(),
+            revoked: revoked_line != 0,
+            revoked_line,
+            matched,
+            change,
         }
-
-        for (line, recorded) in entries {
-            if recorded.algorithm() == key.algorithm() {
-                return ReadStatus {
-                    matched: false,
-                    change: Some(HostKeyStatus::Changed {
-                        path: path.to_path_buf(),
-                        line,
-                        known_fingerprint: fingerprint(&recorded),
-                        removable,
-                    }),
-                };
-            }
-        }
-
-        ReadStatus::empty()
     }
 }
 
 /// The outcome of reading one file for `check`.
 struct ReadStatus {
+    path: PathBuf,
+    revoked: bool,
+    /// Physical line of the revoked match, 0 when there is none.
+    revoked_line: usize,
     matched: bool,
     change: Option<HostKeyStatus>,
 }
 
-impl ReadStatus {
-    fn empty() -> Self {
-        ReadStatus {
-            matched: false,
-            change: None,
-        }
-    }
+/// The first change in a file: the first non-revoked line of the same algorithm as `key`, else the
+/// first non-revoked line whatever its algorithm (T19b, the "another type is a change" point).
+fn first_change(
+    lines: &[HostLine],
+    key: &PublicKey,
+    path: &Path,
+    removable: bool,
+) -> Option<HostKeyStatus> {
+    let same = lines
+        .iter()
+        .find(|line| !line.revoked && line.key.algorithm() == key.algorithm());
+    let any = same.or_else(|| lines.iter().find(|line| !line.revoked));
+    any.map(|line| HostKeyStatus::Changed {
+        path: path.to_path_buf(),
+        line: line.line,
+        known_fingerprint: fingerprint(&line.key),
+        removable,
+    })
 }
 
 /// The OpenSSH host field: the bare host on the default port, `[host]:port` otherwise.
@@ -217,11 +273,14 @@ pub fn fingerprint(key: &PublicKey) -> String {
     key.fingerprint(HashAlg::Sha256).to_string()
 }
 
-/// True when the line's first field (a comma-separated host list) lists `pattern`.
+/// True when the line's first field (a comma-separated host list) lists `pattern`, case-insensitively
+/// and tolerant of tabs and repeated spaces (T19b).
 fn line_comes_from_host(line: &str, pattern: &str) -> bool {
-    line.split(' ')
-        .next()
-        .is_some_and(|hosts| hosts.split(',').any(|host| host == pattern))
+    line.split_whitespace().next().is_some_and(|hosts| {
+        hosts
+            .split(',')
+            .any(|host| host.eq_ignore_ascii_case(pattern))
+    })
 }
 
 /// A uniform `Io` error for every write to the own file, naming the path (never a secret).

@@ -70,8 +70,9 @@ const LINE_RULES = [
   {
     id: "no-panic-in-app-code",
     files: rust.filter((p) => !isTest(p)),
-    pattern: /\.unwrap\(\)|\.expect\(|\bpanic!|\bprintln!|\bdbg!/,
-    message: "return an AppError instead (unwrap/expect/panic/println only in tests)",
+    pattern: /\.unwrap\(\)|\.expect\(|\b(panic|unreachable|todo|unimplemented|println|dbg)!/,
+    message:
+      "return an AppError instead (unwrap/expect/panic!/unreachable!/todo!/println! only in tests)",
   },
   {
     id: "tauri-request-struct",

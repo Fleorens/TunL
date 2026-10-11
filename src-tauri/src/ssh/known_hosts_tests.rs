@@ -114,12 +114,34 @@ fn a_changed_key_in_the_user_file_is_not_removable() {
 }
 
 #[test]
-fn a_key_of_another_type_is_unknown_not_changed() {
+fn a_key_of_another_type_is_changed_not_unknown() {
+    // A server that only shows another type must not get a fresh « unknown host » prompt (T19b).
     let (_dir, known) = files(&format!("db.internal ecdsa-sha2-nistp256 {KEY_EC}\n"), "");
-    assert_eq!(
-        known.check("db.internal", 22, &key(KEY_A)),
-        HostKeyStatus::Unknown
+    match known.check("db.internal", 22, &key(KEY_A)) {
+        HostKeyStatus::Changed {
+            line,
+            known_fingerprint,
+            removable,
+            ..
+        } => {
+            assert_eq!(line, 1);
+            assert_eq!(known_fingerprint, fingerprint(&key(KEY_EC)));
+            assert!(removable);
+        }
+        other => panic!("expected Changed, got {other:?}"),
+    }
+}
+
+#[test]
+fn a_change_of_the_same_type_is_reported_first() {
+    let (_dir, known) = files(
+        &format!("db.internal ecdsa-sha2-nistp256 {KEY_EC}\ndb.internal ssh-ed25519 {KEY_B}\n"),
+        "",
     );
+    assert!(matches!(
+        known.check("db.internal", 22, &key(KEY_A)),
+        HostKeyStatus::Changed { line: 2, .. }
+    ));
 }
 
 #[test]
@@ -136,7 +158,7 @@ fn a_match_in_either_file_wins_over_a_change_in_the_other() {
 
 #[test]
 fn an_unreadable_file_is_skipped_not_fatal() {
-    // russh fails on a matching line whose key does not parse: that file counts as empty, the other still counts.
+    // A line whose key does not parse is skipped; the other file still counts.
     let (_dir, known) = files(
         "db.internal ssh-ed25519 not-base64!\n",
         &format!("db.internal ssh-ed25519 {KEY_A}\n"),

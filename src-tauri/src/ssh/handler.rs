@@ -104,6 +104,10 @@ impl russh::client::Handler for ClientHandler {
                         known_fingerprint,
                         removable,
                     } => Err(self.changed_error(key, &path, line, known_fingerprint, removable)),
+                    // Revoked in one of the files: refused without a question (S6, T19b).
+                    HostKeyStatus::Revoked { .. } => {
+                        Err(AppError::new(ErrorKind::HostKeyRejected, "host key is revoked").into())
+                    }
                     HostKeyStatus::Unknown => self.ask_unknown(key).await,
                 }
             }
