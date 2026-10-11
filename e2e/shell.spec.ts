@@ -32,23 +32,35 @@ test("placeholder actions show a translated toast, never a raw key", async ({ pa
   await expect(page.getByText("shell.notYetAvailable")).toHaveCount(0);
 });
 
-test("keyboard shortcuts drive the sidebar filter and the tabs", async ({ page }) => {
+test("keyboard shortcuts drive the tabs and the sidebar filter", async ({ page }) => {
+  await page.getByRole("button", { name: /^nas/ }).first().dblclick();
+  await page
+    .getByRole("button", { name: /^pi-hole/ })
+    .first()
+    .dblclick();
+  await expect(page.getByRole("tab", { selected: true })).toContainText("pi-hole");
+  await page.keyboard.press("Alt+Digit1");
+  await expect(page.getByRole("tab", { selected: true })).toContainText("nas");
+  await page.keyboard.press("Control+PageDown");
+  await expect(page.getByRole("tab", { selected: true })).toContainText("pi-hole");
+
   await page.keyboard.press("Control+Shift+E");
   await expect(page.locator("#sidebar-filter")).toBeFocused();
   await page.keyboard.type("pg");
   await expect(page.getByRole("button", { name: /^db-prod/ })).toHaveCount(1);
-  await page.keyboard.press("Escape");
-  await page.keyboard.press("Alt+Digit2");
-  await expect(page.getByRole("tab", { selected: true })).toContainText("db-prod");
-  await page.keyboard.press("Control+PageDown");
-  await expect(page.getByRole("tab", { selected: true })).toContainText("web-01");
 });
 
-test("closing every tab shows the home screen", async ({ page }) => {
+test("the app starts on the home screen, and closing the last tab returns to it", async ({
+  page,
+}) => {
+  await expect(page.getByRole("tab")).toHaveCount(0);
+  const quickConnect = page.getByPlaceholder("user@host[:port] — quick connect");
+  await quickConnect.fill("root@unreachable.test");
+  await quickConnect.press("Enter");
+  await expect(page.getByRole("tab")).toHaveCount(1);
   await page.keyboard.press("Control+Shift+W");
-  await page.keyboard.press("Control+Shift+W");
+  await expect(page.getByRole("tab")).toHaveCount(0);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(page.getByPlaceholder("user@host[:port] — quick connect")).toBeVisible();
 });
 
 test("outside Tauri, the status bar flags the mock backend", async ({ page }) => {

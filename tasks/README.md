@@ -6,8 +6,8 @@ le modèle a réellement livré. Une fiche qui cite des signatures de code pas e
 
 ## Où on en est (2026-10-11)
 
-- Lots 1, 2 et 3 : **validés** (T01 → T16). Lot 4 : T17 → T19 **livrées** ; T20 attend sur sa branche (job #15).
-- Prochaine fiche : **T19b** (durcit la confiance dans les clés d'hôte), puis T20 → T21 → T21b. `contract-tests.mjs`
+- Lots 1, 2 et 3 : **validés** (T01 → T16). Lot 4 : T17 → T21 **livrées** ; T21b attend sur sa branche.
+- Prochaine fiche : **T21b** (prompts et clé d'hôte changée), puis T22. `contract-tests.mjs`
   refuse de démarrer une fiche dont une dépendance n'est pas livrée.
 - À partir de T17b, `npm run review` démarre aussi les conteneurs SSH de test (podman, `npm run test:ssh`).
 - En attente de Florian, dans la vraie app (`npm run tauri dev`) :
@@ -91,7 +91,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | T19 | Session shell : PTY, flux d'octets, registre de sessions, `ssh_open` / `write` / `resize` / `close`, mock | T18 | **élevé** | Opus 5 · high | livrée |
 | T19b | Clés d'hôte : `known_hosts` lu comme OpenSSH (haché, jokers, `@revoked`), type de clé changé = refus | T19 | moyen | Opus 5 · high | livrée |
 | T20 | Composant terminal xterm.js 6 (thèmes, ajustement, recherche, liens, copier / coller, zoom) | T19 | moyen | Sonnet 5 · medium | livrée |
-| T21 | Onglets de session : terminal branché, étapes, erreur, fin, reconnexion, StatusBar | T20, T19b | moyen | Sonnet 5 · medium | prête |
+| T21 | Onglets de session : terminal branché, étapes, erreur, fin, reconnexion, StatusBar | T20, T19b | moyen | Sonnet 5 · medium | livrée |
 | T21b | Prompts (clé d'hôte, mot de passe, passphrase, 2FA) et clé d'hôte changée | T21 | moyen | Sonnet 5 · medium | prête |
 
 ### M3 — Bastion

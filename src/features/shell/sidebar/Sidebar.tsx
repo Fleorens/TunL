@@ -14,7 +14,7 @@ import { filterConnections } from "@/features/connections/filter";
 import { openImport } from "@/features/connections/open-import";
 import { buildSidebarSections, compareNames } from "@/features/connections/sections";
 import { useConnections } from "@/features/connections/store";
-import { notifyComingSoon } from "@/features/shell/coming-soon";
+import { openSession } from "@/features/sessions/open-session";
 import { ConfirmDelete } from "@/features/shell/sidebar/ConfirmDelete";
 import { ConnectionContextMenu } from "@/features/shell/sidebar/ConnectionContextMenu";
 import { ConnectionRow } from "@/features/shell/sidebar/ConnectionRow";
@@ -323,7 +323,7 @@ function ConnectionsList({
             jumpHostName={jumpHostNames.get(connection.id) ?? null}
             selected={connection.id === selectedId}
             onSelect={() => onSelectId(connection.id)}
-            onActivate={notifyComingSoon}
+            onActivate={() => openSession(connection)}
           />
         </ConnectionContextMenu>
       ))}

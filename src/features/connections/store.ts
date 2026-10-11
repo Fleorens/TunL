@@ -39,6 +39,8 @@ interface ConnectionsState {
   removeGroup: (id: string) => Promise<boolean>;
   /** Replaces `groups` and `connections` from a snapshot at once (import apply, group delete). */
   replaceSnapshot: (snapshot: StoreSnapshot) => void;
+  /** Marks a connection recently used (the home "Recents"); replaces it, or notifies on failure. */
+  touch: (id: string) => Promise<Connection | null>;
   moveGroup: (id: string, delta: -1 | 1) => Promise<boolean>;
 }
 
@@ -52,6 +54,19 @@ export const useConnections = create<ConnectionsState>()((set) => ({
 
   replaceSnapshot(snapshot) {
     set({ groups: snapshot.groups, connections: snapshot.connections });
+  },
+
+  async touch(id) {
+    try {
+      const connection = await ipc.connectionTouch(id);
+      set((state) => ({
+        connections: state.connections.map((c) => (c.id === id ? connection : c)),
+      }));
+      return connection;
+    } catch (error) {
+      notifyError(error);
+      return null;
+    }
   },
 
   async load() {

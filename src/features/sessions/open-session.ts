@@ -1,19 +1,30 @@
+// The single entry point to open a session from anywhere (sidebar double-click, home card, palette).
+// SFTP/RDP are placeholders until T25/T28; everything else opens a real SSH tab (docs/01 §6.3).
 import type { Connection } from "@/bindings/Connection";
 import type { QuickTarget } from "@/features/palette/quick-connect";
 import { notifyComingSoon } from "@/features/shell/coming-soon";
+import { quickTitle } from "./session-model";
+import { useSessions } from "./store";
 
-/** What opening a session shows: a shell, or an SFTP explorer. Until T21, both are placeholders. */
-export type SessionKind = "terminal" | "sftp";
-
-/** Single entry point to open a saved connection. Until T21: `notifyComingSoon()`. */
-export function openSession(connection: Connection, kind?: SessionKind): void {
-  void connection;
-  void kind;
-  notifyComingSoon();
+/** Opening a saved connection: SFTP and RDP are not there yet, SSH opens a real tab. */
+export function openSession(connection: Connection, kind?: "terminal" | "sftp"): void {
+  if (kind === "sftp" || connection.settings.protocol === "rdp") {
+    notifyComingSoon();
+    return;
+  }
+  useSessions.getState().open({ type: "saved", connectionId: connection.id }, connection.name);
 }
 
-/** Same for an address typed on the fly. Until T21: `notifyComingSoon()`. */
+/** Opening an address typed on the fly: RDP is not there yet, SSH opens a real tab titled like the command line. */
 export function openQuickSession(target: QuickTarget): void {
-  void target;
-  notifyComingSoon();
+  if (target.protocol === "rdp") {
+    notifyComingSoon();
+    return;
+  }
+  useSessions
+    .getState()
+    .open(
+      { type: "quick", host: target.host, port: target.port, username: target.username },
+      quickTitle(target),
+    );
 }

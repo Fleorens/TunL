@@ -103,10 +103,39 @@
     "new": "New session",
     "close": "Close {{name}}"
   },
+  "sessions": {
+    "connecting": "Connecting to {{name}}…",
+    "steps": {
+      "wake": "Waking up {{label}}",
+      "hop": "Through {{label}}",
+      "target": "Connecting to {{label}}",
+      "hostKey": "Checking the host key of {{label}}",
+      "auth": "Signing in as {{label}}",
+      "open": "Opening the shell",
+      "launch": "Starting the RDP client"
+    },
+    "cancel": "Cancel",
+    "error": {
+      "details": "Details",
+      "retry": "Retry",
+      "edit": "Edit connection"
+    },
+    "closed": {
+      "withCode": "Session ended (exit code {{code}})",
+      "withoutCode": "Session ended"
+    },
+    "reconnect": "Reconnect",
+    "confirmClose": {
+      "title": "Close {{name}}?",
+      "description": "The session is still open: closing the tab ends it.",
+      "confirm": "Close"
+    }
+  },
   "statusbar": {
     "activeSessions_one": "{{count}} active session",
     "activeSessions_other": "{{count}} active sessions",
     "via": "via {{name}}",
+    "size": "{{cols}}×{{rows}}",
     "version": "v{{version}}",
     "mockBackend": "Mock backend"
   },

@@ -1,3 +1,5 @@
+// The row of session tabs, from the store: each with its status dot, protocol, close, and a `+`
+// that opens the palette in quick connect.
 import { Plus, X } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslation } from "react-i18next";
@@ -5,34 +7,36 @@ import { ProtocolIcon } from "@/components/ProtocolIcon";
 import { StatusDot } from "@/components/StatusDot";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { notifyComingSoon } from "@/features/shell/coming-soon";
-import type { DemoTab } from "@/features/shell/demo-data";
-import { useDemoTabs } from "@/features/shell/demo-data";
+import type { Session } from "@/features/sessions/session-model";
+import { tabStatus } from "@/features/sessions/session-model";
+import { useSessions } from "@/features/sessions/store";
+import { useUi } from "@/features/shell/ui-store";
 import { cn } from "@/lib/utils";
 
 function Tab({
-  tab,
+  session,
   active,
   activate,
   close,
 }: {
-  tab: DemoTab;
+  session: Session;
   active: boolean;
   activate: (id: string) => void;
   close: (id: string) => void;
 }) {
   const { t } = useTranslation();
+  const status = tabStatus(session.status);
   return (
     <div
       role="tab"
       tabIndex={active ? 0 : -1}
       aria-selected={active}
-      onClick={() => activate(tab.id)}
+      onClick={() => activate(session.id)}
       onAuxClick={(event) => {
-        if (event.button === 1) close(tab.id);
+        if (event.button === 1) close(session.id);
       }}
       onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") activate(tab.id);
+        if (event.key === "Enter" || event.key === " ") activate(session.id);
       }}
       className={cn(
         "group/tab relative flex h-9 min-w-30 max-w-55 cursor-default items-center gap-2 rounded-t-lg px-3 text-sm transition-colors duration-120",
@@ -41,15 +45,15 @@ function Tab({
           : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
       )}
     >
-      <StatusDot status={tab.status} label={t(`status.${tab.status}`)} />
-      <ProtocolIcon protocol={tab.protocol} className="size-3.5" />
-      <span className="truncate">{tab.title}</span>
+      <StatusDot status={status} label={t(`status.${status}`)} />
+      <ProtocolIcon protocol="ssh" className="size-3.5" />
+      <span className="truncate">{session.title}</span>
       <button
         type="button"
-        aria-label={t("tabs.close", { name: tab.title })}
+        aria-label={t("tabs.close", { name: session.title })}
         onClick={(event) => {
           event.stopPropagation();
-          close(tab.id);
+          close(session.id);
         }}
         className={cn(
           "ml-auto rounded-sm p-0.5 text-muted-foreground opacity-0 transition-opacity duration-120 hover:bg-muted hover:text-foreground group-hover/tab:opacity-100 focus-visible:opacity-100",
@@ -71,7 +75,7 @@ function Tab({
 
 export function TabBar() {
   const { t } = useTranslation();
-  const { tabs, activeId, activate, close } = useDemoTabs();
+  const { sessions, activeId, activate, requestClose } = useSessions();
 
   return (
     <div
@@ -79,13 +83,13 @@ export function TabBar() {
       aria-label={t("tabs.label")}
       className="flex h-10 shrink-0 items-end gap-0.5 overflow-x-auto bg-sidebar px-2 select-none"
     >
-      {tabs.map((tab) => (
+      {sessions.map((session) => (
         <Tab
-          key={tab.id}
-          tab={tab}
-          active={tab.id === activeId}
+          key={session.id}
+          session={session}
+          active={session.id === activeId}
           activate={activate}
-          close={close}
+          close={requestClose}
         />
       ))}
       <Tooltip>
@@ -94,7 +98,7 @@ export function TabBar() {
             variant="ghost"
             size="icon-xs"
             aria-label={t("tabs.new")}
-            onClick={notifyComingSoon}
+            onClick={() => useUi.getState().openPalette("quickConnect")}
           >
             <Plus className="size-4" />
           </Button>
