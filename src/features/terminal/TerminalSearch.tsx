@@ -139,7 +139,6 @@ export function TerminalSearch({ search, open, onClose, onFocusTerminal }: Termi
         pressed={caseSensitive}
         onPressedChange={setCaseSensitive}
         aria-label={t("terminal.search.caseSensitive")}
-        aria-pressed={caseSensitive}
         size="sm"
       >
         <CaseSensitive className="size-4" />
@@ -149,7 +148,6 @@ export function TerminalSearch({ search, open, onClose, onFocusTerminal }: Termi
         pressed={regex}
         onPressedChange={setRegex}
         aria-label={t("terminal.search.regex")}
-        aria-pressed={regex}
         size="sm"
       >
         <Regex className="size-4" />

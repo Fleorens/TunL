@@ -80,47 +80,23 @@ export function useXterm(options: UseXtermOptions): UseXterm {
       ),
     );
 
-    const fitNow = (): void => {
-      if (host.clientWidth === 0) {
-        return;
-      }
-      fit.fit();
-      port.resize(term.cols, term.rows);
-    };
-    fitRef.current = fitNow;
-
+    const fitting = wireFit(term, fit, host, port);
+    fitRef.current = fitting.fitNow;
     const pasting = wirePaste(term, port);
     pasteRef.current = pasting.paste;
     const unsubscribe = port.subscribe((bytes) => term.write(bytes));
     term.onResize(({ cols, rows }) => port.resize(cols, rows));
-    term.attachCustomKeyEventHandler((event) => {
-      if (event.type !== "keydown") {
-        return true;
-      }
-      const action = terminalKeyAction(event);
-      if (action) {
-        onActionRef.current(action);
-        event.preventDefault();
-        // Returning false is the documented "handled" signal (xterm ignores the return value).
-        return false;
-      }
-      return true;
-    });
+    wireKeys(term, onActionRef);
 
     term.open(host);
     loadWebgl(term);
     setTerm(term);
     setSearch(search);
 
-    const observer = new ResizeObserver(() => requestAnimationFrame(fitNow));
-    observer.observe(host);
-    // xterm measures the cell at open; wait for the fonts to be ready so the first fit is right.
-    void document.fonts.ready.then(fitNow);
-
     return () => {
       fitRef.current = () => undefined;
       pasteRef.current = () => undefined;
-      observer.disconnect();
+      fitting.dispose();
       unsubscribe();
       pasting.dispose();
       term.dispose();
@@ -203,14 +179,70 @@ function loadWebgl(term: Terminal): void {
 }
 
 /**
+ * Fit the terminal to its element, then tell the port the size (it ignores an unchanged one). Only
+ * when the element has a width: a hidden tab would shrink the PTY to nothing. Refit on resize and once
+ * the fonts are ready (xterm measures the cell at open). Nothing runs once disposed.
+ */
+function wireFit(
+  term: Terminal,
+  fit: FitAddon,
+  host: HTMLElement,
+  port: TerminalPort,
+): { fitNow: () => void; dispose: () => void } {
+  let disposed = false;
+  const fitNow = (): void => {
+    if (disposed || host.clientWidth === 0) {
+      return;
+    }
+    fit.fit();
+    port.resize(term.cols, term.rows);
+  };
+  const observer = new ResizeObserver(() => requestAnimationFrame(fitNow));
+  observer.observe(host);
+  void document.fonts.ready.then(fitNow);
+  return {
+    fitNow,
+    dispose: () => {
+      disposed = true;
+      observer.disconnect();
+    },
+  };
+}
+
+/** Run the terminal's own shortcuts; every other key goes to xterm. */
+function wireKeys(term: Terminal, onActionRef: { current: (action: TerminalKeyAction) => void }) {
+  term.attachCustomKeyEventHandler((event) => {
+    if (event.type !== "keydown") {
+      return true;
+    }
+    const action = terminalKeyAction(event);
+    if (action) {
+      onActionRef.current(action);
+      event.preventDefault();
+      // Returning false is the documented "handled" signal (xterm ignores the return value).
+      return false;
+    }
+    return true;
+  });
+}
+
+/** How long the keys typed during a paste wait for the clipboard before being sent anyway. */
+const PASTE_TIMEOUT_MS = 2000;
+
+/**
  * Send the typed keys to the port, and paste the clipboard. The clipboard is read asynchronously: the
- * keys typed meanwhile are held, then sent after the pasted text, so they keep their order.
+ * keys typed meanwhile are held, then sent after the pasted text, so they keep their order. A clipboard
+ * that never answers releases the keys after a delay; nothing runs once disposed.
  */
 function wirePaste(term: Terminal, port: TerminalPort): { paste: () => void; dispose: () => void } {
   let held: string[] | null = null;
+  let disposed = false;
   const onData = term.onData((data) => (held ? held.push(data) : port.write(data)));
   const release = (text: string): void => {
-    const keys = held ?? [];
+    if (disposed || held === null) {
+      return;
+    }
+    const keys = held;
     held = null;
     if (text.length > 0) {
       term.paste(text);
@@ -224,12 +256,20 @@ function wirePaste(term: Terminal, port: TerminalPort): { paste: () => void; dis
       return;
     }
     held = [];
+    const timer = setTimeout(() => release(""), PASTE_TIMEOUT_MS);
     readClipboardText()
       .then(release)
       .catch((error) => {
         release("");
         notifyError(error);
-      });
+      })
+      .finally(() => clearTimeout(timer));
   };
-  return { paste, dispose: () => onData.dispose() };
+  return {
+    paste,
+    dispose: () => {
+      disposed = true;
+      onData.dispose();
+    },
+  };
 }
