@@ -72,12 +72,17 @@ export function TerminalSearch({ search, open, onClose, onFocusTerminal }: Termi
     }
   };
 
-  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
+  const onInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
     if (event.key === "Enter") {
       event.preventDefault();
       // Enter goes to the next match, Shift+Enter to the previous one.
       jump(event.shiftKey);
-    } else if (event.key === "Escape") {
+    }
+  };
+
+  // Escape closes the panel from any of its controls (the field, the arrows or the toggles).
+  const onPanelKeyDown = (event: React.KeyboardEvent<HTMLDivElement>): void => {
+    if (event.key === "Escape") {
       event.preventDefault();
       search.clearDecorations();
       // Reopening starts from an empty query rather than a stale, unsearched one.
@@ -92,13 +97,16 @@ export function TerminalSearch({ search, open, onClose, onFocusTerminal }: Termi
   }
 
   return (
-    <div className="absolute right-3 top-3 flex items-center gap-1 rounded-lg glass shadow-elevated px-2 py-1">
+    <search
+      onKeyDown={onPanelKeyDown}
+      className="absolute right-3 top-3 flex items-center gap-1 rounded-lg glass shadow-elevated px-2 py-1"
+    >
       <Input
         ref={inputRef}
         type="search"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        onKeyDown={onKeyDown}
+        onKeyDown={onInputKeyDown}
         aria-label={t("terminal.search.label")}
         placeholder={t("terminal.search.label")}
       />
@@ -153,6 +161,6 @@ export function TerminalSearch({ search, open, onClose, onFocusTerminal }: Termi
         <Regex className="size-4" />
         <span className="text-nowrap text-xs">{t("terminal.search.regex")}</span>
       </Toggle>
-    </div>
+    </search>
   );
 }

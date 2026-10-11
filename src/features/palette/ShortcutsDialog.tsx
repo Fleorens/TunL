@@ -3,8 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Kbd } from "@/components/ui/kbd";
 import { shortcutRows } from "@/features/palette/palette-model";
-import type { ShortcutId } from "@/features/shell/shortcuts";
-import { TERMINAL_SHORTCUTS } from "@/features/shell/shortcuts";
+import { type ShortcutId, TERMINAL_SHORTCUTS } from "@/features/shell/shortcuts";
 import { useUi } from "@/features/shell/ui-store";
 
 // The labels are keyed by the shortcut id, and the values are literal i18n keys (typed): a string
