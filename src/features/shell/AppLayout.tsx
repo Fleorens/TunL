@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { useTranslation } from "react-i18next";
 import { usePanelRef } from "react-resizable-panels";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { ConnectionEditor } from "@/features/connections/editor/ConnectionEditor";
@@ -7,8 +6,10 @@ import { HomeView } from "@/features/home/HomeView";
 import { ImportDialog } from "@/features/import/ImportDialog";
 import { CommandPalette } from "@/features/palette/CommandPalette";
 import { ShortcutsDialog } from "@/features/palette/ShortcutsDialog";
+import { CloseSessionDialog } from "@/features/sessions/CloseSessionDialog";
+import { SessionView } from "@/features/sessions/SessionView";
+import { useSessions } from "@/features/sessions/store";
 import { notifyComingSoon } from "@/features/shell/coming-soon";
-import { useDemoTabs } from "@/features/shell/demo-data";
 import { StatusBar } from "@/features/shell/StatusBar";
 import { Sidebar } from "@/features/shell/sidebar/Sidebar";
 import { TabBar } from "@/features/shell/TabBar";
@@ -17,13 +18,12 @@ import { useUi } from "@/features/shell/ui-store";
 import { type ShortcutHandlers, useGlobalShortcuts } from "@/features/shell/use-global-shortcuts";
 
 export function AppLayout() {
-  const { t } = useTranslation();
   const panelRef = usePanelRef();
   const collapsed = useUi((state) => state.sidebarCollapsed);
   const setSidebarCollapsed = useUi((state) => state.setSidebarCollapsed);
   const toggleSidebar = useUi((state) => state.toggleSidebar);
-  const activeId = useDemoTabs((state) => state.activeId);
-  const activeTab = useDemoTabs((state) => state.tabs.find((tab) => tab.id === state.activeId));
+  const sessions = useSessions((state) => state.sessions);
+  const activeId = useSessions((state) => state.activeId);
 
   // The store is the source of truth; the panel follows it.
   useEffect(() => {
@@ -44,23 +44,23 @@ export function AppLayout() {
       if (collapsed) setSidebarCollapsed(false);
       document.getElementById("sidebar-filter")?.focus();
     },
-    "tab.next": () => useDemoTabs.getState().activateRelative(1),
-    "tab.previous": () => useDemoTabs.getState().activateRelative(-1),
+    "tab.next": () => useSessions.getState().activateRelative(1),
+    "tab.previous": () => useSessions.getState().activateRelative(-1),
     "tab.close": () => {
-      const current = useDemoTabs.getState().activeId;
-      if (current) useDemoTabs.getState().close(current);
+      const current = useSessions.getState().activeId;
+      if (current) useSessions.getState().requestClose(current);
     },
-    "tab.goTo1": () => useDemoTabs.getState().activateIndex(0),
-    "tab.goTo2": () => useDemoTabs.getState().activateIndex(1),
-    "tab.goTo3": () => useDemoTabs.getState().activateIndex(2),
-    "tab.goTo4": () => useDemoTabs.getState().activateIndex(3),
-    "tab.goTo5": () => useDemoTabs.getState().activateIndex(4),
-    "tab.goTo6": () => useDemoTabs.getState().activateIndex(5),
-    "tab.goTo7": () => useDemoTabs.getState().activateIndex(6),
-    "tab.goTo8": () => useDemoTabs.getState().activateIndex(7),
+    "tab.goTo1": () => useSessions.getState().activateIndex(0),
+    "tab.goTo2": () => useSessions.getState().activateIndex(1),
+    "tab.goTo3": () => useSessions.getState().activateIndex(2),
+    "tab.goTo4": () => useSessions.getState().activateIndex(3),
+    "tab.goTo5": () => useSessions.getState().activateIndex(4),
+    "tab.goTo6": () => useSessions.getState().activateIndex(5),
+    "tab.goTo7": () => useSessions.getState().activateIndex(6),
+    "tab.goTo8": () => useSessions.getState().activateIndex(7),
     "tab.goTo9": () => {
-      const tabs = useDemoTabs.getState().tabs;
-      if (tabs.length > 0) useDemoTabs.getState().activateIndex(tabs.length - 1);
+      const tabs = useSessions.getState().sessions;
+      if (tabs.length > 0) useSessions.getState().activateIndex(tabs.length - 1);
     },
   };
   useGlobalShortcuts(handlers);
@@ -84,14 +84,12 @@ export function AppLayout() {
         <ResizablePanel className="flex h-full min-w-0 flex-col">
           <TabBar />
           <div className="relative min-h-0 flex-1">
-            {activeId === null ? (
+            {sessions.length === 0 ? (
               <HomeView />
             ) : (
-              <div className="flex h-full items-center justify-center">
-                <p className="text-muted-foreground">
-                  {t("shell.sessionPlaceholder", { name: activeTab?.title })}
-                </p>
-              </div>
+              sessions.map((session) => (
+                <SessionView key={session.id} session={session} active={session.id === activeId} />
+              ))
             )}
           </div>
         </ResizablePanel>
@@ -101,6 +99,7 @@ export function AppLayout() {
       <ImportDialog />
       <CommandPalette />
       <ShortcutsDialog />
+      <CloseSessionDialog />
     </div>
   );
 }

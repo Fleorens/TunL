@@ -104,11 +104,40 @@
     "new": "Nouvelle session",
     "close": "Fermer {{name}}"
   },
+  "sessions": {
+    "connecting": "Connexion à {{name}}…",
+    "steps": {
+      "wake": "Réveil de {{label}}",
+      "hop": "Via {{label}}",
+      "target": "Connexion à {{label}}",
+      "hostKey": "Vérification de la clé d'hôte de {{label}}",
+      "auth": "Connexion en tant que {{label}}",
+      "open": "Ouverture du shell",
+      "launch": "Démarrage du client RDP"
+    },
+    "cancel": "Annuler",
+    "error": {
+      "details": "Détails",
+      "retry": "Réessayer",
+      "edit": "Modifier la connexion"
+    },
+    "closed": {
+      "withCode": "Session terminée (code {{code}})",
+      "withoutCode": "Session terminée"
+    },
+    "reconnect": "Se reconnecter",
+    "confirmClose": {
+      "title": "Fermer {{name}}?",
+      "description": "La session est encore ouverte : fermer l'onglet la termine.",
+      "confirm": "Fermer"
+    }
+  },
   "statusbar": {
     "activeSessions_one": "{{count}} session active",
     "activeSessions_many": "{{count}} de sessions actives",
     "activeSessions_other": "{{count}} sessions actives",
     "via": "via {{name}}",
+    "size": "{{cols}}×{{rows}}",
     "version": "v{{version}}",
     "mockBackend": "Backend simulé"
   },

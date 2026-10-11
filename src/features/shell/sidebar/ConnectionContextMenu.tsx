@@ -26,6 +26,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { useConnections } from "@/features/connections/store";
+import { openSession } from "@/features/sessions/open-session";
 import { notifyComingSoon } from "@/features/shell/coming-soon";
 import { useUi } from "@/features/shell/ui-store";
 import { copyText } from "@/lib/clipboard";
@@ -75,7 +76,7 @@ export function ConnectionContextMenu({
     <ContextMenu>
       <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
       <ContextMenuContent>
-        <ContextMenuItem onClick={notifyComingSoon}>
+        <ContextMenuItem onClick={() => openSession(connection)}>
           <LogIn className="size-3.5" />
           {t("connectionMenu.connect")}
         </ContextMenuItem>

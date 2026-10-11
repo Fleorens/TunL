@@ -20,12 +20,12 @@ test("the palette finds a connection by host, and Alt+Enter edits it", async ({ 
   ).toBeVisible();
 });
 
-test("Enter on a connection opens it (sessions come later)", async ({ page }) => {
+test("Enter on a connection opens it in a new tab", async ({ page }) => {
   await page.getByRole("button", { name: /Search or connect/ }).click();
-  await palette(page).getByRole("combobox").fill("db-prod");
+  await palette(page).getByRole("combobox").fill("pi-hole");
   await page.keyboard.press("Enter");
   await expect(palette(page)).toHaveCount(0);
-  await expect(page.getByText("Coming soon")).toBeVisible();
+  await expect(page.getByRole("tab", { selected: true })).toContainText("pi-hole");
 });
 
 test("quick connect can be saved as a new connection", async ({ page }) => {

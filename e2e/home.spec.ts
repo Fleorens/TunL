@@ -40,11 +40,19 @@ test("the quick connect field checks the address", async ({ page }) => {
   await field.fill("deploy@10.0.0.5");
   await expect(page.getByText("Enter an address like deploy@10.0.0.5:22")).toHaveCount(0);
   await field.press("Enter");
-  await expect(page.getByText("Coming soon")).toBeVisible();
-  await expect(field).toHaveValue("");
+  await expect(page.getByRole("tab", { selected: true })).toContainText("deploy@10.0.0.5");
 });
 
-test("clicking a card opens the connection (sessions come later)", async ({ page }) => {
+test("clicking an SSH card opens a terminal tab", async ({ page }) => {
+  await closeAllTabs(page);
+  await page
+    .getByRole("article", { name: "web-01" })
+    .getByRole("button", { name: "web-01", exact: true })
+    .click();
+  await expect(page.getByRole("tab", { selected: true })).toContainText("web-01");
+});
+
+test("clicking an RDP card says it is coming (RDP arrives with T28)", async ({ page }) => {
   await closeAllTabs(page);
   await page
     .getByRole("article", { name: "ad-01" })
