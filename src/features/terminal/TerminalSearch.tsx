@@ -150,7 +150,6 @@ export function TerminalSearch({ search, open, onClose, onFocusTerminal }: Termi
         size="sm"
       >
         <CaseSensitive className="size-4" />
-        <span className="text-nowrap text-xs">{t("terminal.search.caseSensitive")}</span>
       </Toggle>
       <Toggle
         pressed={regex}
@@ -159,7 +158,6 @@ export function TerminalSearch({ search, open, onClose, onFocusTerminal }: Termi
         size="sm"
       >
         <Regex className="size-4" />
-        <span className="text-nowrap text-xs">{t("terminal.search.regex")}</span>
       </Toggle>
     </search>
   );
