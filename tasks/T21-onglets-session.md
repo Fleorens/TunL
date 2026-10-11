@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Jalon** | M2 — SSH |
-| **Dépend de** | T20 |
+| **Dépend de** | T20, T19b |
 | **Lire avant** | `docs/04-ecrans.md` §1 (TabBar, StatusBar) et §5, `docs/01-architecture.md` §6, `docs/03-design.md` §4 et §7 |
 | **Livrable** | `src/features/sessions/` (modèle, store, ports, vues), TabBar / StatusBar / AppLayout branchés, `openSession` réel, `demo-data.ts` supprimé ; 8 tests Vitest, 10 scénarios e2e + 3 fichiers e2e mis à jour |
 

@@ -4,11 +4,11 @@
 L'orchestrateur (Claude) écrit les fiches détaillées **par lots** : chaque lot est ajusté après relecture de ce que
 le modèle a réellement livré. Une fiche qui cite des signatures de code pas encore écrit finirait par mentir.
 
-## Où on en est (2026-09-28)
+## Où on en est (2026-10-11)
 
-- Lots 1, 2 et 3 : **validés** (T01 → T16). Lot 4 : **prêt** (T17 → T21b, le client SSH).
-- Prochaine fiche : **`/tache T17`**, puis T17b → T18 → T19 → T20 → T21 → T21b, dans cet ordre. `contract-tests.mjs`
-  refuse désormais de démarrer une fiche dont une dépendance n'est pas livrée.
+- Lots 1, 2 et 3 : **validés** (T01 → T16). Lot 4 : T17 → T19 **livrées** ; T20 attend sur sa branche (job #15).
+- Prochaine fiche : **T19b** (durcit la confiance dans les clés d'hôte), puis T20 → T21 → T21b. `contract-tests.mjs`
+  refuse de démarrer une fiche dont une dépendance n'est pas livrée.
 - À partir de T17b, `npm run review` démarre aussi les conteneurs SSH de test (podman, `npm run test:ssh`).
 - En attente de Florian, dans la vraie app (`npm run tauri dev`) :
   - T10 et T11 : créer, modifier et supprimer une connexion, avec un bastion (voir « À regarder » des deux fiches) ;
@@ -89,8 +89,9 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | T17b | Poignée de main SSH : TCP, confiance dans la clé d'hôte, tests contre podman | T17, T16 | **élevé** | Opus 5 · high | livrée |
 | T18 | Authentification : mot de passe, clé + passphrase, agent, keyboard-interactive | T17b | **élevé** | Opus 5 · high | livrée |
 | T19 | Session shell : PTY, flux d'octets, registre de sessions, `ssh_open` / `write` / `resize` / `close`, mock | T18 | **élevé** | Opus 5 · high | livrée |
+| T19b | Clés d'hôte : `known_hosts` lu comme OpenSSH (haché, jokers, `@revoked`), type de clé changé = refus | T19 | moyen | Opus 5 · high | prête |
 | T20 | Composant terminal xterm.js 6 (thèmes, ajustement, recherche, liens, copier / coller, zoom) | T19 | moyen | Sonnet 5 · medium | livrée |
-| T21 | Onglets de session : terminal branché, étapes, erreur, fin, reconnexion, StatusBar | T20 | moyen | Sonnet 5 · medium | prête |
+| T21 | Onglets de session : terminal branché, étapes, erreur, fin, reconnexion, StatusBar | T20, T19b | moyen | Sonnet 5 · medium | prête |
 | T21b | Prompts (clé d'hôte, mot de passe, passphrase, 2FA) et clé d'hôte changée | T21 | moyen | Sonnet 5 · medium | prête |
 
 ### M3 — Bastion
@@ -145,7 +146,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 ## Chemin critique
 
 ```
-T01 → … → T11 → T12 ─┬─ T17 → T17b → T18 → T19 → T20 → T21 → T21b → T22 ─┬─ T24 → T25 → T26
+T01 → … → T11 → T12 ─┬─ T17 → T17b → T18 → T19 → T19b → T20 → T21 → T21b → T22 ─┬─ T24 → T25 → T26
                      │          ↑                                         ├─ T23 → T28
        T05b ─ T16 ───┼──────────┘                                         └─ T29
                      └─ T15 → T15b → T13 → T14      (tout est validé jusqu'à T16)
@@ -162,6 +163,6 @@ local qui écrit le code (voir `AGENTS.md`).
 | 1 | T01 → T05b | **validé** (T05b déjà au format contrat) |
 | 2 | T06 → T11 | **validé** à la revue du 2026-09-27 (format contrat) |
 | 3 | T12, T15, T15b, T13, T14, T16 | **validé** à la revue du 2026-09-28 |
-| 4 | T17 → T21b | **prêt**, écrit après la revue du lot 3 (russh 0.63 prototypé contre les conteneurs de T16) |
+| 4 | T17 → T21b | **prêt**, écrit après la revue du lot 3 (russh 0.63 prototypé contre les conteneurs de T16) ; T19b ajoutée le 2026-10-11 après une revue de T17 → T19 |
 | 5 | T22 → T30 | fin du lot 4 |
 | 6 | T31 → T40 | fin du lot 5 |
