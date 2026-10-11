@@ -10,7 +10,8 @@ import { createEchoPort } from "./echo-port";
  */
 export function TerminalSection() {
   const { t } = useTranslation();
-  // One port for the life of the section: the banner is replayed on every (re)mount.
+  // One port for the life of the section. Its banner is kept until the first subscription only: a
+  // later remount of the view starts from an empty screen.
   const port = useMemo(() => createEchoPort(), []);
 
   return (

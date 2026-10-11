@@ -30,7 +30,7 @@ export function terminalKeyAction(event: KeyInfo): TerminalKeyAction | null {
   if (code === "NumpadAdd" || key === "=" || key === "+") {
     return "zoomIn";
   }
-  if (code === "NumpadSubtract" || code === "Minus" || key === "-") {
+  if (code === "NumpadSubtract" || key === "-") {
     return "zoomOut";
   }
   if (code === "Digit0" || code === "Numpad0" || key === "0" || key === "à") {

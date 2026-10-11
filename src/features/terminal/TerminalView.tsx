@@ -7,7 +7,6 @@ import { resolveTerminalTheme } from "@/features/terminal/themes";
 import { useXterm } from "@/features/terminal/use-xterm";
 import { writeClipboardText } from "@/lib/clipboard";
 import { notifyError } from "@/lib/errors";
-import { isMockBackend } from "@/lib/ipc";
 import { useResolvedTheme } from "@/lib/theme";
 import { TerminalSearch } from "./TerminalSearch";
 
@@ -70,7 +69,6 @@ export function TerminalView({ port, active }: { port: TerminalPort; active: boo
   return (
     <div
       data-terminal
-      data-dom-rows={isMockBackend || undefined}
       className="relative h-full w-full"
       style={{ background: theme?.background, padding: "8px 12px" }}
     >

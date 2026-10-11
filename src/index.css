@@ -235,15 +235,3 @@
     background-color: var(--muted-foreground);
   }
 }
-
-/*
- * Mock backend only (DOM renderer, browser e2e): let the pointer reach the text rows instead of the
- * `.xterm-screen` overlay, so a double click lands on a row. Never set with the real app (WebGL), where
- * the overlay must keep the pointer for the link hover and mouse tracking.
- */
-[data-terminal][data-dom-rows] .xterm-screen {
-  pointer-events: none;
-}
-[data-terminal][data-dom-rows] .xterm-rows {
-  pointer-events: auto;
-}

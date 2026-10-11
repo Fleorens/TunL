@@ -232,30 +232,36 @@ const PASTE_TIMEOUT_MS = 2000;
 /**
  * Send the typed keys to the port, and paste the clipboard. The clipboard is read asynchronously: the
  * keys typed meanwhile are held, then sent after the pasted text, so they keep their order. A clipboard
- * that never answers releases the keys after a delay; nothing runs once disposed.
+ * that never answers releases the keys after a delay; text arriving later is still pasted. Nothing
+ * runs once disposed.
  */
 function wirePaste(term: Terminal, port: TerminalPort): { paste: () => void; dispose: () => void } {
   let held: string[] | null = null;
   let disposed = false;
   const onData = term.onData((data) => (held ? held.push(data) : port.write(data)));
-  const release = (text: string): void => {
-    if (disposed || held === null) {
-      return;
-    }
-    const keys = held;
-    held = null;
-    if (text.length > 0) {
-      term.paste(text);
-    }
-    for (const data of keys) {
-      port.write(data);
-    }
-  };
   const paste = (): void => {
     if (held) {
       return;
     }
-    held = [];
+    const keys: string[] = [];
+    held = keys;
+    // Stop holding, paste the text (its data goes straight to the port), then send this paste's held
+    // keys if they were not already released by the delay.
+    const release = (text: string): void => {
+      if (disposed) {
+        return;
+      }
+      const mine = held === keys;
+      if (mine) {
+        held = null;
+      }
+      if (text.length > 0) {
+        term.paste(text);
+      }
+      for (const data of mine ? keys : []) {
+        port.write(data);
+      }
+    };
     const timer = setTimeout(() => release(""), PASTE_TIMEOUT_MS);
     readClipboardText()
       .then(release)
