@@ -219,7 +219,7 @@ function wireKeys(term: Terminal, onActionRef: { current: (action: TerminalKeyAc
     if (action) {
       onActionRef.current(action);
       event.preventDefault();
-      // Returning false is the documented "handled" signal (xterm ignores the return value).
+      // Returning false tells xterm the key is handled: it does not process it.
       return false;
     }
     return true;
@@ -268,8 +268,11 @@ function wirePaste(term: Terminal, port: TerminalPort): { paste: () => void; dis
     readClipboardText()
       .then(release)
       .catch((error) => {
+        // After the delay, the timeout toast already told the user.
+        if (!disposed && held === keys) {
+          notifyError(error);
+        }
         release("");
-        notifyError(error);
       })
       .finally(() => clearTimeout(timer));
   };

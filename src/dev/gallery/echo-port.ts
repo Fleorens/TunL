@@ -33,7 +33,7 @@ export function createEchoPort(): TerminalPort {
             line = line.slice(0, -1);
             push(enc("\b \b"));
           }
-        } else if (ch >= " " && ch <= "~") {
+        } else if (ch >= " ") {
           // Printable character: remember it and echo it.
           line += ch;
           push(enc(ch));
