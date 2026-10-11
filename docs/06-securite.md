@@ -36,6 +36,8 @@ Voir `05-modele-donnees.md` §6.
 **S6 — Clés d'hôte.**
 - Clé inconnue → prompt avec l'empreinte SHA256, **refus par défaut** (Annuler, délai dépassé, onglet fermé).
 - Clé différente de celle connue → **refus**, sans option « continuer quand même ».
+  Une clé d'un **autre type** que celui enregistré pour l'hôte compte comme différente ; une clé marquée `@revoked`
+  dans l'un des deux `known_hosts` est refusée sans question.
 - La suppression d'une ancienne clé exige une confirmation où l'on tape le nom d'hôte.
 - La politique de certificat RDP n'offre jamais `ignore`.
 
