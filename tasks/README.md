@@ -6,7 +6,7 @@ le modèle a réellement livré. Une fiche qui cite des signatures de code pas e
 
 ## Où on en est (2026-10-11)
 
-- Lots 1, 2 et 3 : **validés** (T01 → T16). Lot 4 : T17 → T21 **livrées** ; T21b attend sur sa branche.
+- Lots 1, 2 et 3 : **validés** (T01 → T16). Lot 4 : T17 → T21 **livrées**.
 - Prochaine fiche : **T21b** (prompts et clé d'hôte changée), puis T22. `contract-tests.mjs`
   refuse de démarrer une fiche dont une dépendance n'est pas livrée.
 - À partir de T17b, `npm run review` démarre aussi les conteneurs SSH de test (podman, `npm run test:ssh`).

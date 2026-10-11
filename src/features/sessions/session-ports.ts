@@ -16,7 +16,7 @@ export interface SessionPort {
 const ports = new Map<string, SessionPort>();
 
 /** The port of a tab, or `null` before it opens and after it closes (SessionView renders the terminal when present). */
-export function useSessionPort(id: string): SessionPort | null {
+export function getSessionPort(id: string): SessionPort | null {
   return ports.get(id) ?? null;
 }
 

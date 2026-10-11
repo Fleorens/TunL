@@ -75,7 +75,10 @@ function Tab({
 
 export function TabBar() {
   const { t } = useTranslation();
-  const { sessions, activeId, activate, requestClose } = useSessions();
+  const sessions = useSessions((s) => s.sessions);
+  const activeId = useSessions((s) => s.activeId);
+  const activate = useSessions((s) => s.activate);
+  const requestClose = useSessions((s) => s.requestClose);
 
   return (
     <div

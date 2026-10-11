@@ -1,6 +1,7 @@
 // The footer: how many sessions are connected, and, for the active tab, its protocol, address, bastion, size.
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { Connection } from "@/bindings/Connection";
 import { ProtocolBadge } from "@/components/ProtocolBadge";
 import { Badge } from "@/components/ui/badge";
 import { useConnections } from "@/features/connections/store";
@@ -70,10 +71,7 @@ export function StatusBar() {
 }
 
 /** The active tab's address: from the saved connection, or from a quick target. Always `user@host:port`. */
-function sessionAddress(
-  session: Session,
-  connections: readonly { id: string; username: string | null; host: string; port: number }[],
-): string | null {
+function sessionAddress(session: Session, connections: readonly Connection[]): string | null {
   const target = session.target;
   if (target.type === "saved") {
     const connection = connections.find((c) => c.id === target.connectionId);
@@ -85,10 +83,7 @@ function sessionAddress(
 }
 
 /** The bastion's name for a saved connection, or null (quick targets have no jump host). */
-function bastionName(
-  session: Session,
-  connections: readonly { id: string; jumpHostId: string | null; name: string }[],
-): string | null {
+function bastionName(session: Session, connections: readonly Connection[]): string | null {
   const target = session.target;
   if (target.type !== "saved") return null;
   const connection = connections.find((c) => c.id === target.connectionId);

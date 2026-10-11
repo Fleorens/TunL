@@ -4,47 +4,49 @@ import { Check, Loader2, ShieldAlert, Unplug, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
 import { useUi } from "@/features/shell/ui-store";
 import { TerminalView } from "@/features/terminal/TerminalView";
 import { describeError } from "@/lib/errors";
 import type { Session, SessionStepView } from "./session-model";
-import { useSessionPort } from "./session-ports";
+import { getSessionPort } from "./session-ports";
 import { useSessions } from "./store";
 
 /** The tab's terminal, and the overlay matching its status. */
 export function SessionView({ session, active }: { session: Session; active: boolean }) {
-  const sessionPort = useSessionPort(session.id);
+  const sessionPort = getSessionPort(session.id);
   const port = sessionPort?.port ?? null;
   if (!port) return null;
   return (
-    <section aria-label={session.title} hidden={!active} className="relative h-full">
-      <TerminalView port={port} active={active} />
-      <AnimatePresence>
-        {session.status === "connecting" && (
-          <ConnectingOverlay key="connecting" session={session} onClose={close(session.id)} />
-        )}
-        {session.status === "error" && (
-          <SessionErrorCard
-            key="error"
-            session={session}
-            onRetry={() => useSessions.getState().reconnect(session.id)}
-            onEdit={edit(session.connectionId)}
-          />
-        )}
-        {session.status === "closed" && (
-          <ClosedBanner
-            key="closed"
-            code={session.exitStatus}
-            onReconnect={() => useSessions.getState().reconnect(session.id)}
-          />
-        )}
-      </AnimatePresence>
+    <section aria-label={session.title} hidden={!active} className="flex h-full flex-col">
+      <div className="relative min-h-0 flex-1">
+        <TerminalView port={port} active={active} />
+        <AnimatePresence>
+          {session.status === "connecting" && (
+            <ConnectingOverlay key="connecting" session={session} onClose={cancel(session.id)} />
+          )}
+          {session.status === "error" && (
+            <SessionErrorCard
+              key="error"
+              session={session}
+              onRetry={() => useSessions.getState().reconnect(session.id)}
+              onEdit={edit(session.connectionId)}
+            />
+          )}
+        </AnimatePresence>
+      </div>
+      {session.status === "closed" && (
+        <ClosedBanner
+          code={session.exitStatus}
+          onReconnect={() => useSessions.getState().reconnect(session.id)}
+        />
+      )}
     </section>
   );
 }
 
-/** The middle button of a tab, and the app-close shortcut, both go through the close flow. */
-function close(id: string): () => void {
+/** The Cancel of the connecting card goes through the same close flow as the tab's close button. */
+function cancel(id: string): () => void {
   return () => useSessions.getState().requestClose(id);
 }
 
@@ -66,20 +68,16 @@ function ConnectingOverlay({ session, onClose }: { session: Session; onClose: ()
       exit={{ opacity: 0 }}
       transition={{ duration: 0.12 }}
     >
-      <div className="w-min max-w-[22rem] rounded-lg glass shadow-elevated p-5">
+      <div className="flex w-80 max-w-[calc(100%-2rem)] flex-col rounded-lg glass shadow-elevated p-5">
         <p className="text-sm font-medium">{t("sessions.connecting", { name: session.title })}</p>
         <ul className="mt-3 flex flex-col gap-1.5 text-sm">
           {session.steps.map((step) => (
             <StepLine key={step.step} step={step} />
           ))}
         </ul>
-        <button
-          type="button"
-          onClick={onClose}
-          className="mt-3 w-full rounded-md border bg-card px-2.5 py-1.5 text-xs transition-colors hover:bg-muted"
-        >
+        <Button variant="outline" size="sm" onClick={onClose} className="mt-3 self-end">
           {t("sessions.cancel")}
-        </button>
+        </Button>
       </div>
     </motion.div>
   );
@@ -101,7 +99,9 @@ function StepLine({ step }: { step: SessionStepView }) {
       <span aria-hidden className="inline-flex size-4 items-center justify-center">
         {icon}
       </span>
-      <span className="truncate">{t(`sessions.steps.${step.step}`, { label: step.label })}</span>
+      <span className="min-w-0 truncate">
+        {t(`sessions.steps.${step.step}`, { label: step.label })}
+      </span>
     </li>
   );
 }
@@ -130,60 +130,51 @@ function SessionErrorCard({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.12 }}
     >
-      <div className="w-min max-w-[22rem] rounded-lg glass shadow-elevated p-5">
+      <div className="flex w-80 max-w-[calc(100%-2rem)] flex-col rounded-lg glass shadow-elevated p-5">
         <div className="flex items-center gap-2">
           {hostKey ? <ShieldAlert className="size-4" /> : <Unplug className="size-4" />}
           <p className="text-sm font-medium">{describeError(error).title}</p>
         </div>
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="sm"
           aria-expanded={open}
           onClick={() => setOpen((current) => !current)}
-          className="mt-3 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="mt-3 self-start text-muted-foreground"
         >
           {t("sessions.error.details")}
-        </button>
+        </Button>
         {open && (
-          <p className="mt-1 truncate font-mono text-xs text-muted-foreground">{error.message}</p>
+          <p className="mt-1 font-mono text-xs break-words whitespace-pre-wrap text-muted-foreground">
+            {error.message}
+          </p>
         )}
-        <div className="mt-3 flex flex-col gap-1.5">
-          <button
-            type="button"
-            onClick={onRetry}
-            className="rounded-md bg-brand-gradient px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:opacity-95"
-          >
-            {t("sessions.error.retry")}
-          </button>
+        <div className="mt-3 flex justify-end gap-2">
           {onEdit && (
-            <button
-              type="button"
-              onClick={onEdit}
-              className="rounded-md border bg-card px-2.5 py-1.5 text-xs transition-colors hover:bg-muted"
-            >
+            <Button variant="outline" size="sm" onClick={onEdit}>
               {t("sessions.error.edit")}
-            </button>
+            </Button>
           )}
+          <Button size="sm" onClick={onRetry}>
+            {t("sessions.error.retry")}
+          </Button>
         </div>
       </div>
     </motion.div>
   );
 }
 
-/** The end banner at the bottom of the tab: the exit code, and a Reconnect. The terminal stays readable above. */
+/** The end banner under the terminal: the exit code, and a Reconnect. The terminal keeps its last line visible. */
 function ClosedBanner({ code, onReconnect }: { code: number | null; onReconnect: () => void }) {
   const { t } = useTranslation();
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 px-3 py-1.5 text-xs">
-      <span className="rounded-md bg-card/90 px-2 py-1 text-muted-foreground">
+    <div className="flex shrink-0 items-center justify-between gap-3 border-t bg-card px-3 py-1.5 text-xs">
+      <span className="text-muted-foreground">
         {code === null ? t("sessions.closed.withoutCode") : t("sessions.closed.withCode", { code })}
       </span>
-      <button
-        type="button"
-        onClick={onReconnect}
-        className="pointer-events-auto rounded-md bg-card/90 px-2 py-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-      >
+      <Button variant="outline" size="xs" onClick={onReconnect}>
         {t("sessions.reconnect")}
-      </button>
+      </Button>
     </div>
   );
 }

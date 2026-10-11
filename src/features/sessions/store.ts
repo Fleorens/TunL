@@ -1,7 +1,6 @@
 // The session tabs: open, switch, close (with confirmation), and reconnect (docs/01 §6.2).
 // The live xterm ports live in `session-ports.ts`, never here, so this state stays immutable and clone-able.
 import { create } from "zustand";
-import type { Connection } from "@/bindings/Connection";
 import type { SessionEvent } from "@/bindings/SessionEvent";
 import type { SessionTarget } from "@/bindings/SessionTarget";
 import { useConnections } from "@/features/connections/store";
@@ -15,7 +14,7 @@ import {
   type Session,
   uniqueTitle,
 } from "./session-model";
-import { registerSessionPort, removeSessionPort, useSessionPort } from "./session-ports";
+import { getSessionPort, registerSessionPort, removeSessionPort } from "./session-ports";
 
 const DEFAULT_SIZE: TerminalSize = { cols: 80, rows: 24 };
 
@@ -50,11 +49,11 @@ export const useSessions = create<SessionsState>()((set, get) => ({
       name,
       get().sessions.map((session) => session.title),
     );
+    registerSessionPort(id);
     set((state) => ({
       sessions: [...state.sessions, newSession(id, title, target)],
       activeId: id,
     }));
-    registerSessionPort(id);
     start(id, id);
     return id;
   },
@@ -143,12 +142,12 @@ function start(id: string, runId: string): void {
       sessions: state.sessions.map((s) => (s.id === id ? applySessionEvent(s, event) : s)),
     }));
     if (event.type === "connected" && current.connectionId) {
-      void touch(current.connectionId);
+      void useConnections.getState().touch(current.connectionId);
     }
   };
 
   const onOutput = (bytes: Uint8Array): void => {
-    useSessionPort(id)?.push(bytes);
+    getSessionPort(id)?.push(bytes);
   };
 
   ipc
@@ -162,11 +161,6 @@ function start(id: string, runId: string): void {
         ),
       }));
     });
-}
-
-/** Record a recent connection: replace it in the connections store, or notify on failure. */
-function touch(connectionId: string): Promise<Connection | null> {
-  return useConnections.getState().touch(connectionId);
 }
 
 /** The next tab to focus when one closes: the neighbour just before it, or the last one. */
