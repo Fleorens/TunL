@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Kbd } from "@/components/ui/kbd";
 import { shortcutRows } from "@/features/palette/palette-model";
-import type { ShortcutId } from "@/features/shell/shortcuts";
+import { type ShortcutId, TERMINAL_SHORTCUTS } from "@/features/shell/shortcuts";
 import { useUi } from "@/features/shell/ui-store";
 
 // The labels are keyed by the shortcut id, and the values are literal i18n keys (typed): a string
@@ -47,6 +47,22 @@ export function ShortcutsDialog() {
           {shortcutRows().map((row) => (
             <div key={row.id} className="grid grid-cols-[1fr_auto] items-center gap-6">
               <span className="truncate">{t(LABELS[row.id])}</span>
+              <div className="flex shrink-0 items-center gap-1">
+                {row.display.map((key) => (
+                  <Kbd key={key}>{key}</Kbd>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 grid gap-2">
+          <h3 className="px-1 text-xs font-medium uppercase tracking-wider text-subtle-foreground">
+            {t("shortcuts.terminal.title")}
+          </h3>
+          {TERMINAL_SHORTCUTS.map((row) => (
+            <div key={row.id} className="grid grid-cols-[1fr_auto] items-center gap-6">
+              <span className="truncate">{t(`shortcuts.terminal.${row.id}`)}</span>
               <div className="flex shrink-0 items-center gap-1">
                 {row.display.map((key) => (
                   <Kbd key={key}>{key}</Kbd>

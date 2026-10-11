@@ -17,11 +17,13 @@ name = "tunl_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.6", features = [] }
+tauri-build = { version = "2.7", features = [] }
 
 [dependencies]
-tauri = { version = "2.11", features = [] }
+tauri = { version = "2.12", features = [] }
+tauri-plugin-clipboard-manager = "2.4"
 tauri-plugin-log = "2.9"
+tauri-plugin-opener = "2.6"
 tauri-plugin-single-instance = "2.4"
 tauri-plugin-window-state = "2.4"
 tokio-util = "0.7"
@@ -38,7 +40,7 @@ zeroize = { version = "1.9", features = ["serde"] }
 
 [dev-dependencies]
 tempfile = "3"
-tauri = { version = "2.11", features = ["test"] }
+tauri = { version = "2.12", features = ["test"] }
 
 [profile.release]
 codegen-units = 1

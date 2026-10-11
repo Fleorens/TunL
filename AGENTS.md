@@ -125,7 +125,7 @@ Deux modules presque identiques font échouer `npm run rules`.
 
 ## Stack figée (versions vérifiées le 2026-09-26, détail dans `docs/01-architecture.md` §2)
 
-Tauri 2.11 · React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · shadcn CLI 4 (style `radix-nova`) · zustand 5 ·
+Tauri 2.12 · React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · shadcn CLI 4 (style `radix-nova`) · zustand 5 ·
 motion 13 · xterm.js 6 · zod 4 · react-hook-form 7 · i18next 26 · Biome 2 · Vitest 5 ·
 Rust édition 2024 · tokio · tokio-util 0.7 · russh 0.63 · russh-sftp 3 · oo7 0.6 · ts-rs 12 · thiserror 2 ·
 plugins Tauri `opener` et `clipboard-manager` (T20).

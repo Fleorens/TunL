@@ -1,3 +1,5 @@
+import type { TerminalKeyAction } from "@/features/terminal/terminal-keys";
+
 export type ShortcutId =
   | "palette.open"
   | "palette.quickConnect"
@@ -95,7 +97,10 @@ export const SHORTCUTS: readonly ShortcutDefinition[] = [
   { id: "help.shortcuts", combos: [{ key: "F1" }], display: ["F1"] },
 ];
 
-type KeyInfo = Pick<KeyboardEvent, "key" | "code" | "ctrlKey" | "shiftKey" | "altKey" | "metaKey">;
+export type KeyInfo = Pick<
+  KeyboardEvent,
+  "key" | "code" | "ctrlKey" | "shiftKey" | "altKey" | "metaKey"
+>;
 
 function comboMatches(combo: KeyCombo, event: KeyInfo, inTerminal: boolean): boolean {
   if (combo.outsideTerminalOnly && inTerminal) return false;
@@ -113,3 +118,14 @@ export function matchShortcut(event: KeyInfo, inTerminal: boolean): ShortcutId |
   );
   return found?.id ?? null;
 }
+
+// Display-only: the detection of these keys lives in `features/terminal/terminal-keys.ts`.
+export const TERMINAL_SHORTCUTS: readonly { id: TerminalKeyAction; display: readonly string[] }[] =
+  [
+    { id: "copy", display: ["Ctrl", "⇧", "C"] },
+    { id: "paste", display: ["Ctrl", "⇧", "V"] },
+    { id: "search", display: ["Ctrl", "⇧", "F"] },
+    { id: "zoomIn", display: ["Ctrl", "="] },
+    { id: "zoomOut", display: ["Ctrl", "-"] },
+    { id: "zoomReset", display: ["Ctrl", "0"] },
+  ];

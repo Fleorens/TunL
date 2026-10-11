@@ -1,6 +1,7 @@
 # 01 — Architecture technique
 
 > Versions vérifiées sur les registres (npm, crates.io) et compilées ensemble sur le poste de dev le **2026-09-26**.
+> Tauri passé en **2.12** (runtime, `tauri-build` 2.7, `@tauri-apps/api`) le 2026-10-11 avec les plugins `opener` et `clipboard-manager` (T20), validé par Florian.
 > Ne pas changer une version majeure, ne pas ajouter de dépendance sans qu'une fiche le demande.
 
 ## 1. Vue d'ensemble
@@ -49,7 +50,7 @@ Le Rust revalide toujours : c'est lui qui fait autorité.
 | Notifications | `sonner` (via le composant shadcn `sonner`) | ^2.0 |
 | Listes longues | `@tanstack/react-virtual` | ^3.14 |
 | i18n | `i18next` + `react-i18next` | ^26 / ^17 |
-| Tauri JS | `@tauri-apps/api` ^2.11, plugins `dialog`, `opener`, `window-state`, `clipboard-manager`, `log` | 2.x |
+| Tauri JS | `@tauri-apps/api` ^2.12, plugins `dialog`, `opener`, `window-state`, `clipboard-manager`, `log` | 2.x |
 | Qualité | `@biomejs/biome` (lint + format) | ^2.5 |
 | Tests | `vitest` ^5.0, `jsdom` ^30, `@testing-library/react` ^16.3 | — |
 
@@ -57,7 +58,7 @@ Le Rust revalide toujours : c'est lui qui fait autorité.
 
 | Rôle | Crate | Version |
 |---|---|---|
-| App | `tauri` / `tauri-build` | 2.11 / 2.6 |
+| App | `tauri` / `tauri-build` | 2.12 / 2.7 |
 | Plugins | `tauri-plugin-log`, `-dialog`, `-opener`, `-window-state`, `-single-instance`, `-clipboard-manager` | 2.x |
 | Async | `tokio` (rt-multi-thread, macros, net, sync, time, io-util, fs), `tokio-util` | 1.53 / 0.7 |
 | SSH | `russh` (features par défaut : aws-lc-rs) | 0.63 |

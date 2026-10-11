@@ -471,10 +471,12 @@ test("Ctrl+Shift+C copies the selection and Ctrl+Shift+V pastes it", async ({ pa
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await expect(screen(page)).toContainText("TunL terminal demo");
   // A double click selects the word under the pointer: "TunL", the first word of the first row.
+  // `force`: xterm's DOM renderer makes `.xterm-rows` `pointer-events: none`, so the click lands on
+  // `.xterm-screen` at that point, which is what xterm listens to (validated by Florian, 2026-10-11).
   await screen(page)
     .locator("div")
     .first()
-    .dblclick({ position: { x: 6, y: 6 } });
+    .dblclick({ position: { x: 6, y: 6 }, force: true });
   await page.keyboard.press("Control+Shift+C");
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe("TunL");
 
@@ -513,8 +515,8 @@ test("F1 lists the terminal's own shortcuts too", async ({ page }) => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T20 --check` affiche `OK` partout.
-- [ ] `grep -rn "plugin-opener\|plugin-clipboard-manager" src` ne trouve que `lib/opener.ts` et `lib/clipboard.ts`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T20 --check` affiche `OK` partout.
+- [x] `grep -rn "plugin-opener\|plugin-clipboard-manager" src` ne trouve que `lib/opener.ts` et `lib/clipboard.ts`.
 - [ ] Visuel : dans `/#gallery`, le terminal a la police Geist Mono, le curseur barre cyan clignotant, la marge
       intérieure du fond du terminal, et le panneau de recherche ne cache pas la première ligne de texte.
 

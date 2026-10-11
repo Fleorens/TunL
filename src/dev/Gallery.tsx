@@ -6,6 +6,7 @@ import { AtomsSection } from "@/dev/gallery/AtomsSection";
 import { ColorsSection } from "@/dev/gallery/ColorsSection";
 import { ControlsSection } from "@/dev/gallery/ControlsSection";
 import { OverlaysSection } from "@/dev/gallery/OverlaysSection";
+import { TerminalSection } from "@/dev/gallery/TerminalSection";
 import { TypographySection } from "@/dev/gallery/TypographySection";
 import { type LanguagePreference, setLanguage } from "@/i18n";
 import { applyTheme, type ThemeMode } from "@/lib/theme";
@@ -60,6 +61,7 @@ export function Gallery() {
         <ControlsSection />
         <AtomsSection />
         <OverlaysSection />
+        <TerminalSection />
       </main>
     </div>
   );
