@@ -35,6 +35,7 @@ export function PromptInteractive({ id, prompt }: { id: string; prompt: Interact
   }
 
   function submitResponses(): void {
+    if (values.some((value) => value === "")) return;
     submit({ kind: "responses", values });
   }
 

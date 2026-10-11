@@ -59,13 +59,14 @@ function scheduler(session: LiveSession) {
     new Promise((resolve) => {
       session.timers.push(setTimeout(resolve, MOCK_STEP_MS));
     });
+  // A session closed in the meantime sends nothing more (e.g. closed while a prompt was open).
   const event = async (e: SessionEvent): Promise<void> => {
     await wait();
-    session.callbacks.onEvent(e);
+    if (sessions.has(session.id)) session.callbacks.onEvent(e);
   };
   const output = async (text: string): Promise<void> => {
     await wait();
-    session.callbacks.onOutput(new TextEncoder().encode(text));
+    if (sessions.has(session.id)) session.callbacks.onOutput(new TextEncoder().encode(text));
   };
   return { event, output };
 }
@@ -117,6 +118,30 @@ async function scenario(
   return scenario_.run({ sessionId: session.id, host: target.host, port: target.port });
 }
 
+/**
+ * One step that may pose a prompt: `started`, the scenario, then `done`, or `failed` and the error.
+ * Returns `false` when the attempt stops (failed, or the session was closed during the prompt).
+ */
+async function promptStep(
+  session: LiveSession,
+  target: ResolvedTarget,
+  step: "hostKey" | "auth",
+  label: string,
+): Promise<boolean> {
+  const { event } = scheduler(session);
+  await event({ type: "step", step, label, state: "started" });
+  const error = await scenario(session, target, step);
+  if (!sessions.has(session.id)) return false;
+  if (error) {
+    await event({ type: "step", step, label, state: "failed" });
+    await event({ type: "error", error });
+    sessions.delete(session.id);
+    return false;
+  }
+  await event({ type: "step", step, label, state: "done" });
+  return true;
+}
+
 /** The steps, the prompts of the connection's scenario, the connected banner. The session stays open. */
 async function runSession(session: LiveSession, target: ResolvedTarget): Promise<void> {
   const { event, output } = scheduler(session);
@@ -140,23 +165,8 @@ async function runSession(session: LiveSession, target: ResolvedTarget): Promise
   }
   await event({ type: "step", step: "target", label: address, state: "done" });
 
-  await event({ type: "step", step: "hostKey", label: target.host, state: "started" });
-  await event({ type: "step", step: "hostKey", label: target.host, state: "done" });
-  const hostKeyError = await scenario(session, target, "hostKey");
-  if (hostKeyError) {
-    await event({ type: "error", error: hostKeyError });
-    sessions.delete(session.id);
-    return;
-  }
-
-  await event({ type: "step", step: "auth", label: target.user, state: "started" });
-  await event({ type: "step", step: "auth", label: target.user, state: "done" });
-  const authError = await scenario(session, target, "auth");
-  if (authError) {
-    await event({ type: "error", error: authError });
-    sessions.delete(session.id);
-    return;
-  }
+  if (!(await promptStep(session, target, "hostKey", target.host))) return;
+  if (!(await promptStep(session, target, "auth", target.user))) return;
 
   await event({ type: "step", step: "open", label: "shell", state: "started" });
   await event({ type: "step", step: "open", label: "shell", state: "done" });

@@ -143,13 +143,15 @@
       "title": "Password for {{username}}@{{host}}",
       "label": "Password",
       "retry": "Wrong password, try again.",
-      "show": "Show password"
+      "show": "Show password",
+      "hide": "Hide password"
     },
     "passphrase": {
       "title": "Passphrase for {{keyPath}}",
       "label": "Passphrase",
       "retry": "Wrong passphrase, try again.",
-      "show": "Show passphrase"
+      "show": "Show passphrase",
+      "hide": "Hide passphrase"
     },
     "interactive": {
       "title": "Sign in to {{name}}"

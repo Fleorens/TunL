@@ -144,13 +144,15 @@
       "title": "Mot de passe pour {{username}}@{{host}}",
       "label": "Mot de passe",
       "retry": "Mot de passe incorrect, réessayez.",
-      "show": "Afficher le mot de passe"
+      "show": "Afficher le mot de passe",
+      "hide": "Masquer le mot de passe"
     },
     "passphrase": {
       "title": "Passphrase pour {{keyPath}}",
       "label": "Passphrase",
       "retry": "Passphrase incorrecte, réessayez.",
-      "show": "Afficher la passphrase"
+      "show": "Afficher la passphrase",
+      "hide": "Masquer la passphrase"
     },
     "interactive": {
       "title": "Connexion à {{name}}"
@@ -162,7 +164,7 @@
   },
   "hostKeyChanged": {
     "title": "La clé d'hôte de {{name}} a changé",
-    "explanation": "Cela peut signifier que le serveur a été réinstallé, ou que quelqu'un intercepte la connexion. TunL ne se connecte tant que l'ancienne clé n'est pas supprimée.",
+    "explanation": "Cela peut signifier que le serveur a été réinstallé, ou que quelqu'un intercepte la connexion. TunL ne se connecte pas tant que l'ancienne clé n'est pas supprimée.",
     "knownKey": "Clé connue",
     "presentedKey": "Clé présentée maintenant",
     "remove": "Supprimer l'ancienne clé…",

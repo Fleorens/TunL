@@ -1,5 +1,6 @@
 // "Do you trust this host key?" — the first-connection prompt (T21b). Refusal is the default (docs/06 §S6).
 import { ShieldQuestion } from "lucide-react";
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { PromptKind } from "@/bindings/PromptKind";
 import {
@@ -21,9 +22,17 @@ export function PromptHostKey({
   prompt: Extract<PromptKind, { kind: "hostKeyUnknown" }>;
 }) {
   const { t } = useTranslation();
+  // Guard against answering twice (a button click also closes the dialog).
+  const answeredRef = useRef(false);
+
+  function answer(kind: "accept" | "reject"): void {
+    if (answeredRef.current) return;
+    answeredRef.current = true;
+    void answerPrompt(id, { kind });
+  }
 
   return (
-    <AlertDialog open>
+    <AlertDialog open onOpenChange={(open) => !open && answer("reject")}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <div className="flex items-center gap-2">
@@ -43,10 +52,10 @@ export function PromptHostKey({
           </div>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => answerPrompt(id, { kind: "reject" })}>
+          <AlertDialogCancel onClick={() => answer("reject")}>
             {t("prompts.cancel")}
           </AlertDialogCancel>
-          <AlertDialogAction onClick={() => answerPrompt(id, { kind: "accept" })}>
+          <AlertDialogAction onClick={() => answer("accept")}>
             {t("prompts.hostKey.trust")}
           </AlertDialogAction>
         </AlertDialogFooter>

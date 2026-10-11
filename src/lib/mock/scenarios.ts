@@ -2,7 +2,6 @@
 // They emit prompts through `askMockPrompt` and read the retained state from `prompts.ts`. A scenario
 // returns an `AppError` to fail the attempt, or `null` to let the connection continue (docs/06 §S6).
 import type { AppError } from "@/bindings/AppError";
-import type { PromptKind } from "@/bindings/PromptKind";
 import {
   askMockPrompt,
   hasStoredPassword,
@@ -135,6 +134,3 @@ const SCENARIOS: Record<string, Scenario> = {
 export function getScenario(name: string): Scenario | null {
   return SCENARIOS[name] ?? null;
 }
-
-// Kept for the type above; the concrete kinds are what the scenarios pose.
-export type { PromptKind };

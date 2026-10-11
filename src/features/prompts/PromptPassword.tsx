@@ -31,7 +31,9 @@ export function PromptPassword({ id, prompt }: { id: string; prompt: SecretPromp
   const answeredRef = useRef(false);
 
   const label = t(isPassphrase ? "prompts.passphrase.label" : "prompts.password.label");
-  const showLabel = t(isPassphrase ? "prompts.passphrase.show" : "prompts.password.show");
+  const toggleKey =
+    `prompts.${isPassphrase ? "passphrase" : "password"}.${show ? "hide" : "show"}` as const;
+  const toggleLabel = t(toggleKey);
   const title = isPassphrase
     ? t("prompts.passphrase.title", { keyPath: prompt.keyPath })
     : t("prompts.password.title", { username: prompt.username, host: prompt.host });
@@ -48,6 +50,7 @@ export function PromptPassword({ id, prompt }: { id: string; prompt: SecretPromp
   }
 
   function submitSecret(): void {
+    if (value === "") return;
     submit({ kind: "secret", value, save });
   }
 
@@ -88,7 +91,7 @@ export function PromptPassword({ id, prompt }: { id: string; prompt: SecretPromp
                 variant="ghost"
                 size="icon"
                 onClick={() => setShow((current) => !current)}
-                aria-label={showLabel}
+                aria-label={toggleLabel}
               >
                 {show ? <EyeOff aria-hidden /> : <Eye aria-hidden />}
               </Button>

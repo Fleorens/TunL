@@ -19,11 +19,11 @@ export function PromptHost() {
 
   switch (request.prompt.kind) {
     case "hostKeyUnknown":
-      return <PromptHostKey id={request.id} prompt={request.prompt} />;
+      return <PromptHostKey key={request.id} id={request.id} prompt={request.prompt} />;
     case "password":
     case "passphrase":
-      return <PromptPassword id={request.id} prompt={request.prompt} />;
+      return <PromptPassword key={request.id} id={request.id} prompt={request.prompt} />;
     case "keyboardInteractive":
-      return <PromptInteractive id={request.id} prompt={request.prompt} />;
+      return <PromptInteractive key={request.id} id={request.id} prompt={request.prompt} />;
   }
 }
