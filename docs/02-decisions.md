@@ -125,3 +125,9 @@ avec retour automatique aux décorations natives.
 Flathub et avec les dépendances (MIT / Apache-2.0).
 Les manifestes (`package.json`, `Cargo.toml`, `tauri.conf.json`) la déclarent dès T01. Le fichier `LICENSE`
 (texte intégral de la GPL v3) est ajouté en T39.
+
+## D16 — Tauri 2.12
+
+Tauri passe de 2.11 à 2.12 (runtime, `tauri-build` 2.7, `@tauri-apps/api` 2.12), validé par Florian le 2026-10-11.
+Les plugins `opener` et `clipboard-manager` ajoutés en T20 l'imposent (`@tauri-apps/plugin-clipboard-manager` exige
+`@tauri-apps/api` ^2.12). La stack d'`AGENTS.md` et `docs/01-architecture.md` §2 sont alignées.

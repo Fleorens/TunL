@@ -42,6 +42,8 @@ cat "$STATE/keys/id_ed25519.pub" "$STATE/keys/id_ed25519_passphrase.pub" "$STATE
 for host in target bastion hidden; do
   cp "$STATE/authorized_keys" "$STATE/hosts/$host/authorized_keys"
   chmod 0644 "$STATE/hosts/$host/authorized_keys"
+  # sshd's StrictModes refuses a group-writable directory (umask 002 creates one).
+  chmod 0755 "$STATE/hosts/$host"
 done
 
 # 4. Networks (create the ones that are missing).

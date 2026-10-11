@@ -4,11 +4,13 @@ import { WebLinksAddon } from "@xterm/addon-web-links";
 import { WebglAddon } from "@xterm/addon-webgl";
 import { Terminal } from "@xterm/xterm";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import type { TerminalSettings } from "@/bindings/TerminalSettings";
 import type { TerminalPort } from "@/features/terminal/port";
 import type { TerminalKeyAction } from "@/features/terminal/terminal-keys";
 import { isOpenableUrl, terminalKeyAction } from "@/features/terminal/terminal-keys";
 import { resolveTerminalTheme } from "@/features/terminal/themes";
+import { i18n } from "@/i18n";
 import { readClipboardText, writeClipboardText } from "@/lib/clipboard";
 import { notifyError } from "@/lib/errors";
 import { isMockBackend } from "@/lib/ipc";
@@ -230,7 +232,7 @@ const PASTE_TIMEOUT_MS = 2000;
 /**
  * Send the typed keys to the port, and paste the clipboard. The clipboard is read asynchronously: the
  * keys typed meanwhile are held, then sent after the pasted text, so they keep their order. A clipboard
- * that never answers releases the keys after a delay; text arriving later is dropped. Nothing
+ * that never answers releases the keys after a delay and says so; text arriving later is dropped. Nothing
  * runs once disposed.
  */
 function wirePaste(term: Terminal, port: TerminalPort): { paste: () => void; dispose: () => void } {
@@ -257,7 +259,12 @@ function wirePaste(term: Terminal, port: TerminalPort): { paste: () => void; dis
         port.write(data);
       }
     };
-    const timer = setTimeout(() => release(""), PASTE_TIMEOUT_MS);
+    const timer = setTimeout(() => {
+      if (!disposed && held === keys) {
+        toast.error(i18n.t("terminal.pasteTimeout"));
+      }
+      release("");
+    }, PASTE_TIMEOUT_MS);
     readClipboardText()
       .then(release)
       .catch((error) => {

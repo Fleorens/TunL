@@ -360,6 +360,7 @@
   },
   "terminal": {
     "title": "Terminal",
+    "pasteTimeout": "The clipboard did not answer in time: nothing was pasted.",
     "search": {
       "label": "Search the terminal",
       "count": "{{current}} of {{total}}",

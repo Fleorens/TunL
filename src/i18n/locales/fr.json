@@ -362,6 +362,7 @@
   },
   "terminal": {
     "title": "Terminal",
+    "pasteTimeout": "Le presse-papiers n'a pas répondu à temps : rien n'a été collé.",
     "search": {
       "label": "Rechercher dans le terminal",
       "count": "{{current}} sur {{total}}",
