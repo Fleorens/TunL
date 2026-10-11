@@ -23,7 +23,6 @@ interface UseXtermOptions {
   /** The per-terminal font size (its own zoom, separate from the global setting). */
   fontSize: number;
   active: boolean;
-  copyOnSelect: boolean;
   onAction: (action: TerminalKeyAction) => void;
 }
 
@@ -44,8 +43,7 @@ interface UseXterm {
  * element xterm opens in, dedicated to it.
  */
 export function useXterm(options: UseXtermOptions): UseXterm {
-  const { port, containerRef, settings, resolvedTheme, fontSize, active, copyOnSelect, onAction } =
-    options;
+  const { port, containerRef, settings, resolvedTheme, fontSize, active, onAction } = options;
   const [term, setTerm] = useState<Terminal | null>(null);
   const [search, setSearch] = useState<SearchAddon | null>(null);
   // Fit to the container (only when it has a width: a hidden tab would shrink the PTY to nothing),
@@ -122,7 +120,7 @@ export function useXterm(options: UseXtermOptions): UseXterm {
 
   // Copy on selection: write the selection when it is not empty.
   useEffect(() => {
-    if (!term || !copyOnSelect) {
+    if (!term || !settings?.copyOnSelect) {
       return;
     }
     const off = term.onSelectionChange(() => {
@@ -132,7 +130,7 @@ export function useXterm(options: UseXtermOptions): UseXterm {
       }
     });
     return () => off.dispose();
-  }, [term, copyOnSelect]);
+  }, [term, settings?.copyOnSelect]);
 
   // When the tab becomes active, fit (it was hidden) and focus the terminal.
   useEffect(() => {
@@ -232,7 +230,7 @@ const PASTE_TIMEOUT_MS = 2000;
 /**
  * Send the typed keys to the port, and paste the clipboard. The clipboard is read asynchronously: the
  * keys typed meanwhile are held, then sent after the pasted text, so they keep their order. A clipboard
- * that never answers releases the keys after a delay; text arriving later is still pasted. Nothing
+ * that never answers releases the keys after a delay; text arriving later is dropped. Nothing
  * runs once disposed.
  */
 function wirePaste(term: Terminal, port: TerminalPort): { paste: () => void; dispose: () => void } {
@@ -245,20 +243,17 @@ function wirePaste(term: Terminal, port: TerminalPort): { paste: () => void; dis
     }
     const keys: string[] = [];
     held = keys;
-    // Stop holding, paste the text (its data goes straight to the port), then send this paste's held
-    // keys if they were not already released by the delay.
+    // Stop holding, paste the text (its data goes straight to the port), then send the held keys.
+    // Runs once: a clipboard answering after the delay is dropped, never pasted into a later context.
     const release = (text: string): void => {
-      if (disposed) {
+      if (disposed || held !== keys) {
         return;
       }
-      const mine = held === keys;
-      if (mine) {
-        held = null;
-      }
+      held = null;
       if (text.length > 0) {
         term.paste(text);
       }
-      for (const data of mine ? keys : []) {
+      for (const data of keys) {
         port.write(data);
       }
     };

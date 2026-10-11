@@ -35,7 +35,6 @@ export function TerminalView({ port, active }: { port: TerminalPort; active: boo
     resolvedTheme,
     fontSize,
     active,
-    copyOnSelect: terminal?.copyOnSelect ?? false,
     onAction: (action: TerminalKeyAction) => {
       switch (action) {
         case "copy": {
