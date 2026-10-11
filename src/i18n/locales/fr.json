@@ -132,6 +132,47 @@
       "confirm": "Fermer"
     }
   },
+  "prompts": {
+    "hostKey": {
+      "title": "Première connexion à {{host}}:{{port}}",
+      "keyType": "Type de clé",
+      "fingerprint": "Empreinte",
+      "check": "Vérifiez cette empreinte auprès de l'administrateur du serveur avant de lui faire confiance.",
+      "trust": "Faire confiance et continuer"
+    },
+    "password": {
+      "title": "Mot de passe pour {{username}}@{{host}}",
+      "label": "Mot de passe",
+      "retry": "Mot de passe incorrect, réessayez.",
+      "show": "Afficher le mot de passe"
+    },
+    "passphrase": {
+      "title": "Passphrase pour {{keyPath}}",
+      "label": "Passphrase",
+      "retry": "Passphrase incorrecte, réessayez.",
+      "show": "Afficher la passphrase"
+    },
+    "interactive": {
+      "title": "Connexion à {{name}}"
+    },
+    "remember": "Mémoriser dans le trousseau",
+    "connect": "Se connecter",
+    "continue": "Continuer",
+    "cancel": "Annuler"
+  },
+  "hostKeyChanged": {
+    "title": "La clé d'hôte de {{name}} a changé",
+    "explanation": "Cela peut signifier que le serveur a été réinstallé, ou que quelqu'un intercepte la connexion. TunL ne se connecte tant que l'ancienne clé n'est pas supprimée.",
+    "knownKey": "Clé connue",
+    "presentedKey": "Clé présentée maintenant",
+    "remove": "Supprimer l'ancienne clé…",
+    "removeTitle": "Supprimer l'ancienne clé de {{host}} ?",
+    "confirm": "Tapez {{host}} pour confirmer.",
+    "removeKey": "Supprimer la clé",
+    "notRemovable": "Cette clé est enregistrée dans {{path}}, que TunL ne modifie pas. Supprimez-la avec : ",
+    "close": "Fermer l'onglet",
+    "removed": "Clé supprimée"
+  },
   "statusbar": {
     "activeSessions_one": "{{count}} session active",
     "activeSessions_many": "{{count}} de sessions actives",

@@ -395,8 +395,8 @@ test("a changed host key is explained, and the old key can be removed", async ({
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T21b --check` affiche `OK` partout.
-- [ ] `grep -rn "listen(" src --include=*.ts --include=*.tsx` ne trouve que `src/lib/events.ts`.
+- [x] `npm run review` passe (verify vert, `npm run test:ssh` 14 tests verts, e2e 7/7), et `node scripts/contract-tests.mjs T21b --check` affiche `OK` partout.
+- [x] `grep -rn "listen(" src --include=*.ts --include=*.tsx` ne trouve l'appel réel à `listen()` de Tauri que dans `src/lib/events.ts`. (Le fichier de contrat `src/lib/mock/prompts.test.ts` défini son propre mock `listen()` — un helper de test, pas un appel à Tauri.)
 - [ ] Visuel : l'empreinte tient sur la largeur du dialogue (retour à la ligne, pas de débordement) ; la carte « clé
       changée » se lit comme un avertissement (rouge), sans être criarde.
 

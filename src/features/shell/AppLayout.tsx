@@ -6,6 +6,7 @@ import { HomeView } from "@/features/home/HomeView";
 import { ImportDialog } from "@/features/import/ImportDialog";
 import { CommandPalette } from "@/features/palette/CommandPalette";
 import { ShortcutsDialog } from "@/features/palette/ShortcutsDialog";
+import { PromptHost } from "@/features/prompts/PromptHost";
 import { CloseSessionDialog } from "@/features/sessions/CloseSessionDialog";
 import { SessionView } from "@/features/sessions/SessionView";
 import { useSessions } from "@/features/sessions/store";
@@ -100,6 +101,7 @@ export function AppLayout() {
       <CommandPalette />
       <ShortcutsDialog />
       <CloseSessionDialog />
+      <PromptHost />
     </div>
   );
 }

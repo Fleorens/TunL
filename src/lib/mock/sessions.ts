@@ -8,6 +8,8 @@ import type { SessionEvent } from "@/bindings/SessionEvent";
 import type { SessionTarget } from "@/bindings/SessionTarget";
 import type { Handler } from "./data";
 import { arg } from "./data";
+import { cancelMockPrompts } from "./prompts";
+import { getScenario } from "./scenarios";
 
 const MOCK_STEP_MS = import.meta.env.MODE === "test" ? 0 : 80;
 
@@ -104,7 +106,18 @@ function resolveTarget(state: Parameters<Handler>[0], target: SessionTarget): Re
   };
 }
 
-/** The steps, the connected banner and the first prompt. Yields once at the prompt; the session stays open. */
+/** Run one scenario for this connection at the given step, failing the attempt when it returns an error. */
+async function scenario(
+  session: LiveSession,
+  target: ResolvedTarget,
+  step: "hostKey" | "auth",
+): Promise<AppError | null> {
+  const scenario_ = getScenario(target.name);
+  if (!scenario_ || scenario_.step !== step) return null;
+  return scenario_.run({ sessionId: session.id, host: target.host, port: target.port });
+}
+
+/** The steps, the prompts of the connection's scenario, the connected banner. The session stays open. */
 async function runSession(session: LiveSession, target: ResolvedTarget): Promise<void> {
   const { event, output } = scheduler(session);
   const address = `${target.host}:${target.port}`;
@@ -129,9 +142,21 @@ async function runSession(session: LiveSession, target: ResolvedTarget): Promise
 
   await event({ type: "step", step: "hostKey", label: target.host, state: "started" });
   await event({ type: "step", step: "hostKey", label: target.host, state: "done" });
+  const hostKeyError = await scenario(session, target, "hostKey");
+  if (hostKeyError) {
+    await event({ type: "error", error: hostKeyError });
+    sessions.delete(session.id);
+    return;
+  }
 
   await event({ type: "step", step: "auth", label: target.user, state: "started" });
   await event({ type: "step", step: "auth", label: target.user, state: "done" });
+  const authError = await scenario(session, target, "auth");
+  if (authError) {
+    await event({ type: "error", error: authError });
+    sessions.delete(session.id);
+    return;
+  }
 
   await event({ type: "step", step: "open", label: "shell", state: "started" });
   await event({ type: "step", step: "open", label: "shell", state: "done" });
@@ -256,6 +281,8 @@ function close(
     for (const timer of session.timers) clearTimeout(timer);
     sessions.delete(sessionId);
   }
+  // Cancel any prompt waiting on this session so a closed tab stops asking (T21b).
+  cancelMockPrompts(sessionId);
   // Closing is idempotent and sends no event (the UI closed the tab itself).
   return { state: _state, result: null };
 }

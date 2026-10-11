@@ -131,6 +131,47 @@
       "confirm": "Close"
     }
   },
+  "prompts": {
+    "hostKey": {
+      "title": "First connection to {{host}}:{{port}}",
+      "keyType": "Key type",
+      "fingerprint": "Fingerprint",
+      "check": "Check this fingerprint with the server's administrator before you trust it.",
+      "trust": "Trust and continue"
+    },
+    "password": {
+      "title": "Password for {{username}}@{{host}}",
+      "label": "Password",
+      "retry": "Wrong password, try again.",
+      "show": "Show password"
+    },
+    "passphrase": {
+      "title": "Passphrase for {{keyPath}}",
+      "label": "Passphrase",
+      "retry": "Wrong passphrase, try again.",
+      "show": "Show passphrase"
+    },
+    "interactive": {
+      "title": "Sign in to {{name}}"
+    },
+    "remember": "Remember in the keyring",
+    "connect": "Connect",
+    "continue": "Continue",
+    "cancel": "Cancel"
+  },
+  "hostKeyChanged": {
+    "title": "The host key of {{name}} has changed",
+    "explanation": "This can mean the server was reinstalled, or that someone is intercepting the connection. TunL will not connect until the old key is removed.",
+    "knownKey": "Known key",
+    "presentedKey": "Key presented now",
+    "remove": "Remove the old key…",
+    "removeTitle": "Remove the old key of {{host}}?",
+    "confirm": "Type {{host}} to confirm.",
+    "removeKey": "Remove the key",
+    "notRemovable": "This key is recorded in {{path}}, which TunL does not modify. Remove it with: ",
+    "close": "Close tab",
+    "removed": "Old key removed"
+  },
   "statusbar": {
     "activeSessions_one": "{{count}} active session",
     "activeSessions_other": "{{count}} active sessions",
