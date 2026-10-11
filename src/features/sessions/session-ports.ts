@@ -1,5 +1,6 @@
 // The live xterm ports of every open tab, keyed by tab id (docs/01 §6.2). Ports are objects, not data:
 // they never enter the zustand state, so the store stays immutable and its tests clone-able.
+// This module and `store.ts` import each other: `useSessions` is only read inside functions, never at load time.
 import { createTerminalPort, type TerminalPort } from "@/features/terminal/port";
 import { notifyError, toAppError } from "@/lib/errors";
 import { ipc, type TerminalSize } from "@/lib/ipc";
@@ -20,15 +21,10 @@ export function getSessionPort(id: string): SessionPort | null {
   return ports.get(id) ?? null;
 }
 
-/** Whether a tab already has a port (a reconnect registers without recreating it). */
-export function hasSessionPort(id: string): boolean {
-  return ports.has(id);
-}
-
 /**
  * Attach a port to a tab, keeping it as-is on a reconnect. The sender forwards keys and size to the
- * current backend attempt, and only while the tab is connecting or connected; the size is kept in the
- * session so a reconnect does not resize the terminal.
+ * current backend attempt, and only while the tab is connecting or connected. The size is always kept in
+ * the session (the port reports each size once), so a reconnect opens the terminal at its current size.
  */
 export function registerSessionPort(id: string): void {
   if (ports.has(id)) return;
@@ -39,16 +35,26 @@ export function registerSessionPort(id: string): void {
       ipc.sshWrite(session.runId, data).catch((error) => handlePortError(error));
     },
     resize(cols, rows) {
-      const session = current(id);
-      if (!isLive(session)) return;
       const size: TerminalSize = { cols, rows };
       useSessions.setState((state) => ({
         sessions: state.sessions.map((s) => (s.id === id ? { ...s, size } : s)),
       }));
+      const session = current(id);
+      if (!isLive(session)) return;
       ipc.sshResize(session.runId, size).catch((error) => handlePortError(error));
     },
   });
   ports.set(id, { port, push });
+}
+
+/**
+ * Send the tab's kept size to its current attempt, once connected: a resize made before the backend
+ * registered the session was refused (`notFound`), and the port does not repeat a size.
+ */
+export function sendSessionSize(id: string): void {
+  const session = current(id);
+  if (!isLive(session) || !session.size) return;
+  ipc.sshResize(session.runId, session.size).catch((error) => handlePortError(error));
 }
 
 /** Drop a tab's port, on close. */

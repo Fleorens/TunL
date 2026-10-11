@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { useConnections } from "@/features/connections/store";
 import { useUi } from "@/features/shell/ui-store";
 import { TerminalView } from "@/features/terminal/TerminalView";
 import { describeError } from "@/lib/errors";
@@ -16,6 +17,10 @@ import { useSessions } from "./store";
 export function SessionView({ session, active }: { session: Session; active: boolean }) {
   const sessionPort = getSessionPort(session.id);
   const port = sessionPort?.port ?? null;
+  // Edit connection only while the saved connection still exists (it may have been deleted since).
+  const editable = useConnections((state) =>
+    state.connections.some((c) => c.id === session.connectionId),
+  );
   if (!port) return null;
   return (
     <section aria-label={session.title} hidden={!active} className="flex h-full flex-col">
@@ -30,7 +35,7 @@ export function SessionView({ session, active }: { session: Session; active: boo
               key="error"
               session={session}
               onRetry={() => useSessions.getState().reconnect(session.id)}
-              onEdit={edit(session.connectionId)}
+              onEdit={editable ? edit(session.connectionId) : null}
             />
           )}
         </AnimatePresence>

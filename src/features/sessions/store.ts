@@ -14,7 +14,12 @@ import {
   type Session,
   uniqueTitle,
 } from "./session-model";
-import { getSessionPort, registerSessionPort, removeSessionPort } from "./session-ports";
+import {
+  getSessionPort,
+  registerSessionPort,
+  removeSessionPort,
+  sendSessionSize,
+} from "./session-ports";
 
 const DEFAULT_SIZE: TerminalSize = { cols: 80, rows: 24 };
 
@@ -138,11 +143,15 @@ function start(id: string, runId: string): void {
     const current = useSessions.getState().sessions.find((s) => s.id === id);
     // A late event of a previous attempt (before a reconnect) must not touch this tab.
     if (!current || current.runId !== runId) return;
+    const next = applySessionEvent(current, event);
     useSessions.setState((state) => ({
-      sessions: state.sessions.map((s) => (s.id === id ? applySessionEvent(s, event) : s)),
+      sessions: state.sessions.map((s) => (s.id === id ? next : s)),
+      // A pending close confirmation no longer applies once the session is not connected.
+      closing: state.closing === id && next.status !== "connected" ? null : state.closing,
     }));
-    if (event.type === "connected" && current.connectionId) {
-      void useConnections.getState().touch(current.connectionId);
+    if (event.type === "connected") {
+      sendSessionSize(id);
+      if (current.connectionId) void useConnections.getState().touch(current.connectionId);
     }
   };
 

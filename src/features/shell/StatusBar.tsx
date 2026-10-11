@@ -70,7 +70,7 @@ export function StatusBar() {
   );
 }
 
-/** The active tab's address: from the saved connection, or from a quick target. Always `user@host:port`. */
+/** The active tab's address: from the saved connection, or from a quick target. `user@host:port`, or `host:port` without a user. */
 function sessionAddress(session: Session, connections: readonly Connection[]): string | null {
   const target = session.target;
   if (target.type === "saved") {
