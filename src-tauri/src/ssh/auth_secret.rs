@@ -233,24 +233,17 @@ pub async fn authenticate_key(
             attempt == 1,
         )
         .await?;
-        match load_secret_key(&expanded, Some(passphrase.expose())) {
-            Ok(key) => {
-                offer_key(handle, key, target, ctx).await?;
-                if save {
-                    save_secret(ctx, target, SecretKind::Passphrase, &passphrase).await;
-                }
-                return Ok(());
+        if let Ok(key) = load_secret_key(&expanded, Some(passphrase.expose())) {
+            offer_key(handle, key, target, ctx).await?;
+            if save {
+                save_secret(ctx, target, SecretKind::Passphrase, &passphrase).await;
             }
-            Err(_) => {
-                // Any load error is a wrong passphrase (the prototype got `SshKey(Crypto)`, not
-                // `KeyIsEncrypted`). Ask again, unless this was the last attempt.
-                if attempt == MAX_SECRET_ATTEMPTS {
-                    return Err(AppError::new(ErrorKind::Auth, "authentication failed"));
-                }
-            }
+            return Ok(());
         }
+        // Any load error is a wrong passphrase (the prototype got `SshKey(Crypto)`, not
+        // `KeyIsEncrypted`). Ask again, unless this was the last attempt.
     }
-    unreachable!("the loop always returns")
+    Err(AppError::new(ErrorKind::Auth, "authentication failed"))
 }
 
 /// Try one agent identity. Returns whether it authenticated (including a second factor).

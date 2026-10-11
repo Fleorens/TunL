@@ -19,7 +19,7 @@ use crate::model::{
 };
 use crate::sessions::{CloseReason, SessionEvent, SessionSink, ShellInput, StepKind, StepState};
 use crate::ssh::auth::{AuthPlan, AuthTarget, authenticate, plan_for};
-use crate::ssh::connect::{client_config, handshake, tcp_connect};
+use crate::ssh::connect::{client_config_for, handshake, tcp_connect};
 use crate::ssh::shell::{open_shell, pump};
 use crate::ssh::{SshContext, handler::HostKeyTarget};
 use crate::store::Store;
@@ -94,9 +94,9 @@ pub fn resolve_target(
                 .iter()
                 .find(|c| c.id == *connection_id)
                 .ok_or_else(|| AppError::not_found(format!("connection {connection_id}")))?;
-            if connection.settings.protocol() != Protocol::Ssh {
+            let ProtocolSettings::Ssh(settings) = &connection.settings else {
                 return Err(AppError::validation("protocol", "is not SSH"));
-            }
+            };
             if connection.jump_host_id.is_some() {
                 // T22 will thread the bastion through here.
                 return Err(AppError::validation(
@@ -109,10 +109,7 @@ pub fn resolve_target(
                 keepalive_secs,
                 connect_timeout_secs,
                 ..
-            } = match &connection.settings {
-                ProtocolSettings::Ssh(settings) => settings.clone(),
-                ProtocolSettings::Rdp(_) => unreachable!("protocol was checked above"),
-            };
+            } = settings.clone();
             let username = username_of(&connection.username, default_user)?;
             Ok(SshTarget {
                 connection_id: Some(connection.id),
@@ -218,7 +215,10 @@ pub async fn run_ssh_session(ctx: SshContext, session: ShellSession, sink: Arc<d
                     port: target.port,
                     session_id: Some(id),
                 },
-                client_config(target.keepalive_secs),
+                client_config_for(
+                    target.keepalive_secs,
+                    &ctx.known_hosts.algorithms(&target.host, target.port),
+                ),
                 &ctx,
             )
         },

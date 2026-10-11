@@ -5,13 +5,18 @@ pub mod connect;
 pub mod error;
 pub mod handler;
 pub mod known_hosts;
+pub mod known_hosts_file;
 pub mod session;
 pub mod shell;
 
 #[cfg(test)]
 mod auth_tests;
 #[cfg(test)]
+mod connect_tests;
+#[cfg(test)]
 mod error_tests;
+#[cfg(test)]
+mod known_hosts_format_tests;
 #[cfg(test)]
 mod known_hosts_tests;
 #[cfg(test)]
