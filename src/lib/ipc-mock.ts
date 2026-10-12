@@ -5,7 +5,7 @@ import type { Handler, MockState } from "./mock/data";
 import { freshState, TEMPLATES } from "./mock/data";
 import { groupHandlers } from "./mock/groups";
 import { importHandlers } from "./mock/import";
-import { promptHandlers } from "./mock/prompts";
+import { promptHandlers, resetMockPrompts } from "./mock/prompts";
 import { secretHandlers } from "./mock/secrets";
 import { resetMockSessions, sessionHandlers } from "./mock/sessions";
 import { settingsHandlers } from "./mock/settings";
@@ -68,6 +68,7 @@ export function resetMockBackend(): void {
   state = freshState();
   pendingFailure = null;
   resetMockSessions();
+  resetMockPrompts();
 }
 
 /** Browser-only fake backend used by `npm run dev` outside Tauri, and by the tests. */

@@ -4,6 +4,7 @@ import { create } from "zustand";
 import type { SessionEvent } from "@/bindings/SessionEvent";
 import type { SessionTarget } from "@/bindings/SessionTarget";
 import { useConnections } from "@/features/connections/store";
+import { usePrompts } from "@/features/prompts/store";
 import { useSettings } from "@/features/settings/store";
 import { notifyError, toAppError } from "@/lib/errors";
 import { ipc, type TerminalSize } from "@/lib/ipc";
@@ -109,6 +110,8 @@ export const useSessions = create<SessionsState>()((set, get) => ({
   close(id) {
     const session = get().sessions.find((s) => s.id === id);
     if (session) {
+      // Dropping this session's prompt removes its dialogue from the queue (the backend cancels its wait).
+      usePrompts.getState().dropSession(session.runId);
       ipc.sessionClose(session.runId).catch(notifyError);
     }
     removeSessionPort(id);

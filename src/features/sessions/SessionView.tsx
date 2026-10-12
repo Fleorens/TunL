@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useConnections } from "@/features/connections/store";
+import { HostKeyChangedCard } from "@/features/prompts/HostKeyChangedCard";
 import { useUi } from "@/features/shell/ui-store";
 import { TerminalView } from "@/features/terminal/TerminalView";
 import { describeError } from "@/lib/errors";
@@ -36,6 +37,7 @@ export function SessionView({ session, active }: { session: Session; active: boo
               session={session}
               onRetry={() => useSessions.getState().reconnect(session.id)}
               onEdit={editable ? edit(session.connectionId) : null}
+              onClose={() => useSessions.getState().requestClose(session.id)}
             />
           )}
         </AnimatePresence>
@@ -116,15 +118,28 @@ function SessionErrorCard({
   session,
   onRetry,
   onEdit,
+  onClose,
 }: {
   session: Session;
   onRetry: () => void;
   onEdit: (() => void) | null;
+  onClose: () => void;
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const error = session.error;
   if (!error) return null;
+  // A changed host key has its own card: explain the refusal, offer to remove the old key, reconnect.
+  if (error.detail?.type === "hostKeyChanged") {
+    return (
+      <HostKeyChangedCard
+        name={session.title}
+        detail={error.detail}
+        onReconnect={onRetry}
+        onClose={onClose}
+      />
+    );
+  }
   const hostKey = error.kind === "hostKeyRejected" || error.kind === "hostKeyChanged";
   return (
     <motion.div
