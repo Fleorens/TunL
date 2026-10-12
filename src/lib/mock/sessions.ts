@@ -113,9 +113,9 @@ async function scenario(
   target: ResolvedTarget,
   step: "hostKey" | "auth",
 ): Promise<AppError | null> {
-  const scenario_ = getScenario(target.name);
-  if (!scenario_ || scenario_.step !== step) return null;
-  return scenario_.run({ sessionId: session.id, host: target.host, port: target.port });
+  const found = getScenario(target.name);
+  if (!found || found.step !== step) return null;
+  return found.run({ sessionId: session.id, host: target.host, port: target.port });
 }
 
 /**

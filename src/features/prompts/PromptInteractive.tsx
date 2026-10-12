@@ -35,7 +35,6 @@ export function PromptInteractive({ id, prompt }: { id: string; prompt: Interact
   }
 
   function submitResponses(): void {
-    if (values.some((value) => value === "")) return;
     submit({ kind: "responses", values });
   }
 
@@ -86,11 +85,7 @@ export function PromptInteractive({ id, prompt }: { id: string; prompt: Interact
           <Button variant="outline" size="sm" onClick={() => submit({ kind: "cancel" })}>
             {t("prompts.cancel")}
           </Button>
-          <Button
-            size="sm"
-            onClick={submitResponses}
-            disabled={values.some((value) => value === "")}
-          >
+          <Button size="sm" onClick={submitResponses}>
             {t("prompts.continue")}
           </Button>
         </DialogFooter>

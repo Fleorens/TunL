@@ -72,10 +72,10 @@ export function cancelMockPrompts(sessionId: string): void {
 }
 
 export const promptHandlers: Record<string, Handler<Record<string, unknown>>> = {
-  prompt_answer(_state, args) {
+  prompt_answer(state, args) {
     const { id, answer: value } = arg<{ id: string; answer: PromptAnswer }>(args);
     answer(id, value);
-    return { state: _state, result: null };
+    return { state, result: null };
   },
 
   known_host_remove(state, args) {

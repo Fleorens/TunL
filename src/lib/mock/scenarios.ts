@@ -47,7 +47,7 @@ interface ScenarioContext {
 }
 
 // A host-key step: first connect asks to trust, a learned key connects, a rejected one fails.
-async function hostKeyStep(ctx: ScenarioContext): Promise<AppError | null> {
+async function hostKeyStep(ctx: ScenarioContext, fingerprint: string): Promise<AppError | null> {
   const { sessionId, host, port } = ctx;
   if (isHostKeyLearned(host, port)) return null;
   const answer = await askMockPrompt(sessionId, {
@@ -55,7 +55,7 @@ async function hostKeyStep(ctx: ScenarioContext): Promise<AppError | null> {
     host,
     port,
     keyType: "ssh-ed25519",
-    fingerprint: DB_FINGERPRINT,
+    fingerprint,
   });
   if (answer.kind === "accept") {
     markHostKeyLearned(host, port);
@@ -113,7 +113,7 @@ async function interactiveStep(ctx: ScenarioContext): Promise<AppError | null> {
 // The changed-host-key refusal: blocked until the old key is removed, then a first connect.
 async function changedKeyStep(ctx: ScenarioContext): Promise<AppError | null> {
   if (!isHostKeyRemoved(ctx.host, ctx.port)) return changed();
-  return hostKeyStep(ctx);
+  return hostKeyStep(ctx, NEW_FINGERPRINT);
 }
 
 type ScenarioStep = "hostKey" | "auth";
@@ -124,7 +124,7 @@ interface Scenario {
 }
 
 const SCENARIOS: Record<string, Scenario> = {
-  "db-prod": { step: "hostKey", run: hostKeyStep },
+  "db-prod": { step: "hostKey", run: (ctx) => hostKeyStep(ctx, DB_FINGERPRINT) },
   router: { step: "auth", run: passwordStep },
   "media-server": { step: "auth", run: interactiveStep },
   "kiosk-01": { step: "hostKey", run: changedKeyStep },
