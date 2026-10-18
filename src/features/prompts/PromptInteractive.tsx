@@ -59,10 +59,8 @@ export function PromptInteractive({ id, prompt }: { id: string; prompt: Interact
         ) : null}
         <div className="flex flex-col gap-4">
           {questions.map((question, index) => (
-            <div key={question.text} className="flex items-center gap-2">
-              <Label htmlFor={`prompt-q-${index}`} className="shrink-0">
-                {question.text.trim()}
-              </Label>
+            <div key={question.text} className="flex flex-col gap-2">
+              <Label htmlFor={`prompt-q-${index}`}>{question.text.trim()}</Label>
               <Input
                 id={`prompt-q-${index}`}
                 type={question.echo ? "text" : "password"}
@@ -76,7 +74,6 @@ export function PromptInteractive({ id, prompt }: { id: string; prompt: Interact
                 onKeyDown={(event) => {
                   if (event.key === "Enter") submitResponses();
                 }}
-                className="flex-1"
               />
             </div>
           ))}

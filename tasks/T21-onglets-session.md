@@ -667,7 +667,7 @@ test("F1 lists the keyboard shortcuts", async ({ page }) => {
 
 - [x] `npm run review` passe, et `node scripts/contract-tests.mjs T21 --check` affiche `OK` partout.
 - [x] `grep -rn "demo-data\|useDemoTabs" src` ne trouve rien.
-- [ ] Visuel : la carte d'étapes est centrée sur le terminal, les icônes alignées ; le bandeau de fin ne cache pas la
+- [x] Visuel : la carte d'étapes est centrée sur le terminal, les icônes alignées ; le bandeau de fin ne cache pas la
       dernière ligne du terminal ; la carte d'erreur est lisible en clair et en sombre.
 
 ## À regarder par Florian

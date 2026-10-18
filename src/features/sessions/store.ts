@@ -118,7 +118,7 @@ export const useSessions = create<SessionsState>()((set, get) => ({
     set((state) => {
       const remaining = state.sessions.filter((s) => s.id !== id);
       if (state.activeId !== id) return { sessions: remaining };
-      return { sessions: remaining, activeId: neighbour(remaining, id)?.id ?? null };
+      return { sessions: remaining, activeId: neighbour(state.sessions, id)?.id ?? null };
     });
   },
 
@@ -175,8 +175,8 @@ function start(id: string, runId: string): void {
     });
 }
 
-/** The next tab to focus when one closes: the neighbour just before it, or the last one. */
+/** The tab to focus when `removedId` closes (`sessions` still holds it): the one after it, else the one before. */
 function neighbour(sessions: readonly Session[], removedId: string): Session | null {
   const index = sessions.findIndex((s) => s.id === removedId);
-  return sessions[Math.min(index, sessions.length - 1)] ?? null;
+  return sessions[index + 1] ?? sessions[index - 1] ?? null;
 }

@@ -397,7 +397,7 @@ test("a changed host key is explained, and the old key can be removed", async ({
 
 - [x] `npm run review` passe, et `node scripts/contract-tests.mjs T21b --check` affiche `OK` partout.
 - [x] `grep -rn "listen(" src --include=*.ts --include=*.tsx` ne trouve que `src/lib/events.ts`.
-- [ ] Visuel : l'empreinte tient sur la largeur du dialogue (retour à la ligne, pas de débordement) ; la carte « clé
+- [x] Visuel : l'empreinte tient sur la largeur du dialogue (retour à la ligne, pas de débordement) ; la carte « clé
       changée » se lit comme un avertissement (rouge), sans être criarde.
 
 ## À regarder par Florian

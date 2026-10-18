@@ -455,7 +455,7 @@ async fn a_closed_port_is_a_network_error() {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T17b --check` affiche `OK` partout.
+- [x] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T17b --check` affiche `OK` partout.
 - [x] Le délai de connexion ne couvre que le TCP : `tokio::time::timeout` n'apparaît pas autour de `handshake`.
 
 ## À regarder par Florian

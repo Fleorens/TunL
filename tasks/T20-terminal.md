@@ -517,7 +517,7 @@ test("F1 lists the terminal's own shortcuts too", async ({ page }) => {
 
 - [x] `npm run review` passe, et `node scripts/contract-tests.mjs T20 --check` affiche `OK` partout.
 - [x] `grep -rn "plugin-opener\|plugin-clipboard-manager" src` ne trouve que `lib/opener.ts` et `lib/clipboard.ts`.
-- [ ] Visuel : dans `/#gallery`, le terminal a la police Geist Mono, le curseur barre cyan clignotant, la marge
+- [x] Visuel : dans `/#gallery`, le terminal a la police Geist Mono, le curseur barre cyan clignotant, la marge
       intérieure du fond du terminal, et le panneau de recherche ne cache pas la première ligne de texte.
 
 ## À regarder par Florian
