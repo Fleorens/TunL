@@ -69,6 +69,7 @@ fn target(env: &TestEnv, id: Uuid, port: u16) -> SshTarget {
         plan: AuthPlan::Password,
         connect_timeout: Duration::from_secs(5),
         keepalive_secs: 15,
+        jump_hosts: Vec::new(),
     }
 }
 

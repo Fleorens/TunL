@@ -6,6 +6,7 @@
 import type { AppError } from "@/bindings/AppError";
 import type { SessionEvent } from "@/bindings/SessionEvent";
 import type { SessionTarget } from "@/bindings/SessionTarget";
+import { jumpChainNames } from "@/features/connections/jump-hosts";
 import type { Handler } from "./data";
 import { arg } from "./data";
 import { cancelMockPrompts } from "./prompts";
@@ -37,8 +38,8 @@ interface ResolvedTarget {
   user: string;
   /** The name printed in the banner: the connection name, or `user@host` for a quick target. */
   name: string;
-  /** The bastion's name, when the connection is reached through a jump host (T22). */
-  bastionName?: string;
+  /** The bastions to cross first (dial order), empty for a direct connection or a quick target (T22). */
+  bastions: string[];
   /** A quick target that refuses the connection at the Target step. */
   unreachable?: boolean;
 }
@@ -80,18 +81,14 @@ function resolveTarget(state: Parameters<Handler>[0], target: SessionTarget): Re
       throw validation("is not SSH");
     }
     const user = connection.username ?? "user";
-    // The mock anticipates T22: a bastion goes through a Hop step. The real backend still refuses it.
-    if (connection.jumpHostId) {
-      const bastion = state.connections.find((c) => c.id === connection.jumpHostId);
-      return {
-        host: connection.host,
-        port: connection.port,
-        user,
-        name: connection.name,
-        bastionName: bastion?.name ?? "",
-      };
-    }
-    return { host: connection.host, port: connection.port, user, name: connection.name };
+    const bastions = jumpChainNames(state.connections, connection.jumpHostId ?? "");
+    return {
+      host: connection.host,
+      port: connection.port,
+      user,
+      name: connection.name,
+      bastions,
+    };
   }
 
   if (target.host === "" || target.host.includes(" ") || target.host.includes("!")) {
@@ -103,6 +100,7 @@ function resolveTarget(state: Parameters<Handler>[0], target: SessionTarget): Re
     port: target.port,
     user,
     name: target.username ? `${target.username}@${target.host}` : target.host,
+    bastions: [],
     unreachable: target.host === "unreachable.test",
   };
 }
@@ -147,10 +145,10 @@ async function runSession(session: LiveSession, target: ResolvedTarget): Promise
   const { event, output } = scheduler(session);
   const address = `${target.host}:${target.port}`;
 
-  // A bastion goes through a Hop step first (the mock anticipates T22).
-  if (target.bastionName) {
-    await event({ type: "step", step: "hop", label: target.bastionName, state: "started" });
-    await event({ type: "step", step: "hop", label: target.bastionName, state: "done" });
+  // One Hop step per bastion, in dial order (the first dialled first, T22).
+  for (const bastion of target.bastions) {
+    await event({ type: "step", step: "hop", label: bastion, state: "started" });
+    await event({ type: "step", step: "hop", label: bastion, state: "done" });
   }
 
   await event({ type: "step", step: "target", label: address, state: "started" });
