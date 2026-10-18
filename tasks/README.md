@@ -8,7 +8,7 @@ le modèle a réellement livré. Une fiche qui cite des signatures de code pas e
 
 - Lots 1 à 4 : **validés** (T01 → T21b, revue du lot 4 le 2026-10-18 : deux défauts corrigés et figés dans
   `e2e/review-lot4.spec.ts`).
-- Lot 5 (T22 → T30) : en cours d'écriture. Prochaine fiche : **T22** (chaîne de bastions).
+- Lot 5 (T22 → T30) : en cours d'écriture. **T22** (chaîne de bastions) est prête, prototypée contre podman.
 - À partir de T17b, `npm run review` démarre aussi les conteneurs SSH de test (podman, `npm run test:ssh`).
 - En attente de Florian, dans la vraie app (`npm run tauri dev`) :
   - T10 et T11 : créer, modifier et supprimer une connexion, avec un bastion (voir « À regarder » des deux fiches) ;
@@ -98,7 +98,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T22 | Chaîne de bastions : résolution, cycles, direct-tcpip + connect_stream, étapes | T21b | **élevé** | Opus 5 · high | à écrire |
+| T22 | Chaîne de bastions : résolution, cycles, direct-tcpip + connect_stream, étapes | T21b | **élevé** | Opus 5 · high | prête |
 | T23 | Tunnel local 127.0.0.1:port → cible via la chaîne (moteur pour le RDP) | T22 | **élevé** | Opus 5 · high | à écrire |
 
 ### M4 — SFTP
