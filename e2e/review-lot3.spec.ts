@@ -39,7 +39,8 @@ test("a card's hover actions sit in one row and hide the status dot", async ({ p
   ];
   const tops = await Promise.all(actions.map(async (a) => (await a.boundingBox())?.y));
   expect(new Set(tops).size, "one row of actions").toBe(1);
-  await expect(card.getByRole("img", { name: "Unknown" })).toBeHidden();
+  // Whatever its probe found (T30), the dot hides under the actions.
+  await expect(card.getByRole("img", { name: /^(Online|Offline|Unknown)$/ })).toBeHidden();
 });
 
 test("the card's padding opens the connection too", async ({ page }) => {
