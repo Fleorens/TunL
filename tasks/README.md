@@ -8,7 +8,7 @@ le modèle a réellement livré. Une fiche qui cite des signatures de code pas e
 
 - Lots 1 à 4 : **validés** (T01 → T21b, revue du lot 4 le 2026-10-18 : deux défauts corrigés et figés dans
   `e2e/review-lot4.spec.ts`).
-- Lot 5 (T22 → T30) : en cours d'écriture. Prêtes, et prototypées : **T22** (chaîne de bastions), **T27** (FreeRDP : détection, arguments), **T30** (sondes).
+- Lot 5 (T22 → T30) : en cours d'écriture. Prêtes, et prototypées : **T22** (chaîne de bastions), **T27** (FreeRDP : détection, arguments), **T30** (sondes), **T29** (Wake-on-LAN).
 - À partir de T17b, `npm run review` démarre aussi les conteneurs SSH de test (podman, `npm run test:ssh`).
 - En attente de Florian, dans la vraie app (`npm run tauri dev`) :
   - T10 et T11 : créer, modifier et supprimer une connexion, avec un bastion (voir « À regarder » des deux fiches) ;
@@ -120,7 +120,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T29 | WoL : paquet magique, bouton, réveil avant connexion + attente du port | T22 | faible | Sonnet 5 · low | à écrire |
+| T29 | WoL : paquet magique, bouton, réveil avant connexion + attente du port | T22 | faible | Sonnet 5 · low | prête |
 | T30 | Sondes de disponibilité (TCP, pastilles, latence) | T09 | moyen | Sonnet 5 · medium | prête |
 
 ### M7 — Finitions
