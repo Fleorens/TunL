@@ -51,14 +51,6 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 `à écrire` (fiche pas encore détaillée) → `prête` → `livrée` (le modèle a fini, `npm run review` vert) → `validée`
 (relue par Claude à la revue du lot). Ce que Florian doit voir dans la vraie app est listé dans « Où on en est ».
 
-## Where it stands
-
-Ce qui fonctionne aujourd'hui dans l'app (revue de lot). Les détails dans chaque fiche.
-
-| Aujourd'hui |
-|---|
-| Sessions SSH en onglets, **via une chaîne de bastions** (jusqu'à 4 sauts), avec journal d'étapes à l'ouverture |
-
 ## Jalons et fiches
 
 ### M0 — Fondations

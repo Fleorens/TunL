@@ -54,7 +54,7 @@ pub fn resolve_chain<'a>(
         if chain.len() > MAX_JUMP_HOSTS {
             return Err(AppError::validation(
                 "jumpHostId",
-                "the jump host chain may contain at most 4 bastions",
+                &format!("the jump host chain may contain at most {MAX_JUMP_HOSTS} bastions"),
             ));
         }
         current = hop.jump_host_id;
