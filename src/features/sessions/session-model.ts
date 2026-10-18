@@ -54,7 +54,7 @@ export function newSession(id: string, title: string, target: SessionTarget): Se
 /**
  * Fold one backend event onto a session, returning a new object.
  *
- * - `step` replaces the line of the same kind, or is appended when it is new;
+ * - `step` replaces the line of the same kind and label, or is appended when it is new;
  * - `connected`, `closed`, `error` set the status (and the error / exit code);
  * - `log` carries no tab state, so the session is returned unchanged.
  */
@@ -62,7 +62,9 @@ export function applySessionEvent(session: Session, event: SessionEvent): Sessio
   switch (event.type) {
     case "step": {
       const next: SessionStepView = { step: event.step, label: event.label, state: event.state };
-      const index = session.steps.findIndex((s) => s.step === event.step);
+      const index = session.steps.findIndex(
+        (s) => s.step === event.step && s.label === event.label,
+      );
       const steps =
         index === -1
           ? [...session.steps, next]

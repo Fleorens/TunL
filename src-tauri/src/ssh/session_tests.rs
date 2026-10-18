@@ -118,22 +118,73 @@ fn an_rdp_connection_cannot_open_a_shell() {
 }
 
 #[test]
-fn a_jump_host_is_refused_until_t22() {
-    let bastion = ssh("bastion", Some("ops"), SshSettings::default());
+fn bastions_are_resolved_first_dialled_first_each_with_its_own_settings() {
+    // web-01 → inner → outer: TunL dials outer by TCP, then inner through it, then web-01.
+    let outer = ssh(
+        "outer",
+        None,
+        SshSettings {
+            auth: SshAuth::Agent,
+            keepalive_secs: Some(7),
+            connect_timeout_secs: Some(3),
+        },
+    );
+    let mut inner = ssh("inner", Some("ops"), SshSettings::default());
+    inner.jump_host_id = Some(outer.id);
     let mut web = ssh("web-01", Some("deploy"), SshSettings::default());
-    web.jump_host_id = Some(bastion.id);
+    web.jump_host_id = Some(inner.id);
     let target = SessionTarget::Saved {
         connection_id: web.id,
     };
-    let error = resolve_target(
+    let resolved = resolve_target(
         &target,
-        &store(vec![bastion, web]),
+        &store(vec![web.clone(), inner.clone(), outer.clone()]),
         &defaults(),
         Some("ada"),
     )
-    .unwrap_err();
-    assert_eq!(error.kind, ErrorKind::Validation);
-    assert!(error.message.contains("jump"), "{}", error.message);
+    .unwrap();
+
+    assert_eq!(resolved.connection_id, Some(web.id));
+    assert_eq!(resolved.username, "deploy");
+    let names: Vec<&str> = resolved
+        .jump_hosts
+        .iter()
+        .map(|hop| hop.connection_name.as_str())
+        .collect();
+    assert_eq!(names, ["outer", "inner"]);
+
+    let first = &resolved.jump_hosts[0];
+    assert_eq!(first.connection_id, Some(outer.id));
+    assert_eq!(
+        first.username, "ada",
+        "a bastion without a user takes the local one"
+    );
+    assert_eq!(first.plan, AuthPlan::Agent);
+    assert_eq!(first.keepalive_secs, 7);
+    assert_eq!(first.connect_timeout, Duration::from_secs(3));
+    assert!(first.jump_hosts.is_empty());
+    assert_eq!(resolved.jump_hosts[1].username, "ops");
+}
+
+#[test]
+fn a_direct_connection_has_no_bastion() {
+    let web = ssh("web-01", Some("deploy"), SshSettings::default());
+    let target = SessionTarget::Saved {
+        connection_id: web.id,
+    };
+    let resolved = resolve_target(&target, &store(vec![web]), &defaults(), Some("ada")).unwrap();
+    assert!(resolved.jump_hosts.is_empty());
+}
+
+#[test]
+fn a_bastion_deleted_since_is_not_found() {
+    let mut web = ssh("web-01", Some("deploy"), SshSettings::default());
+    web.jump_host_id = Some(Uuid::new_v4());
+    let target = SessionTarget::Saved {
+        connection_id: web.id,
+    };
+    let error = resolve_target(&target, &store(vec![web]), &defaults(), Some("ada")).unwrap_err();
+    assert_eq!(error.kind, ErrorKind::NotFound);
 }
 
 #[test]

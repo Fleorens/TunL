@@ -8,7 +8,7 @@ use super::{Connection, ConnectionInput, Group, Protocol, ProtocolSettings, WolC
 use crate::error::{AppError, AppResult, ErrorDetail, ErrorKind};
 
 /// Maximum number of bastions in a jump chain.
-const MAX_JUMP_HOSTS: usize = 4;
+pub const MAX_JUMP_HOSTS: usize = 4;
 
 /// Returns a NEW, normalized copy of `input`, or the first validation error found.
 ///

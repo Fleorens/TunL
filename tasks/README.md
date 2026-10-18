@@ -98,7 +98,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T22 | Chaîne de bastions : résolution, cycles, direct-tcpip + connect_stream, étapes | T21b | **élevé** | Opus 5 · high | prête |
+| T22 | Chaîne de bastions : résolution, cycles, direct-tcpip + connect_stream, étapes | T21b | **élevé** | Opus 5 · high | livrée |
 | T23 | Tunnel local 127.0.0.1:port → cible via la chaîne (moteur pour le RDP) | T22 | **élevé** | Opus 5 · high | à écrire |
 
 ### M4 — SFTP

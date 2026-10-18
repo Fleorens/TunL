@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { Connection } from "@/bindings/Connection";
 import { ProtocolBadge } from "@/components/ProtocolBadge";
 import { Badge } from "@/components/ui/badge";
+import { jumpChainNames } from "@/features/connections/jump-hosts";
 import { useConnections } from "@/features/connections/store";
 import type { Session } from "@/features/sessions/session-model";
 import { useSessions } from "@/features/sessions/store";
@@ -26,7 +27,7 @@ export function StatusBar() {
   );
 
   const address = active ? sessionAddress(active, connections) : null;
-  const bastion = active ? bastionName(active, connections) : null;
+  const bastion = active ? bastionChain(active, connections) : null;
   const size = active?.size ?? null;
 
   const [version, setVersion] = useState<string | null>(null);
@@ -82,11 +83,14 @@ function sessionAddress(session: Session, connections: readonly Connection[]): s
   return `${username ? `${username}@` : ""}${host}:${port}`;
 }
 
-/** The bastion's name for a saved connection, or null (quick targets have no jump host). */
-function bastionName(session: Session, connections: readonly Connection[]): string | null {
+/**
+ * The bastion chain of a saved connection, names joined `nas → bastion-01`, or null (a quick target, or one
+ * with no jump host). Uses `jumpChainNames`, the user's side of the chain (outermost bastion first).
+ */
+function bastionChain(session: Session, connections: readonly Connection[]): string | null {
   const target = session.target;
   if (target.type !== "saved") return null;
   const connection = connections.find((c) => c.id === target.connectionId);
-  if (!connection?.jumpHostId) return null;
-  return connections.find((c) => c.id === connection.jumpHostId)?.name ?? null;
+  const chain = jumpChainNames(connections, connection?.jumpHostId ?? "");
+  return chain.length === 0 ? null : chain.join(" → ");
 }

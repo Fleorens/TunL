@@ -79,7 +79,7 @@ function ConnectingOverlay({ session, onClose }: { session: Session; onClose: ()
         <p className="text-sm font-medium">{t("sessions.connecting", { name: session.title })}</p>
         <ul className="mt-3 flex flex-col gap-1.5 text-sm">
           {session.steps.map((step) => (
-            <StepLine key={step.step} step={step} />
+            <StepLine key={`${step.step}:${step.label}`} step={step} />
           ))}
         </ul>
         <Button variant="outline" size="sm" onClick={onClose} className="mt-3 self-end">

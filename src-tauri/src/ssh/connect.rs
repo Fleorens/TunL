@@ -17,6 +17,10 @@ use crate::error::{AppError, AppResult, ErrorKind};
 use crate::ssh::SshContext;
 use crate::ssh::handler::{ClientHandler, HostKeyTarget};
 
+/// A stream an SSH session runs on: a TCP socket, or a `direct-tcpip` channel of the previous hop (T22).
+pub trait SshStream: AsyncRead + AsyncWrite + Unpin + Send + 'static {}
+impl<S: AsyncRead + AsyncWrite + Unpin + Send + 'static> SshStream for S {}
+
 /// The russh client config: no inactivity timeout (the prompt can take a while) and a keepalive.
 /// Nagle is turned off on the socket by `tcp_connect`.
 pub fn client_config(keepalive_secs: u32) -> Arc<Config> {

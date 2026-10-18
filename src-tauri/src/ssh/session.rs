@@ -6,6 +6,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use russh::Disconnect;
+use russh::client::Handle;
 use serde::Deserialize;
 use tokio::sync::mpsc;
 use tokio_util::sync::CancellationToken;
@@ -14,14 +15,14 @@ use uuid::Uuid;
 
 use crate::error::{AppError, AppResult};
 use crate::model::{
-    ConnectionInput, Protocol, ProtocolSettings, SshDefaults, SshSettings,
+    Connection, ConnectionInput, Protocol, ProtocolSettings, SshDefaults, SshSettings,
     normalize_connection_input,
 };
 use crate::sessions::{CloseReason, SessionEvent, SessionSink, ShellInput, StepKind, StepState};
-use crate::ssh::auth::{AuthPlan, AuthTarget, authenticate, plan_for};
-use crate::ssh::connect::{client_config_for, handshake, tcp_connect};
+use crate::ssh::auth::{AuthPlan, authenticate, plan_for};
+use crate::ssh::chain::{auth_target_of, connect_hop, dial, handshake_with, resolve_chain};
 use crate::ssh::shell::{open_shell, pump};
-use crate::ssh::{SshContext, handler::HostKeyTarget};
+use crate::ssh::{SshContext, handler::ClientHandler};
 use crate::store::Store;
 
 /// A shell session opens against a saved connection or a quick target typed in the UI (docs/01 §6).
@@ -54,6 +55,9 @@ pub struct SshTarget {
     pub plan: AuthPlan,
     pub connect_timeout: Duration,
     pub keepalive_secs: u32,
+    /// The bastions to cross, first dialled first (T22). Empty for a direct connection, and always empty in
+    /// the `SshTarget` of a bastion.
+    pub jump_hosts: Vec<SshTarget>,
 }
 
 /// One running session, handed to `run_ssh_session`. The input receiver and cancel token come from the
@@ -80,7 +84,8 @@ pub fn default_username() -> Option<String> {
         })
 }
 
-/// Resolve what a shell session connects to (docs/01-architecture.md §5, this sheet).
+/// Resolve what a shell session connects to (docs/01-architecture.md §5, this sheet): the address, user and
+/// auth plan of the target, and the bastions to cross before it (T22).
 pub fn resolve_target(
     target: &SessionTarget,
     store: &Store,
@@ -94,36 +99,15 @@ pub fn resolve_target(
                 .iter()
                 .find(|c| c.id == *connection_id)
                 .ok_or_else(|| AppError::not_found(format!("connection {connection_id}")))?;
-            let ProtocolSettings::Ssh(settings) = &connection.settings else {
-                return Err(AppError::validation("protocol", "is not SSH"));
-            };
-            if connection.jump_host_id.is_some() {
-                // T22 will thread the bastion through here.
-                return Err(AppError::validation(
-                    "jumpHostId",
-                    "jump hosts are not supported yet",
-                ));
-            }
-            let SshSettings {
-                auth,
-                keepalive_secs,
-                connect_timeout_secs,
-                ..
-            } = settings.clone();
-            let username = username_of(&connection.username, default_user)?;
-            Ok(SshTarget {
-                connection_id: Some(connection.id),
-                connection_name: connection.name.clone(),
-                host: connection.host.clone(),
-                port: connection.port,
-                username,
-                plan: plan_for(&auth),
-                connect_timeout: connect_timeout(
-                    connect_timeout_secs,
-                    defaults.connect_timeout_secs,
-                ),
-                keepalive_secs: keepalive_secs.unwrap_or(defaults.keepalive_secs),
-            })
+            // The bastions first, each with its own settings (T22); the target keeps them in `jump_hosts`.
+            let chain = resolve_chain(connection, &store.connections)?;
+            let jump_hosts: Vec<SshTarget> = chain
+                .iter()
+                .map(|hop| saved_target(hop, defaults, default_user))
+                .collect::<AppResult<_>>()?;
+            let mut target = saved_target(connection, defaults, default_user)?;
+            target.jump_hosts = jump_hosts;
+            Ok(target)
         }
         SessionTarget::Quick {
             host,
@@ -155,9 +139,40 @@ pub fn resolve_target(
                 plan: AuthPlan::Auto,
                 connect_timeout: connect_timeout(None, defaults.connect_timeout_secs),
                 keepalive_secs: defaults.keepalive_secs,
+                jump_hosts: Vec::new(),
             })
         }
     }
+}
+
+/// What a saved connection connects to: its SSH protocol, user, auth plan and delays (T22). The bastions are
+/// filled by `resolve_target`, so this always resolves a direct target with an empty `jump_hosts`.
+fn saved_target(
+    connection: &Connection,
+    defaults: &SshDefaults,
+    default_user: Option<&str>,
+) -> AppResult<SshTarget> {
+    let ProtocolSettings::Ssh(settings) = &connection.settings else {
+        return Err(AppError::validation("protocol", "is not SSH"));
+    };
+    let SshSettings {
+        auth,
+        keepalive_secs,
+        connect_timeout_secs,
+        ..
+    } = settings.clone();
+    let username = username_of(&connection.username, default_user)?;
+    Ok(SshTarget {
+        connection_id: Some(connection.id),
+        connection_name: connection.name.clone(),
+        host: connection.host.clone(),
+        port: connection.port,
+        username,
+        plan: plan_for(&auth),
+        connect_timeout: connect_timeout(connect_timeout_secs, defaults.connect_timeout_secs),
+        keepalive_secs: keepalive_secs.unwrap_or(defaults.keepalive_secs),
+        jump_hosts: Vec::new(),
+    })
 }
 
 /// The connection's own user, else `default_user`, else a validation error (docs/01-architecture.md §5).
@@ -175,12 +190,14 @@ fn connect_timeout(connect_timeout_secs: Option<u32>, default_secs: u32) -> Dura
     Duration::from_secs(u64::from(connect_timeout_secs.unwrap_or(default_secs)))
 }
 
-/// Run one shell session: the four steps, the shell, and the end (docs/01-architecture.md §5, §6).
+/// Run one shell session: the steps, the shell, and the end (docs/01-architecture.md §5, §6).
 ///
-/// Each step emits `Started` then `Done` or `Failed`. A failed step emits `Error` and stops, with no
-/// `Closed`. A cancel during any step stops with `Closed { UserClosed, None }` (the prompt it left
-/// behind is forgotten by the broker when its future is dropped). When the shell ends, `Closed {
-/// reason, exit_status }` is emitted, then a clean disconnect.
+/// Before the target, one `Hop` step crosses each bastion (first dialled first, T22): its stream, its
+/// handshake, then its authentication. Each step then emits `Started` then `Done` or `Failed`. A failed step
+/// emits `Error` and stops, with no `Closed`. A cancel during any step stops with `Closed { UserClosed, None }`
+/// (the prompt it left behind is forgotten by the broker when its future is dropped). When the shell ends,
+/// `Closed { reason, exit_status }` is emitted, then a clean disconnect of the target and, after it, of the
+/// bastions from the nearest to the first.
 pub async fn run_ssh_session(ctx: SshContext, session: ShellSession, sink: Arc<dyn SessionSink>) {
     let ShellSession {
         id,
@@ -191,10 +208,39 @@ pub async fn run_ssh_session(ctx: SshContext, session: ShellSession, sink: Arc<d
         cancel,
     } = session;
 
-    // Target: the TCP connection to the host.
+    // The bastions before the target, kept alive until the end of the session (a dropped handle would close
+    // the target's channel). One Hop step crosses each of them, first dialled first (T22): the stream, the
+    // handshake, then authentication with the bastion's own plan.
+    let mut handles: Vec<Handle<ClientHandler>> = Vec::new();
+    let mut names: Vec<String> = Vec::new();
+    for hop in &target.jump_hosts {
+        // The channel is opened through the bastion before this one (the previous handle), named `via` in
+        // errors; empty for the first, opened by TCP.
+        let via_name = names.last().cloned().unwrap_or_default();
+        let Ok(hop_handle) = connect_step(
+            cancel.clone(),
+            &*sink,
+            StepKind::Hop,
+            &hop.connection_name,
+            || async {
+                let mut handle = connect_hop(hop, handles.last(), &via_name, id, &ctx).await?;
+                authenticate(&mut handle, &auth_target_of(hop, id), &ctx).await?;
+                Ok(handle)
+            },
+        )
+        .await
+        else {
+            return;
+        };
+        handles.push(hop_handle);
+        names.push(hop.connection_name.clone());
+    }
+
+    // Target: through the last bastion, or by TCP when there is none.
     let address = format!("{}:{}", target.host, target.port);
+    let via_name = names.last().cloned().unwrap_or_default();
     let Ok(stream) = connect_step(cancel.clone(), &*sink, StepKind::Target, &address, || {
-        tcp_connect(&target.host, target.port, target.connect_timeout)
+        dial(handles.last(), &via_name, &target, target.connect_timeout)
     })
     .await
     else {
@@ -207,21 +253,7 @@ pub async fn run_ssh_session(ctx: SshContext, session: ShellSession, sink: Arc<d
         &*sink,
         StepKind::HostKey,
         &target.host,
-        || {
-            handshake(
-                stream,
-                HostKeyTarget {
-                    host: target.host.clone(),
-                    port: target.port,
-                    session_id: Some(id),
-                },
-                client_config_for(
-                    target.keepalive_secs,
-                    &ctx.known_hosts.algorithms(&target.host, target.port),
-                ),
-                &ctx,
-            )
-        },
+        || handshake_with(stream, &target, id, &ctx),
     )
     .await
     else {
@@ -229,14 +261,7 @@ pub async fn run_ssh_session(ctx: SshContext, session: ShellSession, sink: Arc<d
     };
 
     // Authentication.
-    let auth_target = AuthTarget {
-        connection_id: target.connection_id,
-        connection_name: target.connection_name.clone(),
-        username: target.username.clone(),
-        host: target.host.clone(),
-        session_id: Some(id),
-        plan: target.plan.clone(),
-    };
+    let auth_target = auth_target_of(&target, id);
     let Ok(()) = connect_step(
         cancel.clone(),
         &*sink,
@@ -258,7 +283,8 @@ pub async fn run_ssh_session(ctx: SshContext, session: ShellSession, sink: Arc<d
         return;
     };
 
-    // The shell runs until it ends, then we disconnect cleanly.
+    // The shell runs until it ends, then we disconnect cleanly: the target first, then the bastions from the
+    // nearest to the first (their handles, still alive, close the channels they hold open).
     sink.event(SessionEvent::Connected);
     let (reason, exit_status) = pump(channel, input, cancel.clone(), &*sink).await;
     sink.event(SessionEvent::Closed {
@@ -266,6 +292,9 @@ pub async fn run_ssh_session(ctx: SshContext, session: ShellSession, sink: Arc<d
         exit_status,
     });
     let _ = handle.disconnect(Disconnect::ByApplication, "", "en").await;
+    for handle in handles.into_iter().rev() {
+        let _ = handle.disconnect(Disconnect::ByApplication, "", "en").await;
+    }
 }
 
 /// Run one step's work, emitting `Started`, then `Done` (and returning the value) or `Failed` +

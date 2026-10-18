@@ -14,7 +14,7 @@ A modern SSH, SFTP and RDP connection manager for Linux, built with Tauri 2, Rea
 | Command palette (Ctrl+Shift+P / Ctrl+K): search connections, quick connect, toggle theme, keyboard shortcuts (F1) | |
 | Secrets: passwords and SSH key passphrases in the system keyring, saved/replaced/forgotten in the connection editor (T12) | |
 | Storage: `~/.config/io.github.fleorens.TunL/connections.json` (mode 0600, `.bak` copy) | |
-| SSH sessions in tabs: terminal, connecting steps, error card with Retry, end banner with Reconnect, no jump host yet (T21) | |
+| SSH sessions in tabs: terminal, connecting steps, error card with Retry, end banner with Reconnect, through a chain of jump hosts (T21, T22) | |
 | Connection prompts: host key, password/passphrase (keyring), 2FA, changed host key (T21b) | |
 
 The progress of each task is in [`tasks/README.md`](tasks/README.md).
