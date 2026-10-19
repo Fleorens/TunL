@@ -180,7 +180,8 @@
     "via": "via {{name}}",
     "size": "{{cols}}×{{rows}}",
     "version": "v{{version}}",
-    "mockBackend": "Mock backend"
+    "mockBackend": "Mock backend",
+    "latency": "{{ms}} ms"
   },
   "errors": {
     "kind": {

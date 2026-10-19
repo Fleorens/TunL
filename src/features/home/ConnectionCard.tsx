@@ -3,10 +3,10 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { Connection } from "@/bindings/Connection";
 import { ProtocolBadge } from "@/components/ProtocolBadge";
-import { StatusDot } from "@/components/StatusDot";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ConnectionStatusDot } from "@/features/reachability/ConnectionStatusDot";
 import { openSession } from "@/features/sessions/open-session";
 import { useUi } from "@/features/shell/ui-store";
 import { cn } from "@/lib/utils";
@@ -44,9 +44,8 @@ export function ConnectionCard({ connection, jumpHostName }: ConnectionCardProps
         <div className="flex items-center justify-between">
           <ProtocolBadge protocol={protocol} />
           {/* The hover actions take this corner: the dot hides instead of sitting under them. */}
-          <StatusDot
-            status="unknown"
-            label={t("status.unknown")}
+          <ConnectionStatusDot
+            connectionId={connection.id}
             className="group-hover:invisible group-focus-within:invisible"
           />
         </div>

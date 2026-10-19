@@ -7,6 +7,7 @@ import { ImportDialog } from "@/features/import/ImportDialog";
 import { CommandPalette } from "@/features/palette/CommandPalette";
 import { ShortcutsDialog } from "@/features/palette/ShortcutsDialog";
 import { PromptHost } from "@/features/prompts/PromptHost";
+import { useReachabilityPolling } from "@/features/reachability/use-reachability-polling";
 import { CloseSessionDialog } from "@/features/sessions/CloseSessionDialog";
 import { SessionView } from "@/features/sessions/SessionView";
 import { useSessions } from "@/features/sessions/store";
@@ -65,6 +66,7 @@ export function AppLayout() {
     },
   };
   useGlobalShortcuts(handlers);
+  useReachabilityPolling();
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-background">

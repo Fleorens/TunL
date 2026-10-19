@@ -4,6 +4,7 @@ pub mod error;
 pub mod import;
 pub mod model;
 pub mod paths;
+pub mod probe;
 pub mod prompts;
 pub mod rdp;
 pub mod secrets;
@@ -12,6 +13,8 @@ pub mod ssh;
 pub mod state;
 pub mod store;
 
+#[cfg(test)]
+mod probe_tests;
 #[cfg(test)]
 mod prompts_tests;
 #[cfg(test)]
@@ -104,6 +107,7 @@ pub fn invoke_handler<R: tauri::Runtime>()
         commands::import::import_ssh_config_apply,
         commands::prompts::prompt_answer,
         commands::prompts::known_host_remove,
+        commands::probe::probe_check,
         commands::ssh::ssh_open,
         commands::ssh::ssh_write,
         commands::ssh::ssh_resize,

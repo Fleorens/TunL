@@ -3,8 +3,8 @@ import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import type { Connection } from "@/bindings/Connection";
 import { ProtocolIcon } from "@/components/ProtocolIcon";
-import { StatusDot } from "@/components/StatusDot";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ConnectionStatusDot } from "@/features/reachability/ConnectionStatusDot";
 import { cn } from "@/lib/utils";
 
 interface ConnectionRowProps extends ComponentProps<"button"> {
@@ -71,7 +71,7 @@ export function ConnectionRow({
           <TooltipContent>{t("sidebar.viaBastion", { name: jumpHostName })}</TooltipContent>
         </Tooltip>
       )}
-      <StatusDot status="unknown" label={t("status.unknown")} />
+      <ConnectionStatusDot connectionId={connection.id} />
     </button>
   );
 }
