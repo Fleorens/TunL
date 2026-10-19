@@ -9,8 +9,8 @@ use serde::Serialize;
 use tokio::net::TcpStream;
 use tokio::sync::Semaphore;
 use tokio::task::JoinSet;
-use uuid::Uuid;
 use ts_rs::TS;
+use uuid::Uuid;
 
 use crate::model::Connection;
 
@@ -67,12 +67,10 @@ pub async fn probe_all(
     // Every slot starts `Offline`; skipped and errored tasks keep it.
     let mut results: Vec<ProbeResult> = connections
         .iter()
-        .map(|connection| {
-            ProbeResult {
-                connection_id: connection.id,
-                status: ProbeStatus::Offline,
-                latency_ms: None,
-            }
+        .map(|connection| ProbeResult {
+            connection_id: connection.id,
+            status: ProbeStatus::Offline,
+            latency_ms: None,
         })
         .collect();
 
@@ -116,10 +114,9 @@ pub async fn probe_all(
     }
 
     while let Some(entry) = join_set.join_next().await {
-        match entry {
-            Ok((index, probe_result)) => results[index] = probe_result,
-            // A task that would error counts as Offline (already the slot's value).
-            Err(_) => {}
+        // A task that would error counts as Offline (already the slot's value).
+        if let Ok((index, probe_result)) = entry {
+            results[index] = probe_result;
         }
     }
 

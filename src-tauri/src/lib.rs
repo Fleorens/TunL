@@ -107,7 +107,7 @@ pub fn invoke_handler<R: tauri::Runtime>()
         commands::import::import_ssh_config_apply,
         commands::prompts::prompt_answer,
         commands::prompts::known_host_remove,
-         commands::probe::probe_check,
+        commands::probe::probe_check,
         commands::ssh::ssh_open,
         commands::ssh::ssh_write,
         commands::ssh::ssh_resize,

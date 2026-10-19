@@ -1,12 +1,12 @@
 //! The `probe_check` command: probe a set of connections and return their availability.
 use std::collections::HashMap;
 
-use uuid::Uuid;
 use tauri::State;
+use uuid::Uuid;
 
 use crate::error::AppResult;
 use crate::model::Connection;
-use crate::probe::{PROBE_TIMEOUT, MAX_PARALLEL_PROBES, ProbeResult, ProbeStatus, probe_all};
+use crate::probe::{MAX_PARALLEL_PROBES, PROBE_TIMEOUT, ProbeResult, ProbeStatus, probe_all};
 use crate::state::AppState;
 
 /// Probe the connections named by `ids` (as `src/lib/ipc.ts` sends them), in that order.
@@ -26,10 +26,7 @@ pub async fn probe_check(
         .into_iter()
         .map(|connection| (connection.id, connection))
         .collect();
-    let ordered: Vec<Connection> = ids
-        .iter()
-        .filter_map(|id| by_id.get(id).cloned())
-        .collect();
+    let ordered: Vec<Connection> = ids.iter().filter_map(|id| by_id.get(id).cloned()).collect();
 
     if !state.get_settings().await.reachability.enabled {
         return Ok(ordered

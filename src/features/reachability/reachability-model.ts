@@ -1,7 +1,8 @@
 // Pure rules for what a probe result means for a connection's dot and latency.
-import type { Status } from "@/components/StatusDot";
+
 import type { Connection } from "@/bindings/Connection";
 import type { ProbeResult } from "@/bindings/ProbeResult";
+import type { Status } from "@/components/StatusDot";
 
 /** The dot a probe result (or the absence of one) should show. */
 export function dotStatus(result: ProbeResult | undefined): Status {
@@ -42,8 +43,13 @@ export function mergeResults(
  compares effect dependencies by value, so this (not the connections array itself) keeps the polling
  in step with the list without re-triggering on unrelated reshuffles.
  */
-export function probeKey(connections: readonly Pick<Connection, "id" | "host" | "port" | "jumpHostId">[]): string {
+export function probeKey(
+  connections: readonly Pick<Connection, "id" | "host" | "port" | "jumpHostId">[],
+): string {
   return connections
-    .map((connection) => `${connection.id}:${connection.host}:${connection.port}:${connection.jumpHostId ?? ""}`)
+    .map(
+      (connection) =>
+        `${connection.id}:${connection.host}:${connection.port}:${connection.jumpHostId ?? ""}`,
+    )
     .join("|");
 }

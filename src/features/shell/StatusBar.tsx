@@ -6,6 +6,8 @@ import { ProtocolBadge } from "@/components/ProtocolBadge";
 import { Badge } from "@/components/ui/badge";
 import { jumpChainNames } from "@/features/connections/jump-hosts";
 import { useConnections } from "@/features/connections/store";
+import { latencyOf } from "@/features/reachability/reachability-model";
+import { useReachability } from "@/features/reachability/store";
 import type { Session } from "@/features/sessions/session-model";
 import { useSessions } from "@/features/sessions/store";
 import { notifyError } from "@/lib/errors";
@@ -16,6 +18,7 @@ export function StatusBar() {
   const sessions = useSessions((state) => state.sessions);
   const activeId = useSessions((state) => state.activeId);
   const connections = useConnections((state) => state.connections);
+  const results = useReachability((state) => state.results);
 
   const active = useMemo(
     () => sessions.find((session) => session.id === activeId) ?? null,
@@ -29,6 +32,9 @@ export function StatusBar() {
   const address = active ? sessionAddress(active, connections) : null;
   const bastion = active ? bastionChain(active, connections) : null;
   const size = active?.size ?? null;
+  const latency = latencyOf(
+    active?.target.type === "saved" ? results[active.target.connectionId] : undefined,
+  );
 
   const [version, setVersion] = useState<string | null>(null);
   useEffect(() => {
@@ -57,6 +63,7 @@ export function StatusBar() {
               {address && <span>{address}</span>}
               {bastion && <span>{t("statusbar.via", { name: bastion })}</span>}
               {size && <span>{t("statusbar.size", { cols: size.cols, rows: size.rows })}</span>}
+              {latency != null && <span>{t("statusbar.latency", { ms: latency })}</span>}
             </>
           )}
         </div>

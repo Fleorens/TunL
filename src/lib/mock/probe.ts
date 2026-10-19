@@ -10,7 +10,7 @@ export const MOCK_OFFLINE = ["win-desktop", "kiosk-01"];
 
 /** A fixed latency, in milliseconds, for an answering host (`2 + (name.length * 7) % 40`). */
 function fixedLatency(name: string): number {
-  return 2 + (name.length * 7) % 40;
+  return 2 + ((name.length * 7) % 40);
 }
 
 export const probeHandlers: Record<string, Handler<Record<string, unknown>>> = {
