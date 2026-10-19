@@ -2,13 +2,14 @@
 // header ("Transfers (n)" that folds it, "Clear finished" when something is done) and one line per transfer.
 // Pure view of the store: it reads the transfers of its session, starts and cancels them, and never builds the
 // event channel (that is the mock/Tauri side, T26).
-import { ChevronDown, ChevronUp } from "lucide-react";
+import type { TFunction } from "i18next";
+import { ChevronDown, ChevronUp, FolderOpen, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Progress } from "@/components/ui/progress";
-import { describeError } from "@/lib/errors";
+import { describeError, notifyError } from "@/lib/errors";
 import { revealInFolder } from "@/lib/opener";
 import { cn } from "@/lib/utils";
 import { formatSize } from "./sftp-model";
@@ -19,61 +20,82 @@ interface TransfersPanelProps {
   sessionId: string;
 }
 
+/** The final state of a transfer, in words: done, cancelled, or the title of its error. */
+function statusText(transfer: Transfer, t: TFunction): string {
+  if (transfer.status === "done") return t("sftp.transfers.done");
+  if (transfer.status === "cancelled") return t("sftp.transfers.cancelled");
+  return transfer.error ? describeError(transfer.error).title : t("sftp.transfers.failed");
+}
+
+async function reveal(path: string): Promise<void> {
+  try {
+    await revealInFolder(path);
+  } catch (error) {
+    notifyError(error);
+  }
+}
+
+/** The action on the right of a line: Cancel while it runs, Show in folder once a download is done. */
+function rowAction(transfer: Transfer, t: TFunction) {
+  if (transfer.status === "running") {
+    const label = t("sftp.transfers.cancel", { name: transfer.name });
+    return (
+      <Button
+        size="icon-xs"
+        variant="ghost"
+        aria-label={label}
+        onClick={() => useTransfers.getState().cancel(transfer.id)}
+      >
+        <X aria-hidden />
+      </Button>
+    );
+  }
+  const path = transfer.path;
+  if (transfer.status !== "done" || transfer.direction !== "download" || !path) return null;
+  return (
+    <Button
+      size="icon-xs"
+      variant="ghost"
+      aria-label={t("sftp.transfers.reveal", { name: transfer.name })}
+      onClick={() => void reveal(path)}
+    >
+      <FolderOpen aria-hidden />
+    </Button>
+  );
+}
+
 /** One transfer line: direction arrow, name, progress or final state, and its action on the right. */
 function TransferRow({ transfer, locale }: { transfer: Transfer; locale: string }) {
   const { t } = useTranslation();
-  const running = transfer.status === "running";
   const pct = percentOf(transfer);
   const Arrow = transfer.direction === "download" ? ChevronDown : ChevronUp;
-  const statusText =
-    transfer.status === "done"
-      ? t("sftp.transfers.done")
-      : transfer.status === "cancelled"
-        ? t("sftp.transfers.cancelled")
-        : describeError(transfer.error ?? { kind: "internal", message: "", detail: null }).title;
 
   return (
     <li aria-label={transfer.name} className="flex items-center gap-2 px-2 py-1">
       <Arrow className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
       <span className="min-w-0 flex-1 truncate">{transfer.name}</span>
-      {running ? (
-        <span className="flex min-w-0 items-center gap-2">
+      {transfer.status === "running" ? (
+        <span className="flex w-56 shrink-0 items-center gap-2">
           <Progress aria-label={transfer.name} value={pct ?? 0} className="w-24 shrink-0" />
           <span className="w-8 shrink-0 text-right text-xs text-muted-foreground">
             {pct ?? 0} %
           </span>
-          <span className="shrink-0 text-xs text-muted-foreground">
+          <span className="min-w-0 truncate text-xs text-muted-foreground">
             {t("sftp.transfers.rate", { rate: formatSize(transfer.bytesPerSec, locale) })}
           </span>
         </span>
       ) : (
         <span
           className={cn(
-            "min-w-0 flex-1 truncate",
+            "w-56 shrink-0 truncate",
             transfer.status === "failed" && "text-destructive",
           )}
         >
-          {statusText}
+          {statusText(transfer, t)}
         </span>
       )}
-      <span className="ml-auto shrink-0">
-        {running ? (
-          <Button
-            size="xs"
-            variant="ghost"
-            onClick={() => useTransfers.getState().cancel(transfer.id)}
-          >
-            {t("sftp.transfers.cancel", { name: transfer.name })}
-          </Button>
-        ) : transfer.status === "done" ? (
-          <Button
-            size="xs"
-            variant="ghost"
-            onClick={() => void revealInFolder(transfer.path ?? "")}
-          >
-            {t("sftp.transfers.reveal", { name: transfer.name })}
-          </Button>
-        ) : null}
+      <span className="flex size-6 shrink-0 items-center justify-center">
+        {rowAction(transfer, t)}
       </span>
     </li>
   );
@@ -107,7 +129,7 @@ export function TransfersPanel({ sessionId }: TransfersPanelProps) {
             <ChevronDown
               className={cn(
                 "size-3.5 shrink-0 transition-transform",
-                open ? "rotate-0" : "rotate-90",
+                open ? "rotate-0" : "-rotate-90",
               )}
               aria-hidden
             />

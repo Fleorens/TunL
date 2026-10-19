@@ -64,7 +64,7 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
   // A download runs in the background (its events come back through the store's channel); the menu never rerenders
   // on progress, so it reads the store directly instead of subscribing.
   const download = (entry: RemoteEntry): void => {
-    useTransfers.getState().download(sessionId, entry);
+    void useTransfers.getState().download(sessionId, entry);
   };
 
   const permissions = (entry: RemoteEntry): void => setDialog({ type: "permissions", entry });
