@@ -13,6 +13,7 @@ import {
   newSession,
   restartSession,
   type Session,
+  type SessionKind,
   uniqueTitle,
 } from "./session-model";
 import {
@@ -30,7 +31,7 @@ interface SessionsState {
   /** The tab waiting for the close confirmation, or null. */
   closing: string | null;
   /** Open a tab on a target, make it active, and start the attempt. Returns the tab id. */
-  open: (target: SessionTarget, name: string) => string;
+  open: (target: SessionTarget, name: string, kind?: SessionKind) => string;
   activate: (id: string) => void;
   /** Alt+1…8, Alt+9 = last. */
   activateIndex: (index: number) => void;
@@ -49,15 +50,16 @@ export const useSessions = create<SessionsState>()((set, get) => ({
   activeId: null,
   closing: null,
 
-  open(target, name) {
+  open(target, name, kind = "ssh") {
     const id = crypto.randomUUID();
     const title = uniqueTitle(
       name,
       get().sessions.map((session) => session.title),
     );
-    registerSessionPort(id);
+    // An SFTP tab has no terminal port; only SSH registers one.
+    if (kind === "ssh") registerSessionPort(id);
     set((state) => ({
-      sessions: [...state.sessions, newSession(id, title, target)],
+      sessions: [...state.sessions, newSession(id, title, target, kind)],
       activeId: id,
     }));
     start(id, id);
@@ -153,7 +155,8 @@ function start(id: string, runId: string): void {
       closing: state.closing === id && next.status !== "connected" ? null : state.closing,
     }));
     if (event.type === "connected") {
-      sendSessionSize(id);
+      // An SFTP tab has no terminal to size; only SSH does.
+      if (session.kind === "ssh") sendSessionSize(id);
       if (current.connectionId) void useConnections.getState().touch(current.connectionId);
     }
   };
@@ -162,17 +165,24 @@ function start(id: string, runId: string): void {
     getSessionPort(id)?.push(bytes);
   };
 
-  ipc
-    .sshOpen(runId, session.target, session.size ?? DEFAULT_SIZE, { onEvent, onOutput })
-    .catch((error) => {
-      useSessions.setState((state) => ({
-        sessions: state.sessions.map((s) =>
-          s.id === id && s.runId === runId
-            ? applySessionEvent(s, { type: "error", error: toAppError(error) })
-            : s,
-        ),
-      }));
-    });
+  const onError = (error: unknown): void => {
+    useSessions.setState((state) => ({
+      sessions: state.sessions.map((s) =>
+        s.id === id && s.runId === runId
+          ? applySessionEvent(s, { type: "error", error: toAppError(error) })
+          : s,
+      ),
+    }));
+  };
+
+  // SFTP reuses the connecting steps of a shell, then works on the remote files by tab id.
+  if (session.kind === "sftp") {
+    ipc.sftpOpen(runId, session.target, onEvent).catch(onError);
+  } else {
+    ipc
+      .sshOpen(runId, session.target, session.size ?? DEFAULT_SIZE, { onEvent, onOutput })
+      .catch(onError);
+  }
 }
 
 /** The tab to focus when `removedId` closes (`sessions` still holds it): the one after it, else the one before. */

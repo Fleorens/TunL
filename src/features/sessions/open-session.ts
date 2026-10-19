@@ -1,14 +1,20 @@
 // The single entry point to open a session from anywhere (sidebar double-click, home card, palette).
-// SFTP/RDP are placeholders until T25/T28; everything else opens a real SSH tab (docs/01 §6.3).
+// SFTP opens a real explorer tab; RDP is a placeholder until T28; everything else opens a real SSH tab.
 import type { Connection } from "@/bindings/Connection";
 import type { QuickTarget } from "@/features/palette/quick-connect";
 import { notifyComingSoon } from "@/features/shell/coming-soon";
 import { quickTitle } from "./session-model";
 import { useSessions } from "./store";
 
-/** Opening a saved connection: SFTP and RDP are not there yet, SSH opens a real tab. */
+/** Opening a saved connection: SFTP opens a real explorer tab, RDP is not there yet, SSH opens a real tab. */
 export function openSession(connection: Connection, kind?: "terminal" | "sftp"): void {
-  if (kind === "sftp" || connection.settings.protocol === "rdp") {
+  if (kind === "sftp") {
+    useSessions
+      .getState()
+      .open({ type: "saved", connectionId: connection.id }, connection.name, "sftp");
+    return;
+  }
+  if (connection.settings.protocol === "rdp") {
     notifyComingSoon();
     return;
   }

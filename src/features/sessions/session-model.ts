@@ -10,6 +10,9 @@ import type { TerminalSize } from "@/lib/ipc";
 
 export type SessionStatus = "connecting" | "connected" | "closed" | "error";
 
+/** What a tab runs: a shell (`ssh`) or a file explorer (`sftp`). RDP comes with T28. */
+export type SessionKind = "ssh" | "sftp";
+
 /** One line of the connecting card: a step, what it is, and whether it started, passed, or failed. */
 export interface SessionStepView {
   step: StepKind;
@@ -21,6 +24,8 @@ export interface SessionStepView {
 export interface Session {
   /** The tab the user sees and closes. */
   id: string;
+  /** What the tab runs: a shell, or a file explorer. */
+  kind: SessionKind;
   /** The backend session of the current attempt (`sessionId` of `ssh_open`); a reconnect gets a new one. */
   runId: string;
   title: string;
@@ -35,10 +40,19 @@ export interface Session {
   size: TerminalSize | null;
 }
 
-/** A brand-new tab: still connecting, nothing done yet. The first attempt reuses the tab id as the run. */
-export function newSession(id: string, title: string, target: SessionTarget): Session {
+/**
+ * A brand-new tab: still connecting, nothing done yet. The first attempt reuses the tab id as the run.
+ * An SFTP tab is the same session, of another kind.
+ */
+export function newSession(
+  id: string,
+  title: string,
+  target: SessionTarget,
+  kind: SessionKind = "ssh",
+): Session {
   return {
     id,
+    kind,
     runId: id,
     title,
     target,
