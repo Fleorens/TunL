@@ -11,6 +11,7 @@ import { rdpHandlers } from "./mock/rdp";
 import { secretHandlers } from "./mock/secrets";
 import { resetMockSessions, sessionHandlers } from "./mock/sessions";
 import { settingsHandlers } from "./mock/settings";
+import { resetMockSftp, sftpHandlers } from "./mock/sftp";
 import { wolHandlers } from "./mock/wol";
 
 type Args = Record<string, unknown> | undefined;
@@ -54,6 +55,7 @@ const HANDLERS: Record<string, Handler> = {
   ...secretHandlers,
   ...settingsHandlers,
   ...sessionHandlers,
+  ...sftpHandlers,
   ...wolHandlers,
 };
 
@@ -74,6 +76,7 @@ export function resetMockBackend(): void {
   state = freshState();
   pendingFailure = null;
   resetMockSessions();
+  resetMockSftp();
   resetMockPrompts();
 }
 

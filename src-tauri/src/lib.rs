@@ -9,6 +9,7 @@ pub mod prompts;
 pub mod rdp;
 pub mod secrets;
 pub mod sessions;
+pub mod sftp;
 pub mod ssh;
 pub mod state;
 pub mod store;
@@ -115,6 +116,14 @@ pub fn invoke_handler<R: tauri::Runtime>()
         commands::ssh::ssh_write,
         commands::ssh::ssh_resize,
         commands::ssh::session_close,
+        commands::sftp::sftp_open,
+        commands::sftp::sftp_realpath,
+        commands::sftp::sftp_list,
+        commands::sftp::sftp_mkdir,
+        commands::sftp::sftp_rename,
+        commands::sftp::sftp_count,
+        commands::sftp::sftp_remove,
+        commands::sftp::sftp_chmod,
         commands::secrets::secret_set,
         commands::secrets::secret_has,
         commands::secrets::secret_delete,

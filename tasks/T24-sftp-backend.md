@@ -792,9 +792,9 @@ describe("mock sftp operations", () => {
 - [ ] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T24 --check` affiche `OK`
       partout.
 - [ ] `grep -rn "error_message" src-tauri/src/sftp` ne trouve rien (le texte du serveur n'est jamais recopié, S7).
-- [ ] `grep -n "fn metadata\|\.metadata(" src-tauri/src/sftp/ops.rs` ne montre que `entry.metadata()` (les attributs
+- [x] `grep -n "fn metadata\|\.metadata(" src-tauri/src/sftp/ops.rs` ne montre que `entry.metadata()` (les attributs
       de `read_dir`), jamais `sftp.metadata(` (qui suivrait un lien).
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 

@@ -19,7 +19,7 @@ interface SessionCallbacks {
   onOutput: (bytes: Uint8Array) => void;
 }
 
-interface LiveSession {
+export interface LiveSession {
   id: string;
   callbacks: SessionCallbacks;
   /** The prompt to print, e.g. `admin@192.168.1.10:~$ `. */
@@ -32,7 +32,7 @@ interface LiveSession {
   timers: Array<ReturnType<typeof setTimeout>>;
 }
 
-interface ResolvedTarget {
+export interface ResolvedTarget {
   host: string;
   port: number;
   user: string;
@@ -46,7 +46,8 @@ interface ResolvedTarget {
   unreachable?: boolean;
 }
 
-const sessions = new Map<string, LiveSession>();
+/** Every live mock session, shell or SFTP. */
+export const sessions = new Map<string, LiveSession>();
 
 function validation(message: string): AppError {
   return { kind: "validation", message, detail: null };
@@ -57,7 +58,7 @@ function notFound(what: string): AppError {
 }
 
 /** One scheduled send: wait `MOCK_STEP_MS`, then emit, tracking the timer so it can be cancelled. */
-function scheduler(session: LiveSession) {
+export function scheduler(session: LiveSession) {
   const wait = (): Promise<void> =>
     new Promise((resolve) => {
       session.timers.push(setTimeout(resolve, MOCK_STEP_MS));
@@ -75,7 +76,10 @@ function scheduler(session: LiveSession) {
 }
 
 /** Turn a `SessionTarget` into what the mock connects to, throwing the same refusals as the backend. */
-function resolveTarget(state: Parameters<Handler>[0], target: SessionTarget): ResolvedTarget {
+export function resolveTarget(
+  state: Parameters<Handler>[0],
+  target: SessionTarget,
+): ResolvedTarget {
   if (target.type === "saved") {
     const connection = state.connections.find((c) => c.id === target.connectionId);
     if (!connection) throw notFound(`connection ${target.connectionId}`);
@@ -145,9 +149,12 @@ async function promptStep(
   return true;
 }
 
-/** The steps, the prompts of the connection's scenario, the connected banner. The session stays open. */
-async function runSession(session: LiveSession, target: ResolvedTarget): Promise<void> {
-  const { event, output } = scheduler(session);
+/**
+ * The connecting steps shared by a shell and an SFTP tab: wake, bastions, target, host key, authentication.
+ * Returns `false` when the attempt stops (failed, or the session was closed during a prompt).
+ */
+export async function connectSteps(session: LiveSession, target: ResolvedTarget): Promise<boolean> {
+  const { event } = scheduler(session);
   const address = `${target.host}:${target.port}`;
 
   // Wake the host first, if this direct connection asked for it (T29): the mock comes alive at once.
@@ -170,12 +177,18 @@ async function runSession(session: LiveSession, target: ResolvedTarget): Promise
       error: { kind: "network", message: `connection refused by ${address}`, detail: null },
     });
     sessions.delete(session.id);
-    return;
+    return false;
   }
   await event({ type: "step", step: "target", label: address, state: "done" });
 
-  if (!(await promptStep(session, target, "hostKey", target.host))) return;
-  if (!(await promptStep(session, target, "auth", target.user))) return;
+  if (!(await promptStep(session, target, "hostKey", target.host))) return false;
+  return promptStep(session, target, "auth", target.user);
+}
+
+/** The steps, the prompts of the connection's scenario, the connected banner. The session stays open. */
+async function runSession(session: LiveSession, target: ResolvedTarget): Promise<void> {
+  const { event, output } = scheduler(session);
+  if (!(await connectSteps(session, target))) return;
 
   await event({ type: "step", step: "open", label: "shell", state: "started" });
   await event({ type: "step", step: "open", label: "shell", state: "done" });
