@@ -78,13 +78,11 @@ pub async fn ssh_open(
     tauri::async_runtime::spawn(async move {
         // Wake first, and only connect when it finished (a failure or a closed tab stops here). The
         // cleanup below runs in every case.
-        let mut connect = true;
-        if let Some(wake) = wake
-            && !run_wake_step(&wake, WAKE_POLL_INTERVAL, cancel.clone(), &*sink).await
-        {
-            connect = false;
-        }
-        if connect {
+        let woke = match wake {
+            Some(wake) => run_wake_step(&wake, WAKE_POLL_INTERVAL, cancel.clone(), &*sink).await,
+            None => true,
+        };
+        if woke {
             let session = crate::ssh::session::ShellSession {
                 id: session_id,
                 target: resolved_target,

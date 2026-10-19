@@ -1,5 +1,5 @@
 // Mock Wake-on-LAN (T29): send a connection's magic packet. The backend refuses an unknown or an
-// unconfigured connection; an configured one sends its packet (the mock answers at once, no wait).
+// unconfigured connection; a configured one sends its packet (the mock answers at once, no wait).
 import type { AppError } from "@/bindings/AppError";
 import type { Handler } from "./data";
 import { arg } from "./data";

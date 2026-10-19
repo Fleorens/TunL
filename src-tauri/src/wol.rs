@@ -7,7 +7,6 @@ use std::net::{Ipv4Addr, UdpSocket};
 use std::time::{Duration, Instant};
 
 use tokio_util::sync::CancellationToken;
-use ts_rs::TS;
 
 use crate::error::{AppError, AppResult, ErrorKind};
 use crate::model::{Connection, WolConfig};
@@ -30,7 +29,7 @@ fn wake_timeout(host: &str, port: u16, total: Duration) -> AppError {
 }
 
 /// The wake target of a connection: its address, and the WoL configuration to send.
-#[derive(Debug, Clone, PartialEq, Eq, TS)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WakeTarget {
     pub name: String,
     pub host: String,
@@ -109,13 +108,11 @@ pub async fn wait_for_port(
 ) -> AppResult<()> {
     let started = Instant::now();
     loop {
-        let remaining = total.checked_sub(started.elapsed());
-        let Some(remaining) = remaining else {
-            return Err(wake_timeout(host, port, total));
+        let remaining = match total.checked_sub(started.elapsed()) {
+            Some(remaining) if !remaining.is_zero() => remaining,
+            _ => return Err(wake_timeout(host, port, total)),
         };
-        if remaining.is_zero() {
-            return Err(wake_timeout(host, port, total));
-        }
+        let round = Instant::now();
 
         // Bound each attempt by the shorter of the poll interval and the time left, so the last round
         // never overshoots `total`.
@@ -125,7 +122,7 @@ pub async fn wait_for_port(
             Err(_) => {
                 // The attempt is done (a refusal comes back fast, or `budget` elapsed). Wait out the
                 // rest of the round so a refused port does not spin the loop to empty.
-                let rest = budget - started.elapsed().min(budget);
+                let rest = budget.saturating_sub(round.elapsed());
                 if !rest.is_zero() {
                     tokio::time::sleep(rest).await;
                 }
