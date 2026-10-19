@@ -516,10 +516,10 @@ test("an SFTP tab through a bastion shows its steps, then the files", async ({ p
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T25 --check` affiche `OK` partout.
-- [ ] `grep -rn 'role="table"\|role="row"\|role="cell"' src/features/sftp` ne trouve rien.
-- [ ] `grep -rn "\.sort(" src/features/sftp` ne trouve rien.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T25 --check` affiche `OK` partout.
+- [x] `grep -rn 'role="table"\|role="row"\|role="cell"' src/features/sftp` ne trouve rien.
+- [x] `grep -rn "\.sort(" src/features/sftp` ne trouve rien.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 - [ ] Visuel : en clair et en sombre, les colonnes Taille, Modifié et Droits sont alignées à droite, la ligne
       sélectionnée se distingue sans être criarde, et un nom très long est tronqué sans pousser les colonnes.
 

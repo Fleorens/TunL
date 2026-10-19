@@ -3,7 +3,7 @@
 
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ChevronDown, ChevronUp, File, FileQuestion, Folder, Link2 } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { EntryKind } from "@/bindings/EntryKind";
 import type { RemoteEntry } from "@/bindings/RemoteEntry";
@@ -13,6 +13,8 @@ import { formatMode, formatSize } from "./sftp-model";
 
 const ROW_HEIGHT = 32;
 const OVERSCAN = 12;
+// The column template, set on every row (header included) so the cells line up.
+const ROW_GRID = "grid w-full grid-cols-[minmax(0,1fr)_6rem_10rem_7.5rem]";
 
 interface EntryTableProps {
   entries: readonly RemoteEntry[];
@@ -47,7 +49,7 @@ function SortHeader({
   return (
     <th
       aria-sort={active ? (order.ascending ? "ascending" : "descending") : "none"}
-      className="w-full px-2 text-xs font-medium text-muted-foreground"
+      className="min-w-0 px-2 text-xs font-medium text-muted-foreground"
     >
       <button
         type="button"
@@ -67,8 +69,8 @@ function SortHeader({
 }
 
 /**
- * One row: icon, truncated name (grayed when hidden), size, date, rights. Called, not rendered as a component,
- * so React keeps the same instance across renders.
+ * One row: icon, truncated name (grayed when hidden), size, date, rights. Declared at module level, so React keeps
+ * the same instance across renders.
  */
 function EntryRow({
   entry,
@@ -78,6 +80,8 @@ function EntryRow({
   top,
   height,
   locale,
+  dateFormat,
+  rowRef,
   onSelect,
   onOpen,
 }: {
@@ -88,21 +92,28 @@ function EntryRow({
   top: number;
   height: number;
   locale: string;
+  dateFormat: Intl.DateTimeFormat;
+  rowRef: (node: HTMLTableRowElement | null) => void;
   onSelect: (path: string) => void;
   onOpen: (entry: RemoteEntry) => void;
 }) {
   const sizeText = entry.kind === "dir" ? "—" : formatSize(entry.size, locale);
-  const dateText = entry.modifiedAt == null ? "—" : formatDateTime(entry.modifiedAt, locale);
+  const dateText = entry.modifiedAt == null ? "—" : dateFormat.format(entry.modifiedAt);
   const modeText = formatMode(entry.kind, entry.permissions);
   return (
     <tr
+      ref={rowRef}
       data-index={index}
-      style={{ position: "absolute", top, height, width: "100%" }}
+      style={{ position: "absolute", top: 0, height, transform: `translateY(${top}px)` }}
       tabIndex={tabIndex}
       aria-selected={isSelected}
       onClick={() => onSelect(entry.path)}
       onDoubleClick={() => onOpen(entry)}
-      className="group/row cursor-default"
+      className={cn(
+        ROW_GRID,
+        "cursor-default items-center outline-none hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset",
+        isSelected && "bg-accent text-accent-foreground hover:bg-accent",
+      )}
     >
       <td className="flex min-w-0 items-center gap-1.5 px-2">
         <EntryIcon kind={entry.kind} />
@@ -123,10 +134,6 @@ function EntryRow({
   );
 }
 
-function formatDateTime(modifiedAt: number, locale: string): string {
-  return new Date(modifiedAt).toLocaleString(locale, { dateStyle: "medium", timeStyle: "short" });
-}
-
 export function EntryTable({
   entries,
   sort,
@@ -138,11 +145,15 @@ export function EntryTable({
 }: EntryTableProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
+  const dateFormat = useMemo(
+    () => new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }),
+    [locale],
+  );
   const containerRef = useRef<HTMLDivElement | null>(null);
   const tableRef = useRef<HTMLTableElement | null>(null);
   // The row nodes, by index, to refocus after a keyboard move.
   const rowRefs = useRef<(HTMLTableRowElement | null)[]>([]);
-  // Whether the table had focus, so a keyboard move can give it back to the new row.
+  // Whether focus is inside the table body, so a keyboard move can give it to the new row.
   const tableHasFocus = useRef(false);
 
   const virtualizer = useVirtualizer({
@@ -163,14 +174,13 @@ export function EntryTable({
   }, [selectedPath, entries]);
 
   const focusIndex = (index: number): void => {
-    tableHasFocus.current = tableRef.current?.contains(document.activeElement) ?? false;
     const entry = entries[index];
     if (!entry) return;
     onSelect(entry.path);
     virtualizer.scrollToIndex(index);
   };
 
-  const onKeyDown = (event: React.KeyboardEvent<HTMLTableElement>): void => {
+  const onKeyDown = (event: React.KeyboardEvent<HTMLTableSectionElement>): void => {
     const count = entries.length;
     if (count === 0) return;
     const currentIndex = selectedPath
@@ -215,18 +225,27 @@ export function EntryTable({
         ref={tableRef}
         aria-label={t("sftp.files")}
         aria-rowcount={entries.length}
-        onKeyDown={onKeyDown}
-        className="grid w-full grid-cols-[minmax(0,1fr)_6rem_10rem_7.5rem]"
+        className="grid w-full"
       >
-        <thead className="sticky top-0 z-10 grid bg-background">
-          <tr>
+        <thead className="sticky top-0 z-10 grid w-full bg-background">
+          <tr className={ROW_GRID}>
             <SortHeader sortKey="name" order={sort} onSort={onSort} />
             <SortHeader sortKey="size" order={sort} onSort={onSort} />
             <SortHeader sortKey="modified" order={sort} onSort={onSort} />
             <SortHeader sortKey="permissions" order={sort} onSort={onSort} />
           </tr>
         </thead>
-        <tbody className="relative grid" style={{ height: `${totalSize}px`, width: "100%" }}>
+        <tbody
+          className="relative grid w-full"
+          style={{ height: `${totalSize}px` }}
+          onKeyDown={onKeyDown}
+          onFocus={() => {
+            tableHasFocus.current = true;
+          }}
+          onBlur={(event) => {
+            tableHasFocus.current = event.currentTarget.contains(event.relatedTarget);
+          }}
+        >
           {virtualItems.map((virtual) => {
             const entry = entries[virtual.index];
             return (
@@ -239,6 +258,10 @@ export function EntryTable({
                 top={virtual.start}
                 height={virtual.size}
                 locale={locale}
+                dateFormat={dateFormat}
+                rowRef={(node) => {
+                  rowRefs.current[virtual.index] = node;
+                }}
                 onSelect={onSelect}
                 onOpen={onOpen}
               />

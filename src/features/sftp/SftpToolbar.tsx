@@ -21,7 +21,6 @@ interface SftpToolbarProps {
   onUp: () => void;
   onRefresh: () => void;
   onNavigate: (target: string) => void;
-  onEnterPath: (path: string) => void;
   onToggleHidden: (showHidden: boolean) => void;
 }
 
@@ -34,8 +33,8 @@ function BreadcrumbPath({
   onNavigate: (target: string) => void;
 }) {
   return (
-    <Breadcrumb aria-label="breadcrumb">
-      <BreadcrumbList className="min-w-0 flex-1">
+    <Breadcrumb className="min-w-0 flex-1">
+      <BreadcrumbList className="font-mono text-xs">
         {segments.map((segment, index) => {
           const isLast = index === segments.length - 1;
           // No separator between the root `/` and the first folder.
@@ -45,7 +44,7 @@ function BreadcrumbPath({
               {showSeparator && <BreadcrumbSeparator />}
               <BreadcrumbItem>
                 {isLast ? (
-                  <BreadcrumbPage className="font-mono text-xs">{segment.name}</BreadcrumbPage>
+                  <BreadcrumbPage>{segment.name}</BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink asChild>
                     <button
@@ -72,7 +71,6 @@ export function SftpToolbar({
   onUp,
   onRefresh,
   onNavigate,
-  onEnterPath,
   onToggleHidden,
 }: SftpToolbarProps) {
   const { t } = useTranslation();
@@ -87,7 +85,7 @@ export function SftpToolbar({
   const commitEdit = (): void => {
     setEditing(false);
     const trimmed = value.trim();
-    if (trimmed) onEnterPath(trimmed);
+    if (trimmed) onNavigate(trimmed);
   };
   const cancelEdit = (): void => setEditing(false);
 

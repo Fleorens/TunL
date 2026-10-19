@@ -7,7 +7,7 @@ A modern SSH, SFTP and RDP connection manager for Linux, built with Tauri 2, Rea
 
 | Works today | Not yet |
 |---|---|
-| Connections: create, edit, duplicate, delete, favorites, groups, filter | SFTP and RDP sessions (the menus say "Coming soon") |
+| Connections: create, edit, duplicate, delete, favorites, groups, filter | RDP sessions (the menu says "Coming soon") |
 | Home screen: greeting, quick-connect field, favorites grid, recents list, first-launch welcome (T14) | |
 | Editor: SSH / RDP, authentication method, jump host chain, Wake-on-LAN, RDP display options | |
 | `~/.ssh/config` import: preview, select hosts, choose a group, apply (T15, T15b) | |
@@ -18,6 +18,7 @@ A modern SSH, SFTP and RDP connection manager for Linux, built with Tauri 2, Rea
 | Connection prompts: host key, password/passphrase (keyring), 2FA, changed host key (T21b) | |
 | Availability dots: TCP probes, sidebar and home, latency in the status bar (T30) | |
 | Wake-on-LAN: send the magic packet from the connection menu, and wake a host before connecting (T29) | |
+| SFTP tab: browse a server's folders (breadcrumb, typed path, sortable virtualized table, hidden files, keyboard) (T25) | |
 
 The progress of each task is in [`tasks/README.md`](tasks/README.md).
 

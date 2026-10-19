@@ -72,7 +72,6 @@ export function SftpExplorer({ sessionId }: SftpExplorerProps) {
         onUp={() => navigate(parentPath(path))}
         onRefresh={() => navigate(path)}
         onNavigate={navigate}
-        onEnterPath={navigate}
         onToggleHidden={setShowHidden}
       />
       <div className="min-h-0 flex-1">
