@@ -5,6 +5,7 @@ pub mod import;
 pub mod model;
 pub mod paths;
 pub mod prompts;
+pub mod rdp;
 pub mod secrets;
 pub mod sessions;
 pub mod ssh;
@@ -110,6 +111,7 @@ pub fn invoke_handler<R: tauri::Runtime>()
         commands::secrets::secret_set,
         commands::secrets::secret_has,
         commands::secrets::secret_delete,
+        commands::rdp::rdp_detect,
     ]
 }
 

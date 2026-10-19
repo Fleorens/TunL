@@ -3,6 +3,7 @@ pub mod connections;
 pub mod groups;
 pub mod import;
 pub mod prompts;
+pub mod rdp;
 pub mod secrets;
 pub mod settings;
 pub mod ssh;
@@ -10,6 +11,9 @@ pub mod store;
 
 #[cfg(test)]
 mod ipc_prompts_tests;
+
+#[cfg(test)]
+mod ipc_rdp_tests;
 
 #[cfg(test)]
 mod ipc_tests;

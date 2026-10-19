@@ -7,6 +7,7 @@ import type { Group } from "@/bindings/Group";
 import type { GroupInput } from "@/bindings/GroupInput";
 import type { ImportPreview } from "@/bindings/ImportPreview";
 import type { PromptAnswer } from "@/bindings/PromptAnswer";
+import type { RdpClient } from "@/bindings/RdpClient";
 import type { SecretKind } from "@/bindings/SecretKind";
 import type { SessionEvent } from "@/bindings/SessionEvent";
 import type { SessionTarget } from "@/bindings/SessionTarget";
@@ -117,4 +118,7 @@ export const ipc = {
   promptAnswer: (id: string, answer: PromptAnswer) => call<void>("prompt_answer", { id, answer }),
   knownHostRemove: (host: string, port: number) =>
     call<number>("known_host_remove", { host, port }),
+
+  // RDP (T27): the FreeRDP 3 client TunL would launch with, or none.
+  rdpDetect: () => call<RdpClient>("rdp_detect"),
 };
