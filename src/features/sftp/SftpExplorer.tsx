@@ -65,7 +65,7 @@ export function SftpExplorer({ sessionId }: SftpExplorerProps) {
   const entriesToShow = visibleEntries(entries, sort, showHidden);
 
   return (
-    <>
+    <div className="flex h-full flex-col">
       <SftpToolbar
         path={path}
         showHidden={showHidden}
@@ -95,6 +95,6 @@ export function SftpExplorer({ sessionId }: SftpExplorerProps) {
           />
         )}
       </div>
-    </>
+    </div>
   );
 }

@@ -175,7 +175,7 @@ function start(id: string, runId: string): void {
     }));
   };
 
-  // SFTP reuses the connecting steps of a shell, then works on the remote files by tab id.
+  // SFTP reuses the connecting steps of a shell, then works on the remote files by run id.
   if (session.kind === "sftp") {
     ipc.sftpOpen(runId, session.target, onEvent).catch(onError);
   } else {

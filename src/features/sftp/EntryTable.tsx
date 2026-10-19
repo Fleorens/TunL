@@ -104,6 +104,7 @@ function EntryRow({
     <tr
       ref={rowRef}
       data-index={index}
+      aria-rowindex={index + 2}
       style={{ position: "absolute", top: 0, height, transform: `translateY(${top}px)` }}
       tabIndex={tabIndex}
       aria-selected={isSelected}
@@ -150,7 +151,6 @@ export function EntryTable({
     [locale],
   );
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const tableRef = useRef<HTMLTableElement | null>(null);
   // The row nodes, by index, to refocus after a keyboard move.
   const rowRefs = useRef<(HTMLTableRowElement | null)[]>([]);
   // Whether focus is inside the table body, so a keyboard move can give it to the new row.
@@ -222,9 +222,8 @@ export function EntryTable({
   return (
     <div ref={containerRef} className="h-full overflow-auto">
       <table
-        ref={tableRef}
         aria-label={t("sftp.files")}
-        aria-rowcount={entries.length}
+        aria-rowcount={entries.length + 1}
         className="grid w-full"
       >
         <thead className="sticky top-0 z-10 grid w-full bg-background">
