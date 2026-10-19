@@ -446,5 +446,20 @@
       "caseSensitive": "Respecter la casse",
       "regex": "Expression régulière"
     }
+  },
+  "sftp": {
+    "files": "Fichiers",
+    "up": "Dossier parent",
+    "refresh": "Actualiser",
+    "editPath": "Saisir un chemin",
+    "path": "Chemin",
+    "showHidden": "Afficher les fichiers cachés",
+    "empty": "Ce dossier est vide",
+    "columns": {
+      "name": "Nom",
+      "size": "Taille",
+      "modified": "Modifié",
+      "permissions": "Droits"
+    }
   }
 }

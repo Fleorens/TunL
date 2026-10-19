@@ -5,7 +5,10 @@ import type { RemoteEntry } from "@/bindings/RemoteEntry";
 
 /** A column to sort the entries on, and the direction. */
 export type SortKey = "name" | "size" | "modified" | "permissions";
-export interface SortOrder { key: SortKey; ascending: boolean }
+export interface SortOrder {
+  key: SortKey;
+  ascending: boolean;
+}
 
 /** The default: by name, ascending. */
 export const DEFAULT_SORT: SortOrder = { key: "name", ascending: true };
@@ -104,14 +107,13 @@ function groupChars(bits: number, special: boolean, letter: "s" | "t"): string {
   const read = has(bits, 4);
   const write = has(bits, 2);
   const exec = has(bits, 1);
-  const execChar = exec ? (special ? letter : "x") : (special ? letter.toUpperCase() : "-");
+  const execChar = exec ? (special ? letter : "x") : special ? letter.toUpperCase() : "-";
   return `${read ? "r" : "-"}${write ? "w" : "-"}${execChar}`;
 }
 
 /** The `drwxr-xr-x` mode: a type char first, then the three permission groups. `null` is an unknown mode. */
 export function formatMode(kind: EntryKind, permissions: number | null): string {
-  const typeChar =
-    kind === "dir" ? "d" : kind === "symlink" ? "l" : kind === "file" ? "-" : "?";
+  const typeChar = kind === "dir" ? "d" : kind === "symlink" ? "l" : kind === "file" ? "-" : "?";
   if (permissions === null) return `${typeChar}---------`;
   const bits = permissions & 0o777;
   const owner = groupChars(bits >> 6, has(permissions, 0o4000), "s");

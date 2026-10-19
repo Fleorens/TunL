@@ -59,7 +59,7 @@ export function StatusBar() {
         <div className="flex items-center gap-2 font-mono">
           {active && (
             <>
-              <ProtocolBadge protocol="ssh" />
+              <ProtocolBadge protocol={active.kind} />
               {address && <span>{address}</span>}
               {bastion && <span>{t("statusbar.via", { name: bastion })}</span>}
               {size && <span>{t("statusbar.size", { cols: size.cols, rows: size.rows })}</span>}

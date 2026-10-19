@@ -29,7 +29,12 @@ function names(page: Page, title: string) {
 test("an SFTP tab opens in the home directory, folders first", async ({ page }) => {
   await openSftp(page, "nas");
   await expect(page.getByRole("tab", { selected: true })).toContainText("nas");
-  await expect(names(page, "nas")).toHaveText(["projects", "backup.tar.gz", "current", "notes.txt"]);
+  await expect(names(page, "nas")).toHaveText([
+    "projects",
+    "backup.tar.gz",
+    "current",
+    "notes.txt",
+  ]);
   await expect(view(page, "nas").getByRole("navigation")).toContainText("home");
   await expect(view(page, "nas").getByRole("navigation")).toContainText("admin");
   await expect(page.getByRole("contentinfo")).toContainText("sftp");
@@ -59,7 +64,9 @@ test("hidden files, sorting, and the size column", async ({ page }) => {
 test("double-click enters a folder; the breadcrumb and Up go back", async ({ page }) => {
   await openSftp(page, "nas");
   const nas = view(page, "nas");
-  await files(page, "nas").getByRole("row", { name: /projects/ }).dblclick();
+  await files(page, "nas")
+    .getByRole("row", { name: /projects/ })
+    .dblclick();
   await expect(names(page, "nas")).toHaveText(["app", "README.md"]);
   await expect(nas.getByRole("navigation")).toContainText("projects");
 
@@ -73,7 +80,9 @@ test("double-click enters a folder; the breadcrumb and Up go back", async ({ pag
 test("the keyboard moves, opens, and goes up", async ({ page }) => {
   await openSftp(page, "nas");
   await expect(names(page, "nas").first()).toHaveText("projects");
-  await files(page, "nas").getByRole("row", { name: /projects/ }).click();
+  await files(page, "nas")
+    .getByRole("row", { name: /projects/ })
+    .click();
   await page.keyboard.press("Enter");
   await expect(names(page, "nas")).toHaveText(["app", "README.md"]);
   await files(page, "nas").getByRole("row", { name: /app/ }).click();
