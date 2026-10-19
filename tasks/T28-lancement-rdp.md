@@ -780,11 +780,11 @@ describe("mock rdp_open", () => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T28 --check` affiche `OK`
+- [x] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T28 --check` affiche `OK`
       partout.
-- [ ] `grep -n '\.arg(' src-tauri/src/rdp/launch.rs` ne montre que `.arg("/args-from:stdin")` (S4).
-- [ ] `grep -rn "struct EventSink" src-tauri/src` ne trouve qu'une définition.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `grep -n '\.arg(' src-tauri/src/rdp/launch.rs` ne montre que `.arg("/args-from:stdin")` (S4).
+- [x] `grep -rn "struct EventSink" src-tauri/src` ne trouve qu'une définition.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 
