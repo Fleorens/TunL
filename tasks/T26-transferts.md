@@ -5,13 +5,13 @@
 | **Jalon** | M4 — SFTP |
 | **Dépend de** | T25b |
 | **Lire avant** | `docs/06-securite.md` **S11**, S7 et S8, `docs/05-modele-donnees.md` §5 (`ui.downloadDir`) et §8 (`TransferEvent`) |
-| **Livrable** | `sftp/transfer.rs` (téléchargement et envoi en flux), `TransferRegistry`, commandes `sftp_download`, `sftp_upload`, `transfer_cancel`, binding `TransferEvent.ts` ; 3 fichiers de tests |
+| **Livrable** | `sftp/transfer.rs` (téléchargement et envoi en flux), `TransferRegistry`, commandes `sftp_download`, `sftp_upload`, `transfer_cancel` + ipc et mock, binding `TransferEvent.ts` ; 4 fichiers de tests |
 
 ## Pourquoi
 
 L'explorateur sait parcourir et agir ; il ne sait pas encore **transférer**. Les transferts sont découpés en trois
-fiches : **T26** (cette fiche) écrit le moteur Rust dans les deux sens et ses commandes ; **T26c** branche l'IPC, le
-mock, le modèle et le store côté frontend ; **T26d** ajoute le panneau et le téléchargement depuis l'explorateur.
+fiches : **T26** (cette fiche) écrit le moteur Rust dans les deux sens, ses commandes, l'IPC et le mock ; **T26c** ajoute
+le modèle et le store côté frontend ; **T26d** ajoute le panneau et le téléchargement depuis l'explorateur.
 Les transferts tournent en tâche de fond et rapportent leur progression par un `Channel`.
 
 S11 : un fichier téléchargé garde **seulement son nom de base**, et rien n'est jamais écrasé (` (1)`, ` (2)`…).
@@ -97,9 +97,29 @@ impl TransferRegistry {
 Le `Channel` est enveloppé dans une petite struct qui implémente `TransferSink` (un envoi raté → `log::warn!`).
 `commands/mod.rs` : `pub mod transfer;` et `#[cfg(test)] mod ipc_transfer_tests;`. `lib.rs` : les 3 commandes.
 
-- `npm run bindings` : `TransferEvent.ts` (ne l'édite pas : il est généré).
+## Contrat — IPC et mock
 
-Hors de cette fiche : `ipc.ts`, le mock et tout le frontend (T26c, T26d), la permission `opener` (T26c).
+`src/lib/ipc-contract.test.ts` exige que chaque commande Rust soit exposée par `ipc.ts` et servie par le mock : les
+3 commandes arrivent donc ensemble des deux côtés.
+
+- `npm run bindings` : `TransferEvent.ts` (ne l'édite pas : il est généré).
+- `ipc.ts`, section `// Transfers (T26): …` : `sftpDownload(sessionId, transferId, remotePath, onEvent)`,
+  `sftpUpload(sessionId, transferId, localPath, remoteDir, onEvent)`, `transferCancel(transferId)`. `onEvent` passe
+  par une fonction `transferChannel(onEvent)` : la fonction elle-même pour le mock, un
+  `new Channel<TransferEvent>(onEvent)` dans Tauri.
+- Mock :
+  - `lib/mock/sftp.ts` exporte en plus `mockRemoteNode(sessionId, path)` (refuse un onglet non connecté),
+    `mockRemoteWrite(path, size)` et `mockRemoteNames(dir)` ;
+  - `lib/mock/transfers.ts` (nouveau) : `MOCK_DOWNLOAD_DIR = "/home/user/Downloads"`, `transferHandlers` (les 3
+    commandes) et `resetMockTransfers()`. Progression par pas : un pas par 20 Mo (1 à 40), un pas toutes les
+    150 ms (**5 ms** en mode test, pas 0 : un gros fichier doit encore tourner quand un test l'annule), débit affiché
+    12,4 Mo/s. Téléchargement : fichier absent ou dossier → `failed` `notFound` ; sinon `done` vers
+    `MOCK_DOWNLOAD_DIR/<nom libre>` (les noms déjà téléchargés sont retenus). Envoi : `done` vers le premier nom libre
+    du dossier distant, où le fichier apparaît (taille fictive). `transfer_cancel` arrête les pas et envoie
+    `cancelled` ;
+  - `ipc-mock.ts` : `...transferHandlers`, et `resetMockTransfers()` dans `resetMockBackend()`.
+
+Hors de cette fiche : le modèle, le store et l'interface (T26c, T26d), la permission `opener` (T26c).
 
 ## Pièges (vus au prototype)
 
@@ -109,6 +129,9 @@ Hors de cette fiche : `ipc.ts`, le mock et tout le frontend (T26c, T26d), la per
 - `SftpSession::write(path, data)` n'ouvre qu'un fichier **existant** : pour envoyer, `create`, puis `write_all` et
   `shutdown`.
 - Un `Progress` final est indispensable : sans lui, une barre resterait à 97 % jusqu'à `Done`.
+- `Channel` de Tauri : construit **seulement** dans `src/lib/ipc.ts` (`transferChannel`), et seulement dans Tauri.
+- Mock : un pas toutes les **5 ms** en mode test, pas 0 — un gros fichier doit encore tourner quand un test
+  l'annule.
 - **`npm run test:ssh` recrée les conteneurs** avec les clés de ton clone : ne le lance jamais pendant qu'un autre
   clone l'utilise.
 
@@ -470,13 +493,93 @@ async fn a_missing_remote_file_fails_without_a_local_file() {
 ```
 
 
+### `src/lib/mock/transfers.test.ts` (nouveau)
+
+```ts
+// T26: the mock's transfers, which the panel is built against.
+import { beforeEach, describe, expect, test } from "vitest";
+import type { TransferEvent } from "@/bindings/TransferEvent";
+import { ipc } from "@/lib/ipc";
+import { resetMockBackend } from "@/lib/ipc-mock";
+import { MOCK_IDS } from "@/lib/mock/data";
+
+beforeEach(() => {
+  resetMockBackend();
+});
+
+async function openTab(): Promise<string> {
+  const id = crypto.randomUUID();
+  await new Promise<void>((resolve) => {
+    void ipc.sftpOpen(id, { type: "saved", connectionId: MOCK_IDS.nas }, (event) => {
+      if (event.type === "connected") resolve();
+    });
+  });
+  return id;
+}
+
+/** Start a transfer and collect its events until the last one. */
+function collect(start: (onEvent: (e: TransferEvent) => void) => Promise<void>) {
+  return new Promise<TransferEvent[]>((resolve) => {
+    const events: TransferEvent[] = [];
+    void start((event) => {
+      events.push(event);
+      if (event.type !== "progress") resolve(events);
+    });
+  });
+}
+
+describe("mock transfers", () => {
+  test("a download reports progress, then where it landed; never over an earlier one", async () => {
+    const tab = await openTab();
+    const first = await collect((on) =>
+      ipc.sftpDownload(tab, crypto.randomUUID(), "/home/admin/notes.txt", on),
+    );
+    expect(first[0]).toMatchObject({ type: "progress", total: 512 });
+    expect(first.at(-1)).toEqual({ type: "done", path: "/home/user/Downloads/notes.txt" });
+    const second = await collect((on) =>
+      ipc.sftpDownload(tab, crypto.randomUUID(), "/home/admin/notes.txt", on),
+    );
+    expect(second.at(-1)).toEqual({ type: "done", path: "/home/user/Downloads/notes (1).txt" });
+  });
+
+  test("a missing file fails as not found", async () => {
+    const tab = await openTab();
+    const events = await collect((on) =>
+      ipc.sftpDownload(tab, crypto.randomUUID(), "/home/admin/nope", on),
+    );
+    expect(events.at(-1)).toMatchObject({ type: "failed", error: { kind: "notFound" } });
+  });
+
+  test("an upload lands in the folder, beside an existing file of the same name", async () => {
+    const tab = await openTab();
+    const one = await collect((on) =>
+      ipc.sftpUpload(tab, crypto.randomUUID(), "/home/me/notes.txt", "/home/admin", on),
+    );
+    expect(one.at(-1)).toEqual({ type: "done", path: "/home/admin/notes (1).txt" });
+    const names = (await ipc.sftpList(tab, "/home/admin")).map((e) => e.name);
+    expect(names).toContain("notes (1).txt");
+  });
+
+  test("a cancelled transfer ends with cancelled", async () => {
+    const tab = await openTab();
+    const id = crypto.randomUUID();
+    const events = await collect(async (on) => {
+      await ipc.sftpDownload(tab, id, "/home/admin/backup.tar.gz", on);
+      await ipc.transferCancel(id);
+    });
+    expect(events.at(-1)).toEqual({ type: "cancelled" });
+  });
+});
+```
+
 ## Étapes
 
 1. Les tests : `node scripts/contract-tests.mjs T26`.
 2. `sftp/transfer.rs`, `TransferRegistry`, `state.rs` : `cd src-tauri && cargo test --lib sftp::transfer`.
 3. `commands/transfer.rs`, `commands/mod.rs`, `lib.rs` : `cargo test --lib commands::ipc_transfer`, puis
    `npm run test:ssh` (`ssh_transfer` compris), `npm run bindings`.
-4. `npm run format`, `npm run review`, cases, statut, commit
+4. `ipc.ts`, `lib/mock/sftp.ts`, `lib/mock/transfers.ts`, `ipc-mock.ts` : `npx vitest run src/lib`.
+5. `npm run format`, `npm run review`, cases, statut, commit
    `feat: SFTP transfer engine: streaming download and upload, cancel, IPC commands (T26)`.
 
 ## Critères d'acceptation
@@ -488,4 +591,4 @@ async fn a_missing_remote_file_fails_without_a_local_file() {
 
 ## À regarder par Florian
 
-Rien à l'écran : le moteur n'a pas encore d'interface (T26c, T26d). `npm run test:ssh` vert suffit.
+Rien à l'écran : les transferts n'ont pas encore d'interface (T26c, T26d). `npm run test:ssh` vert suffit.

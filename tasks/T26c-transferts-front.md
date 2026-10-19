@@ -1,23 +1,22 @@
-# T26c — Transferts SFTP : IPC, mock, modèle et store (frontend)
+# T26c — Transferts SFTP : modèle et store (frontend)
 
 | | |
 |---|---|
 | **Jalon** | M4 — SFTP |
 | **Dépend de** | T26 |
 | **Lire avant** | `docs/05-modele-donnees.md` §8 (`TransferEvent`), `docs/06-securite.md` S14 |
-| **Livrable** | `ipc.ts` (3 commandes), `lib/opener.ts` (`revealInFolder`), mock des transferts, `transfer-model.ts`, `transfers-store.ts` ; 2 fichiers de tests |
+| **Livrable** | `lib/opener.ts` (`revealInFolder`), `transfer-model.ts`, `transfers-store.ts` ; 1 fichier de tests |
 
 ## Pourquoi
 
-T26 a écrit le moteur Rust des transferts et ses commandes (`sftp_download`, `sftp_upload`, `transfer_cancel`) ainsi
-que le binding `TransferEvent.ts`. Cette fiche les branche côté frontend, **sans interface** : l'IPC, le mock (pour
-le navigateur et les e2e), un modèle pur et le store zustand. T26d s'en servira pour le panneau et l'explorateur,
+T26 a écrit le moteur Rust des transferts, ses commandes (`sftp_download`, `sftp_upload`, `transfer_cancel`), leur
+IPC (`ipc.sftpDownload`…) et leur mock. Cette fiche ajoute, **sans interface**, un modèle pur et le store zustand. T26d s'en servira pour le panneau et l'explorateur,
 T26b pour l'envoi.
 
 ## À réutiliser (ne pas réécrire)
 
-- T26 : `src/bindings/TransferEvent.ts` (généré, jamais édité).
-- T24 : le mock `lib/mock/sftp.ts` (son système de fichiers).
+- T26 : `src/bindings/TransferEvent.ts` (généré, jamais édité), `ipc.sftpDownload`, `ipc.sftpUpload`,
+  `ipc.transferCancel`, le mock des transferts.
 - T25 : `formatSize` (`sftp-model.ts`).
 - `lib/opener.ts` (le **seul** fichier qui importe le plugin `opener`), `describeError`, `notifyError`, `toAppError`.
 
@@ -29,22 +28,7 @@ Ajouter `"opener:allow-reveal-item-in-dir"` (bouton « Afficher dans son dossier
 
 ### Frontend
 
-- `ipc.ts`, section `// Transfers (T26): …` : `sftpDownload(sessionId, transferId, remotePath, onEvent)`,
-  `sftpUpload(sessionId, transferId, localPath, remoteDir, onEvent)`, `transferCancel(transferId)`. `onEvent` passe
-  par une fonction `transferChannel(onEvent)` : la fonction elle-même pour le mock, un
-  `new Channel<TransferEvent>(onEvent)` dans Tauri.
 - `lib/opener.ts` : `revealInFolder(path)` → `revealItemInDir(path)` ; dans le navigateur, rien.
-- Mock :
-  - `lib/mock/sftp.ts` exporte en plus `mockRemoteNode(sessionId, path)` (refuse un onglet non connecté),
-    `mockRemoteWrite(path, size)` et `mockRemoteNames(dir)` ;
-  - `lib/mock/transfers.ts` (nouveau) : `MOCK_DOWNLOAD_DIR = "/home/user/Downloads"`, `transferHandlers` (les 3
-    commandes) et `resetMockTransfers()`. Progression par pas : un pas par 20 Mo (1 à 40), un pas toutes les
-    150 ms (**5 ms** en mode test, pas 0 : un gros fichier doit encore tourner quand un test l'annule), débit affiché
-    12,4 Mo/s. Téléchargement : fichier absent ou dossier → `failed` `notFound` ; sinon `done` vers
-    `MOCK_DOWNLOAD_DIR/<nom libre>` (les noms déjà téléchargés sont retenus). Envoi : `done` vers le premier nom libre
-    du dossier distant, où le fichier apparaît (taille fictive). `transfer_cancel` arrête les pas et envoie
-    `cancelled` ;
-  - `ipc-mock.ts` : `...transferHandlers`, et `resetMockTransfers()` dans `resetMockBackend()`.
 
 ### `src/features/sftp/`
 
@@ -55,9 +39,8 @@ Ajouter `"opener:allow-reveal-item-in-dir"` (bouton « Afficher dans son dossier
 
 ## Pièges
 
-- `Channel` de Tauri : construit **seulement** dans `src/lib/ipc.ts` (`transferChannel`), et seulement dans Tauri.
-- Mock : un pas toutes les **5 ms** en mode test, pas 0 — un gros fichier doit encore tourner quand un test
-  l'annule.
+- `Channel` de Tauri : construit **seulement** dans `src/lib/ipc.ts` (déjà fait en T26) : le store passe une
+  simple fonction de rappel.
 - `applyTransferEvent` : un transfert fini est rendu **tel quel** (même objet), pas une copie.
 
 ## Tests du contrat
@@ -123,94 +106,13 @@ describe("transfers", () => {
 });
 ```
 
-### `src/lib/mock/transfers.test.ts` (nouveau)
-
-```ts
-// T26: the mock's transfers, which the panel is built against.
-import { beforeEach, describe, expect, test } from "vitest";
-import type { TransferEvent } from "@/bindings/TransferEvent";
-import { ipc } from "@/lib/ipc";
-import { resetMockBackend } from "@/lib/ipc-mock";
-import { MOCK_IDS } from "@/lib/mock/data";
-
-beforeEach(() => {
-  resetMockBackend();
-});
-
-async function openTab(): Promise<string> {
-  const id = crypto.randomUUID();
-  await new Promise<void>((resolve) => {
-    void ipc.sftpOpen(id, { type: "saved", connectionId: MOCK_IDS.nas }, (event) => {
-      if (event.type === "connected") resolve();
-    });
-  });
-  return id;
-}
-
-/** Start a transfer and collect its events until the last one. */
-function collect(start: (onEvent: (e: TransferEvent) => void) => Promise<void>) {
-  return new Promise<TransferEvent[]>((resolve) => {
-    const events: TransferEvent[] = [];
-    void start((event) => {
-      events.push(event);
-      if (event.type !== "progress") resolve(events);
-    });
-  });
-}
-
-describe("mock transfers", () => {
-  test("a download reports progress, then where it landed; never over an earlier one", async () => {
-    const tab = await openTab();
-    const first = await collect((on) =>
-      ipc.sftpDownload(tab, crypto.randomUUID(), "/home/admin/notes.txt", on),
-    );
-    expect(first[0]).toMatchObject({ type: "progress", total: 512 });
-    expect(first.at(-1)).toEqual({ type: "done", path: "/home/user/Downloads/notes.txt" });
-    const second = await collect((on) =>
-      ipc.sftpDownload(tab, crypto.randomUUID(), "/home/admin/notes.txt", on),
-    );
-    expect(second.at(-1)).toEqual({ type: "done", path: "/home/user/Downloads/notes (1).txt" });
-  });
-
-  test("a missing file fails as not found", async () => {
-    const tab = await openTab();
-    const events = await collect((on) =>
-      ipc.sftpDownload(tab, crypto.randomUUID(), "/home/admin/nope", on),
-    );
-    expect(events.at(-1)).toMatchObject({ type: "failed", error: { kind: "notFound" } });
-  });
-
-  test("an upload lands in the folder, beside an existing file of the same name", async () => {
-    const tab = await openTab();
-    const one = await collect((on) =>
-      ipc.sftpUpload(tab, crypto.randomUUID(), "/home/me/notes.txt", "/home/admin", on),
-    );
-    expect(one.at(-1)).toEqual({ type: "done", path: "/home/admin/notes (1).txt" });
-    const names = (await ipc.sftpList(tab, "/home/admin")).map((e) => e.name);
-    expect(names).toContain("notes (1).txt");
-  });
-
-  test("a cancelled transfer ends with cancelled", async () => {
-    const tab = await openTab();
-    const id = crypto.randomUUID();
-    const events = await collect(async (on) => {
-      await ipc.sftpDownload(tab, id, "/home/admin/backup.tar.gz", on);
-      await ipc.transferCancel(id);
-    });
-    expect(events.at(-1)).toEqual({ type: "cancelled" });
-  });
-});
-```
-
-
 ## Étapes
 
 1. Les tests : `node scripts/contract-tests.mjs T26c`.
-2. `capabilities/default.json`, `ipc.ts`, `lib/opener.ts`, `lib/mock/sftp.ts`, `lib/mock/transfers.ts`,
-   `ipc-mock.ts` : `npm run typecheck`, `npx vitest run src/lib`.
+2. `capabilities/default.json`, `lib/opener.ts` : `npm run typecheck`.
 3. `transfer-model.ts`, `transfers-store.ts` : `npx vitest run src/features/sftp`.
 4. `npm run format`, `npm run review`, cases, statut, commit
-   `feat: SFTP transfers: IPC, mock, model and store (T26c)`.
+   `feat: SFTP transfers: model and store (T26c)`.
 
 ## Critères d'acceptation
 
