@@ -421,10 +421,10 @@ test("the status bar shows the latency of the active session's host", async ({ p
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T30 --check` affiche `OK` partout.
-- [ ] `grep -rn 'status="unknown"' src/features` ne trouve rien.
-- [ ] `grep -rn "write_all\|\.write(" src-tauri/src/probe.rs` ne trouve rien (aucune donnée envoyée, S15).
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T30 --check` affiche `OK` partout.
+- [x] `grep -rn 'status="unknown"' src/features` ne trouve rien.
+- [x] `grep -rn "write_all\|\.write(" src-tauri/src/probe.rs` ne trouve rien (aucune donnée envoyée, S15).
+- [x] Aucune nouvelle exception `project-rules: allow`.
 - [ ] Visuel : les pastilles vertes et grises restent lisibles en clair et en sombre ; la latence de la barre d'état
       ne décale pas les autres éléments.
 
