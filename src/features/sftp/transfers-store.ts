@@ -4,7 +4,7 @@
 import { create } from "zustand";
 import type { RemoteEntry } from "@/bindings/RemoteEntry";
 import type { TransferEvent } from "@/bindings/TransferEvent";
-import { toAppError } from "@/lib/errors";
+import { notifyError, toAppError } from "@/lib/errors";
 import { ipc } from "@/lib/ipc";
 import { applyTransferEvent, newTransfer, type Transfer } from "./transfer-model";
 
@@ -24,12 +24,34 @@ interface TransfersState {
     onDone?: (transfer: Transfer) => void,
   ) => Promise<void>;
   /** Cancel the transfer by id (a no-op when it is already finished). */
-  cancel: (id: string) => void;
+  cancel: (id: string) => Promise<void>;
   /** Forget every finished transfer of `sessionId`. */
   clearFinished: (sessionId: string) => void;
 }
 
-export const useTransfers = create<TransfersState>()((set) => ({
+type SetState = (update: (state: TransfersState) => Partial<TransfersState>) => void;
+
+/**
+ * Build the event handler of transfer `id`: apply each event to the stored transfer, ignore events of a
+ * transfer already cleared, and call `onDone` once, when it goes from `running` to a final state.
+ */
+function eventApplier(
+  set: SetState,
+  get: () => TransfersState,
+  id: string,
+  onDone?: (transfer: Transfer) => void,
+): (event: TransferEvent) => void {
+  return (event) => {
+    const before = get().transfers[id];
+    if (!before) return;
+    const next = applyTransferEvent(before, event);
+    if (next === before) return;
+    set((state) => ({ transfers: { ...state.transfers, [id]: next } }));
+    if (before.status === "running" && next.status !== "running") onDone?.(next);
+  };
+}
+
+export const useTransfers = create<TransfersState>()((set, get) => ({
   transfers: {},
 
   async download(sessionId, entry) {
@@ -37,12 +59,7 @@ export const useTransfers = create<TransfersState>()((set) => ({
     const initial = newTransfer(id, sessionId, "download", entry.name);
     set((state) => ({ transfers: { ...state.transfers, [id]: initial } }));
 
-    const apply = (event: TransferEvent) => {
-      set((state) => {
-        const next = applyTransferEvent(state.transfers[id] ?? initial, event);
-        return { transfers: { ...state.transfers, [id]: next } };
-      });
-    };
+    const apply = eventApplier(set, get, id);
 
     try {
       await ipc.sftpDownload(sessionId, id, entry.path, apply);
@@ -58,13 +75,7 @@ export const useTransfers = create<TransfersState>()((set) => ({
     const initial = newTransfer(id, sessionId, "upload", name);
     set((state) => ({ transfers: { ...state.transfers, [id]: initial } }));
 
-    const apply = (event: TransferEvent) => {
-      set((state) => {
-        const next = applyTransferEvent(state.transfers[id] ?? initial, event);
-        if (next.status !== "running" && onDone) onDone(next);
-        return { transfers: { ...state.transfers, [id]: next } };
-      });
-    };
+    const apply = eventApplier(set, get, id, onDone);
 
     try {
       await ipc.sftpUpload(sessionId, id, localPath, remoteDir, apply);
@@ -73,8 +84,13 @@ export const useTransfers = create<TransfersState>()((set) => ({
     }
   },
 
-  cancel(id) {
-    void ipc.transferCancel(id);
+  async cancel(id) {
+    if (get().transfers[id]?.status !== "running") return;
+    try {
+      await ipc.transferCancel(id);
+    } catch (error) {
+      notifyError(error);
+    }
   },
 
   clearFinished(sessionId) {
