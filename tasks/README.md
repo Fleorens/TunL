@@ -8,7 +8,7 @@ le modèle a réellement livré. Une fiche qui cite des signatures de code pas e
 
 - Lots 1 à 4 : **validés** (T01 → T21b, revue du lot 4 le 2026-10-18 : deux défauts corrigés et figés dans
   `e2e/review-lot4.spec.ts`).
-- Lot 5 (T22 → T30, plus T25b, T26b, T28b) : tout est écrit et prototypé (contre podman pour le SSH). L'état de
+- Lot 5 (T22 → T30, plus T25b, T26b, T26c, T26d, T28b) : tout est écrit et prototypé (contre podman pour le SSH). L'état de
   chaque fiche est dans le tableau « Jalons et fiches » ci-dessous.
 - À partir de T17b, `npm run review` démarre aussi les conteneurs SSH de test (podman, `npm run test:ssh`).
 - En attente de Florian, dans la vraie app (`npm run tauri dev`) :
@@ -109,8 +109,10 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | T24 | Backend SFTP : session, list, mkdir, rename, remove, chmod (+ ipc et mock) | T23 | moyen | Sonnet 5 · high | livrée |
 | T25 | Onglet SFTP : explorateur (fil d'Ariane, tableau virtualisé, tri, fichiers cachés) | T24 | moyen | Sonnet 5 · medium | livrée |
 | T25b | Explorateur SFTP : nouveau dossier, renommer, supprimer (avec le compte), droits, copier le chemin | T25 | moyen | Sonnet 5 · medium | livrée |
-| T26 | Transferts : moteur (téléchargement, envoi), annulation, panneau, téléchargement depuis l'explorateur | T25b | **élevé** | Opus 5 · high | prête |
-| T26b | Envoi de fichiers : sélecteur natif et glisser-déposer depuis le bureau | T26, T28b | moyen | Sonnet 5 · medium | prête |
+| T26 | Transferts : moteur Rust (téléchargement, envoi), annulation, commandes IPC | T25b | **élevé** | Opus 5 · high | prête |
+| T26c | Transferts : IPC, mock, modèle et store (frontend) | T26 | moyen | Sonnet 5 · medium | prête |
+| T26d | Transferts : panneau, téléchargement depuis l'explorateur (double-clic, menu) | T26c | moyen | Sonnet 5 · medium | prête |
+| T26b | Envoi de fichiers : sélecteur natif et glisser-déposer depuis le bureau | T26d, T28b | moyen | Sonnet 5 · medium | prête |
 
 ### M5 — RDP
 

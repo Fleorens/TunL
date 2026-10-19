@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Jalon** | M5 — RDP |
-| **Dépend de** | T28, T26 |
+| **Dépend de** | T28, T26d |
 | **Lire avant** | `docs/04-ecrans.md` §7 (onglet RDP), `docs/03-design.md` (cartes, `bg-brand-soft`, `shadow-elevated`) |
 | **Livrable** | onglets de type `rdp` (store, ouverture, journal dans le modèle) ; `src/features/rdp/` (modèle pur, `RdpCard`, `RdpMissingCard`) ; texte de l'étape `open` selon ce qu'elle ouvre ; mock : un client qui sort tout seul ; 6 fichiers de tests (dont 4 remplacent des versions antérieures) |
 

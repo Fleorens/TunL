@@ -1,18 +1,18 @@
-# T26 — Transferts SFTP : moteur (téléchargement, envoi), annulation, panneau, téléchargement depuis l'explorateur
+# T26 — Transferts SFTP : moteur Rust (téléchargement, envoi), annulation, commandes IPC
 
 | | |
 |---|---|
 | **Jalon** | M4 — SFTP |
 | **Dépend de** | T25b |
-| **Lire avant** | `docs/04-ecrans.md` §6 (panneau « Transferts »), `docs/06-securite.md` **S11**, S7, S8 et S14, `docs/05-modele-donnees.md` §5 (`ui.downloadDir`) et §8 (`TransferEvent`) |
-| **Livrable** | `sftp/transfer.rs` (téléchargement et envoi en flux), `TransferRegistry`, commandes `sftp_download`, `sftp_upload`, `transfer_cancel` + ipc + mock ; panneau des transferts ; téléchargement par double-clic et par le menu ; 6 fichiers de tests |
+| **Lire avant** | `docs/06-securite.md` **S11**, S7 et S8, `docs/05-modele-donnees.md` §5 (`ui.downloadDir`) et §8 (`TransferEvent`) |
+| **Livrable** | `sftp/transfer.rs` (téléchargement et envoi en flux), `TransferRegistry`, commandes `sftp_download`, `sftp_upload`, `transfer_cancel`, binding `TransferEvent.ts` ; 3 fichiers de tests |
 
 ## Pourquoi
 
-L'explorateur sait parcourir et agir ; il ne sait pas encore **transférer**. Cette fiche écrit le moteur dans les
-deux sens (l'envoi servira à T26b, qui n'ajoute que son interface) et branche le **téléchargement** : double-clic
-sur un fichier, ou « Télécharger » dans le menu. Les transferts tournent en tâche de fond, rapportent leur
-progression par un `Channel`, et s'affichent dans un panneau repliable sous l'explorateur.
+L'explorateur sait parcourir et agir ; il ne sait pas encore **transférer**. Les transferts sont découpés en trois
+fiches : **T26** (cette fiche) écrit le moteur Rust dans les deux sens et ses commandes ; **T26c** branche l'IPC, le
+mock, le modèle et le store côté frontend ; **T26d** ajoute le panneau et le téléchargement depuis l'explorateur.
+Les transferts tournent en tâche de fond et rapportent leur progression par un `Channel`.
 
 S11 : un fichier téléchargé garde **seulement son nom de base**, et rien n'est jamais écrasé (` (1)`, ` (2)`…).
 Un transfert écrit d'abord un fichier `.part`, renommé à la fin : annulé ou raté, il ne laisse rien sous le vrai nom.
@@ -23,11 +23,8 @@ fichier de 64 Mo) : les tests de cette fiche passent.
 ## À réutiliser (ne pas réécrire)
 
 - T24 : `sftp::ops::{join, valid_name, validate_remote_path, map_sftp_error, list}`, `state.sftp.get(session_id)`,
-  `commands/ipc_tests.rs`. Le mock : `lib/mock/sftp.ts` (son système de fichiers).
+  `commands/ipc_tests.rs`.
 - T18 : `ssh::auth::expand_home(path, home)` (pour `ui.downloadDir` qui commence par `~/`).
-- T25 / T25b : `SftpExplorer` (son `open`), `EntryMenu`, `formatSize` (`sftp-model.ts`).
-- shadcn : `collapsible`, `progress`, `button` (tailles `xs`, `icon-xs`).
-- `lib/opener.ts` (le **seul** fichier qui importe le plugin `opener`), `describeError`, `notifyError`, `toAppError`.
 
 ## Contrat — Rust
 
@@ -100,43 +97,9 @@ impl TransferRegistry {
 Le `Channel` est enveloppé dans une petite struct qui implémente `TransferSink` (un envoi raté → `log::warn!`).
 `commands/mod.rs` : `pub mod transfer;` et `#[cfg(test)] mod ipc_transfer_tests;`. `lib.rs` : les 3 commandes.
 
-### `src-tauri/capabilities/default.json`
+- `npm run bindings` : `TransferEvent.ts` (ne l'édite pas : il est généré).
 
-Ajouter `"opener:allow-reveal-item-in-dir"` (bouton « Afficher dans son dossier »). Rien d'autre (S14).
-
-## Contrat — Frontend
-
-- `npm run bindings` : `TransferEvent.ts`.
-- `ipc.ts`, section `// Transfers (T26): …` : `sftpDownload(sessionId, transferId, remotePath, onEvent)`,
-  `sftpUpload(sessionId, transferId, localPath, remoteDir, onEvent)`, `transferCancel(transferId)`. `onEvent` passe
-  par une fonction `transferChannel(onEvent)` : la fonction elle-même pour le mock, un
-  `new Channel<TransferEvent>(onEvent)` dans Tauri.
-- `lib/opener.ts` : `revealInFolder(path)` → `revealItemInDir(path)` ; dans le navigateur, rien.
-- Mock :
-  - `lib/mock/sftp.ts` exporte en plus `mockRemoteNode(sessionId, path)` (refuse un onglet non connecté),
-    `mockRemoteWrite(path, size)` et `mockRemoteNames(dir)` ;
-  - `lib/mock/transfers.ts` (nouveau) : `MOCK_DOWNLOAD_DIR = "/home/user/Downloads"`, `transferHandlers` (les 3
-    commandes) et `resetMockTransfers()`. Progression par pas : un pas par 20 Mo (1 à 40), un pas toutes les
-    150 ms (**5 ms** en mode test, pas 0 : un gros fichier doit encore tourner quand un test l'annule), débit affiché
-    12,4 Mo/s. Téléchargement : fichier absent ou dossier → `failed` `notFound` ; sinon `done` vers
-    `MOCK_DOWNLOAD_DIR/<nom libre>` (les noms déjà téléchargés sont retenus). Envoi : `done` vers le premier nom libre
-    du dossier distant, où le fichier apparaît (taille fictive). `transfer_cancel` arrête les pas et envoie
-    `cancelled` ;
-  - `ipc-mock.ts` : `...transferHandlers`, et `resetMockTransfers()` dans `resetMockBackend()`.
-
-### `src/features/sftp/`
-
-| Fichier | Contenu |
-|---|---|
-| `transfer-model.ts` (pur) | `Transfer { id, sessionId, direction: "download" \| "upload", name, transferred, total, bytesPerSec, status: "running" \| "done" \| "failed" \| "cancelled", error, path }` ; `newTransfer(id, sessionId, direction, name)` ; `applyTransferEvent(t, event)` (nouvel objet ; un transfert fini ne bouge plus et est rendu **tel quel**) ; `percentOf(t)` (`done` → 100, total inconnu ou nul → `null`, sinon l'entier inférieur) |
-| `transfers-store.ts` | `useTransfers` (zustand) : `transfers`, `download(sessionId, entry)`, `upload(sessionId, localPath, remoteDir, onDone?)` (pour T26b), `cancel(id)`, `clearFinished(sessionId)`. Un appel `ipc` rejeté devient un événement `failed` du transfert |
-| `TransfersPanel.tsx` | `TransfersPanel({ sessionId })` : rien sans transfert ; sinon un `Collapsible` ouvert par défaut, bordure haute : un en-tête bouton « Transfers (n) » (chevron qui tourne), « Clear finished » s'il y a un transfert fini ; une liste (`aria-label` « Transfers », `max-h-40`, défilante), une ligne par transfert (`aria-label` = son nom) : flèche (bas pour un téléchargement), nom, puis en cours une `Progress` (`aria-label` = le nom) + `NN %` + débit `12 MB/s`, sinon « Done » / « Cancelled » / le titre de l'erreur (en `text-destructive`) ; à droite « Cancel <nom> » (en cours) ou « Show <nom> in its folder » (téléchargement fini) |
-
-- `SftpExplorer.tsx` : ouvrir un **fichier** (`file` ou `other`) → `download` ; `<TransfersPanel>` sous le tableau.
-- `EntryMenu.tsx` : « Download » (`Download`), en tête, pour une entrée qui n'est pas un dossier.
-- i18n (`en` et `fr`) : `sftp.menu.download`, `sftp.transfers.{title_one, title_other, list, clear, rate, done,
-  failed, cancelled, cancel, reveal}` (anglais : « Transfers ({{count}}) », « Transfers », « Clear finished »,
-  « {{rate}}/s », « Done », « Failed », « Cancelled », « Cancel {{name}} », « Show {{name}} in its folder »).
+Hors de cette fiche : `ipc.ts`, le mock et tout le frontend (T26c, T26d), la permission `opener` (T26c).
 
 ## Pièges (vus au prototype)
 
@@ -146,9 +109,6 @@ Ajouter `"opener:allow-reveal-item-in-dir"` (bouton « Afficher dans son dossier
 - `SftpSession::write(path, data)` n'ouvre qu'un fichier **existant** : pour envoyer, `create`, puis `write_all` et
   `shutdown`.
 - Un `Progress` final est indispensable : sans lui, une barre resterait à 97 % jusqu'à `Done`.
-- Sélecteur zustand : `useTransfers((s) => s.transfers)` puis un `useMemo` qui filtre par session ; jamais
-  `s.transfers.filter(…)` dans le sélecteur (nouveau tableau à chaque rendu → boucle infinie).
-- Le panneau vit **dans** l'explorateur : une reconnexion (nouveau `runId`) repart d'un panneau vide.
 - **`npm run test:ssh` recrée les conteneurs** avec les clés de ton clone : ne le lance jamais pendant qu'un autre
   clone l'utilise.
 
@@ -509,245 +469,23 @@ async fn a_missing_remote_file_fails_without_a_local_file() {
 }
 ```
 
-### `src/features/sftp/transfer-model.test.ts` (nouveau)
-
-```ts
-// T26: a transfer's life, as the panel shows it.
-import { describe, expect, test } from "vitest";
-import { applyTransferEvent, newTransfer, percentOf } from "./transfer-model";
-
-const start = newTransfer("t-1", "run-1", "download", "backup.tar.gz");
-
-describe("transfers", () => {
-  test("a new transfer runs, with nothing transferred yet", () => {
-    expect(start).toMatchObject({ status: "running", transferred: 0, total: null, path: null });
-    expect(percentOf(start)).toBeNull();
-  });
-
-  test("progress, then done", () => {
-    const half = applyTransferEvent(start, {
-      type: "progress",
-      transferred: 50,
-      total: 200,
-      bytesPerSec: 1000,
-    });
-    expect(percentOf(half)).toBe(25);
-    expect(half.bytesPerSec).toBe(1000);
-    const done = applyTransferEvent(half, {
-      type: "done",
-      path: "/home/me/Downloads/backup.tar.gz",
-    });
-    expect(done.status).toBe("done");
-    expect(done.path).toBe("/home/me/Downloads/backup.tar.gz");
-    expect(percentOf(done)).toBe(100);
-    expect(start.transferred).toBe(0);
-  });
-
-  test("failed and cancelled are final: a late event changes nothing", () => {
-    const error = { kind: "notFound" as const, message: "/srv/x", detail: null };
-    const failed = applyTransferEvent(start, { type: "failed", error });
-    expect(failed).toMatchObject({ status: "failed", error });
-    const cancelled = applyTransferEvent(start, { type: "cancelled" });
-    expect(cancelled.status).toBe("cancelled");
-    const late = applyTransferEvent(cancelled, {
-      type: "progress",
-      transferred: 9,
-      total: 10,
-      bytesPerSec: 1,
-    });
-    expect(late).toBe(cancelled);
-  });
-
-  test("an empty file is not a division by zero", () => {
-    const empty = applyTransferEvent(start, {
-      type: "progress",
-      transferred: 0,
-      total: 0,
-      bytesPerSec: 0,
-    });
-    expect(percentOf(empty)).toBeNull();
-  });
-});
-```
-
-### `src/lib/mock/transfers.test.ts` (nouveau)
-
-```ts
-// T26: the mock's transfers, which the panel is built against.
-import { beforeEach, describe, expect, test } from "vitest";
-import type { TransferEvent } from "@/bindings/TransferEvent";
-import { ipc } from "@/lib/ipc";
-import { resetMockBackend } from "@/lib/ipc-mock";
-import { MOCK_IDS } from "@/lib/mock/data";
-
-beforeEach(() => {
-  resetMockBackend();
-});
-
-async function openTab(): Promise<string> {
-  const id = crypto.randomUUID();
-  await new Promise<void>((resolve) => {
-    void ipc.sftpOpen(id, { type: "saved", connectionId: MOCK_IDS.nas }, (event) => {
-      if (event.type === "connected") resolve();
-    });
-  });
-  return id;
-}
-
-/** Start a transfer and collect its events until the last one. */
-function collect(start: (onEvent: (e: TransferEvent) => void) => Promise<void>) {
-  return new Promise<TransferEvent[]>((resolve) => {
-    const events: TransferEvent[] = [];
-    void start((event) => {
-      events.push(event);
-      if (event.type !== "progress") resolve(events);
-    });
-  });
-}
-
-describe("mock transfers", () => {
-  test("a download reports progress, then where it landed; never over an earlier one", async () => {
-    const tab = await openTab();
-    const first = await collect((on) =>
-      ipc.sftpDownload(tab, crypto.randomUUID(), "/home/admin/notes.txt", on),
-    );
-    expect(first[0]).toMatchObject({ type: "progress", total: 512 });
-    expect(first.at(-1)).toEqual({ type: "done", path: "/home/user/Downloads/notes.txt" });
-    const second = await collect((on) =>
-      ipc.sftpDownload(tab, crypto.randomUUID(), "/home/admin/notes.txt", on),
-    );
-    expect(second.at(-1)).toEqual({ type: "done", path: "/home/user/Downloads/notes (1).txt" });
-  });
-
-  test("a missing file fails as not found", async () => {
-    const tab = await openTab();
-    const events = await collect((on) =>
-      ipc.sftpDownload(tab, crypto.randomUUID(), "/home/admin/nope", on),
-    );
-    expect(events.at(-1)).toMatchObject({ type: "failed", error: { kind: "notFound" } });
-  });
-
-  test("an upload lands in the folder, beside an existing file of the same name", async () => {
-    const tab = await openTab();
-    const one = await collect((on) =>
-      ipc.sftpUpload(tab, crypto.randomUUID(), "/home/me/notes.txt", "/home/admin", on),
-    );
-    expect(one.at(-1)).toEqual({ type: "done", path: "/home/admin/notes (1).txt" });
-    const names = (await ipc.sftpList(tab, "/home/admin")).map((e) => e.name);
-    expect(names).toContain("notes (1).txt");
-  });
-
-  test("a cancelled transfer ends with cancelled", async () => {
-    const tab = await openTab();
-    const id = crypto.randomUUID();
-    const events = await collect(async (on) => {
-      await ipc.sftpDownload(tab, id, "/home/admin/backup.tar.gz", on);
-      await ipc.transferCancel(id);
-    });
-    expect(events.at(-1)).toEqual({ type: "cancelled" });
-  });
-});
-```
-
-### `e2e/sftp-transfers.spec.ts` (nouveau)
-
-```ts
-// T26: downloads from the explorer, and the transfers panel (mock: backup.tar.gz is 700 MB, a few seconds).
-import { expectSaneUi } from "./support/sanity.ts";
-import { expect, type Page, test } from "./support/test.ts";
-
-test.beforeEach(async ({ page }) => {
-  await page.goto("/");
-  await page.getByRole("button", { name: /^nas/ }).first().click({ button: "right" });
-  await page.getByRole("menu").getByRole("menuitem", { name: "Open in SFTP" }).click();
-  await expect(row(page, "notes.txt")).toBeVisible();
-});
-
-function nas(page: Page) {
-  return page.getByRole("region", { name: "nas", exact: true });
-}
-
-function row(page: Page, name: string) {
-  return nas(page)
-    .getByRole("table", { name: "Files" })
-    .getByRole("row", { name: new RegExp(`^${name.replace(".", "\\.")}\\b`) });
-}
-
-function transfers(page: Page) {
-  return nas(page).getByRole("list", { name: "Transfers" });
-}
-
-test("double-clicking a file downloads it; the panel says when it is done", async ({ page }) => {
-  await row(page, "notes.txt").dblclick();
-  await expect(nas(page).getByRole("button", { name: "Transfers (1)" })).toBeVisible();
-  const line = transfers(page).getByRole("listitem", { name: "notes.txt" });
-  await expect(line).toContainText("Done");
-  await expect(line.getByRole("button", { name: "Show notes.txt in its folder" })).toBeVisible();
-  await expectSaneUi(page);
-});
-
-test("a folder has no Download in its menu; a file has", async ({ page }) => {
-  await row(page, "projects").click({ button: "right" });
-  await expect(page.getByRole("menu").getByRole("menuitem", { name: "Download" })).toHaveCount(0);
-  await page.keyboard.press("Escape");
-  await row(page, "notes.txt").click({ button: "right" });
-  await page.getByRole("menu").getByRole("menuitem", { name: "Download" }).click();
-  await expect(transfers(page).getByRole("listitem", { name: "notes.txt" })).toContainText("Done");
-});
-
-test("a long download shows its progress and can be cancelled", async ({ page }) => {
-  await row(page, "backup.tar.gz").dblclick();
-  const line = transfers(page).getByRole("listitem", { name: "backup.tar.gz" });
-  await expect(line.getByRole("progressbar")).toBeVisible();
-  await expect(line).toContainText("/s");
-  await line.getByRole("button", { name: "Cancel backup.tar.gz" }).click();
-  await expect(line).toContainText("Cancelled");
-  await expect(line.getByRole("progressbar")).toHaveCount(0);
-});
-
-test("Clear finished empties the panel, which then goes away", async ({ page }) => {
-  await row(page, "notes.txt").dblclick();
-  await expect(transfers(page).getByRole("listitem", { name: "notes.txt" })).toContainText("Done");
-  await nas(page).getByRole("button", { name: "Clear finished" }).click();
-  await expect(transfers(page)).toHaveCount(0);
-});
-
-test("the panel folds away and comes back", async ({ page }) => {
-  await row(page, "notes.txt").dblclick();
-  const toggle = nas(page).getByRole("button", { name: "Transfers (1)" });
-  await expect(transfers(page)).toBeVisible();
-  await toggle.click();
-  await expect(transfers(page)).toHaveCount(0);
-  await toggle.click();
-  await expect(transfers(page)).toBeVisible();
-});
-```
 
 ## Étapes
 
 1. Les tests : `node scripts/contract-tests.mjs T26`.
 2. `sftp/transfer.rs`, `TransferRegistry`, `state.rs` : `cd src-tauri && cargo test --lib sftp::transfer`.
-3. `commands/transfer.rs`, `commands/mod.rs`, `lib.rs`, `capabilities/default.json` :
-   `cargo test --lib commands::ipc_transfer`, puis `npm run test:ssh` (`ssh_transfer` compris), `npm run bindings`.
-4. `ipc.ts`, `lib/opener.ts`, `lib/mock/sftp.ts`, `lib/mock/transfers.ts`, `ipc-mock.ts`, puis
-   `transfer-model.ts`, `transfers-store.ts` : `npx vitest run src/lib src/features/sftp`.
-5. `TransfersPanel.tsx`, `SftpExplorer.tsx`, `EntryMenu.tsx`, `en.json`, `fr.json` :
-   `npx playwright test e2e/sftp-transfers.spec.ts e2e/sftp-actions.spec.ts e2e/sftp.spec.ts`.
-6. `npm run format`, `npm run review`, cases, statut, ligne « Works today » du `README.md`, commit
-   `feat: SFTP transfers: streaming download and upload, cancel, transfers panel (T26)`.
+3. `commands/transfer.rs`, `commands/mod.rs`, `lib.rs` : `cargo test --lib commands::ipc_transfer`, puis
+   `npm run test:ssh` (`ssh_transfer` compris), `npm run bindings`.
+4. `npm run format`, `npm run review`, cases, statut, commit
+   `feat: SFTP transfer engine: streaming download and upload, cancel, IPC commands (T26)`.
 
 ## Critères d'acceptation
 
 - [ ] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T26 --check` affiche `OK`
       partout.
 - [ ] `grep -rn "create_new(true)" src-tauri/src/sftp/transfer.rs` trouve la création du `.part` local.
-- [ ] `grep -rn "plugin-opener" src` ne trouve que `src/lib/opener.ts`.
 - [ ] Aucune nouvelle exception `project-rules: allow`.
-- [ ] Visuel : en clair et en sombre, une ligne de transfert garde ses colonnes alignées pendant et après le
-      transfert, et le panneau ne cache pas la dernière ligne du tableau.
 
 ## À regarder par Florian
 
-`npm run tauri dev`, un onglet SFTP : double-clic sur un fichier, il arrive dans ton dossier Téléchargements (un
-deuxième téléchargement devient `nom (1).ext`) ; « Afficher dans son dossier » ouvre le gestionnaire de fichiers.
-Lance un gros fichier, puis annule : aucun fichier `.part` ne reste.
+Rien à l'écran : le moteur n'a pas encore d'interface (T26c, T26d). `npm run test:ssh` vert suffit.

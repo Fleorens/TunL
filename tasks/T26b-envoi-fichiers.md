@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Jalon** | M4 — SFTP |
-| **Dépend de** | T26, T28b |
+| **Dépend de** | T26d, T28b |
 | **Lire avant** | `docs/04-ecrans.md` §6 (« Glisser-déposer », bouton « Envoyer »), `docs/06-securite.md` S14 |
 | **Livrable** | plugin `dialog` ; `lib/files.ts` (`pickFiles`) ; `onFileDrop` dans `lib/events.ts` ; bouton « Envoyer des fichiers » et voile « Déposer pour envoyer vers … » de l'explorateur ; 1 fichier de tests |
 
