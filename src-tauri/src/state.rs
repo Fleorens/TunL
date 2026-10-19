@@ -9,6 +9,7 @@ use crate::paths::AppPaths;
 use crate::prompts::PromptBroker;
 use crate::secrets::SecretStore;
 use crate::sessions::SessionRegistry;
+use crate::sftp::SftpRegistry;
 use crate::ssh::known_hosts::KnownHosts;
 use crate::store::{Store, load_settings, load_store, save_settings, save_store};
 
@@ -33,6 +34,8 @@ pub struct AppState {
     pub known_hosts: Arc<KnownHosts>,
     /// Every live session, one per tab id (T19).
     pub sessions: Arc<SessionRegistry>,
+    /// The connected SFTP tabs, one per tab id (T24).
+    pub sftp: Arc<SftpRegistry>,
 }
 
 impl AppState {
@@ -80,6 +83,7 @@ impl AppState {
             prompts: Arc::new(PromptBroker::new()),
             known_hosts: Arc::new(KnownHosts::for_app(&paths.config_dir)),
             sessions: Arc::new(SessionRegistry::new()),
+            sftp: Arc::new(SftpRegistry::default()),
         })
     }
 
@@ -98,6 +102,7 @@ impl AppState {
             prompts: Arc::new(PromptBroker::new()),
             known_hosts: Arc::new(KnownHosts::for_app(&paths.config_dir)),
             sessions: Arc::new(SessionRegistry::new()),
+            sftp: Arc::new(SftpRegistry::default()),
         }
     }
 
