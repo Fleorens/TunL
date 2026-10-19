@@ -117,7 +117,7 @@ pub async fn mkdir(sftp: &SftpSession, path: &str) -> AppResult<()> {
 pub async fn rename(sftp: &SftpSession, from: &str, to: &str) -> AppResult<()> {
     sftp.rename(from, to)
         .await
-        .map_err(|_error| AppError::new(ErrorKind::Sftp, format!("cannot rename {from} to {to}")))
+        .map_err(|error| map_sftp_error("rename", from, &error))
 }
 
 /// Change a path's permission bits (`mode & 0o7777`). A mode above `0o7777` is rejected before any
@@ -164,7 +164,7 @@ pub async fn count(sftp: &SftpSession, path: &str) -> AppResult<u64> {
 /// Remove `path`: a file or a link is removed as one (lstat, never its target); a directory has its
 /// contents removed first, in depth, then the directory itself (S11). The root cannot be removed.
 pub async fn remove(sftp: &SftpSession, path: &str) -> AppResult<()> {
-    if path == "/" {
+    if resolves_to_root(path) {
         return Err(AppError::validation("path", "cannot remove the root"));
     }
     // Post-order removal with a stack: a directory is removed only after its children, a file or a
@@ -210,4 +210,18 @@ async fn is_dir(sftp: &SftpSession, path: &str) -> AppResult<bool> {
         .await
         .map_err(|error| map_sftp_error("count", path, &error))?;
     Ok(meta.file_type().is_dir())
+}
+
+/// Whether `path` names the root once its empty, `.` and `..` segments are resolved (`//`, `/.`,
+/// `/x/..`), so `remove` never clears it.
+fn resolves_to_root(path: &str) -> bool {
+    let mut depth: usize = 0;
+    for segment in path.split('/') {
+        match segment {
+            "" | "." => {}
+            ".." => depth = depth.saturating_sub(1),
+            _ => depth += 1,
+        }
+    }
+    depth == 0
 }

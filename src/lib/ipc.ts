@@ -9,6 +9,7 @@ import type { ImportPreview } from "@/bindings/ImportPreview";
 import type { ProbeResult } from "@/bindings/ProbeResult";
 import type { PromptAnswer } from "@/bindings/PromptAnswer";
 import type { RdpClient } from "@/bindings/RdpClient";
+import type { RemoteEntry } from "@/bindings/RemoteEntry";
 import type { SecretKind } from "@/bindings/SecretKind";
 import type { SessionEvent } from "@/bindings/SessionEvent";
 import type { SessionTarget } from "@/bindings/SessionTarget";
@@ -114,6 +115,26 @@ export const ipc = {
   sshResize: (sessionId: string, size: TerminalSize) =>
     call<void>("ssh_resize", { sessionId, cols: size.cols, rows: size.rows }),
   sessionClose: (sessionId: string) => call<void>("session_close", { sessionId }),
+
+  // SFTP (T24): open a tab (its events come back through one `Channel`, the callback itself with the
+  // mock), then work on its remote files by tab id.
+  sftpOpen: (sessionId: string, target: SessionTarget, onEvent: (event: SessionEvent) => void) =>
+    call<void>("sftp_open", {
+      sessionId,
+      target,
+      onEvent: isMockBackend ? onEvent : new Channel<SessionEvent>(onEvent),
+    }),
+  sftpRealpath: (sessionId: string, path: string) =>
+    call<string>("sftp_realpath", { sessionId, path }),
+  sftpList: (sessionId: string, path: string) =>
+    call<RemoteEntry[]>("sftp_list", { sessionId, path }),
+  sftpMkdir: (sessionId: string, path: string) => call<void>("sftp_mkdir", { sessionId, path }),
+  sftpRename: (sessionId: string, from: string, to: string) =>
+    call<void>("sftp_rename", { sessionId, from, to }),
+  sftpCount: (sessionId: string, path: string) => call<number>("sftp_count", { sessionId, path }),
+  sftpRemove: (sessionId: string, path: string) => call<void>("sftp_remove", { sessionId, path }),
+  sftpChmod: (sessionId: string, path: string, mode: number) =>
+    call<void>("sftp_chmod", { sessionId, path, mode }),
 
   // Prompts (T17): answer the question the backend posed, and forget a known host.
   promptAnswer: (id: string, answer: PromptAnswer) => call<void>("prompt_answer", { id, answer }),

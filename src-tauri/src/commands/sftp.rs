@@ -67,7 +67,6 @@ pub async fn sftp_open(
     let sessions = state.sessions.clone();
     let prompts = state.prompts.clone();
     let sftp = state.sftp.clone();
-    let sftp_registry = state.sftp.clone();
     let ctx = state.ssh_context();
     let sink: Arc<dyn SessionSink> = Arc::new(EventSink { on_event });
 
@@ -87,11 +86,11 @@ pub async fn sftp_open(
                     cancel,
                 },
                 sink,
-                sftp,
+                sftp.clone(),
             )
             .await;
         }
-        sftp_registry.remove(session_id);
+        sftp.remove(session_id);
         sessions.remove(session_id);
         prompts.cancel_session(session_id);
     });
@@ -116,6 +115,7 @@ pub async fn sftp_list(
     session_id: Uuid,
     path: String,
 ) -> AppResult<Vec<RemoteEntry>> {
+    ops::validate_remote_path("path", &path)?;
     ops::list(&*state.sftp.get(session_id)?, &path).await
 }
 
@@ -126,6 +126,7 @@ pub async fn sftp_mkdir(
     session_id: Uuid,
     path: String,
 ) -> AppResult<()> {
+    ops::validate_remote_path("path", &path)?;
     ops::mkdir(&*state.sftp.get(session_id)?, &path).await
 }
 
@@ -137,6 +138,8 @@ pub async fn sftp_rename(
     from: String,
     to: String,
 ) -> AppResult<()> {
+    ops::validate_remote_path("from", &from)?;
+    ops::validate_remote_path("to", &to)?;
     ops::rename(&*state.sftp.get(session_id)?, &from, &to).await
 }
 
@@ -147,6 +150,7 @@ pub async fn sftp_count(
     session_id: Uuid,
     path: String,
 ) -> AppResult<u64> {
+    ops::validate_remote_path("path", &path)?;
     ops::count(&*state.sftp.get(session_id)?, &path).await
 }
 
@@ -157,6 +161,7 @@ pub async fn sftp_remove(
     session_id: Uuid,
     path: String,
 ) -> AppResult<()> {
+    ops::validate_remote_path("path", &path)?;
     ops::remove(&*state.sftp.get(session_id)?, &path).await
 }
 
@@ -168,6 +173,7 @@ pub async fn sftp_chmod(
     path: String,
     mode: u32,
 ) -> AppResult<()> {
+    ops::validate_remote_path("path", &path)?;
     ops::chmod(&*state.sftp.get(session_id)?, &path, mode).await
 }
 
