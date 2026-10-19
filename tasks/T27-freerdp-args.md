@@ -724,11 +724,11 @@ describe("mock rdp_detect", () => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T27 --check` affiche `OK` partout.
-- [ ] `grep -n '"/gateway"\|"/args-from"' src-tauri/src/rdp/args.rs` ne trouve rien (la liste des arguments
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T27 --check` affiche `OK` partout.
+- [x] `grep -n '"/gateway"\|"/args-from"' src-tauri/src/rdp/args.rs` ne trouve rien (la liste des arguments
       réservés reste dans `model/validate_args.rs`).
-- [ ] `grep -rn "derive(.*Debug" src-tauri/src/rdp/args.rs` ne montre pas `RdpArgs`.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `grep -rn "derive(.*Debug" src-tauri/src/rdp/args.rs` ne montre pas `RdpArgs`.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 

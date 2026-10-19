@@ -8,7 +8,7 @@ le modèle a réellement livré. Une fiche qui cite des signatures de code pas e
 
 - Lots 1 à 4 : **validés** (T01 → T21b, revue du lot 4 le 2026-10-18 : deux défauts corrigés et figés dans
   `e2e/review-lot4.spec.ts`).
-- Lot 5 (T22 → T30) : T22 **livrée**. Prêtes, et prototypées (contre podman pour le SSH) : T27, T30, T29, T23,
+- Lot 5 (T22 → T30) : T22, T27 **livrées**. Prêtes, et prototypées (contre podman pour le SSH) : T30, T29, T23,
   T24, T25, T25b, T26, T28. Restent à écrire : T26b (envoi de fichiers) et T28b (onglet RDP).
 - À partir de T17b, `npm run review` démarre aussi les conteneurs SSH de test (podman, `npm run test:ssh`).
 - En attente de Florian, dans la vraie app (`npm run tauri dev`) :
@@ -116,7 +116,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T27 | Détection FreeRDP + constructeur d'arguments pur + tests exhaustifs | T08 | moyen | Sonnet 5 · medium | prête |
+| T27 | Détection FreeRDP + constructeur d'arguments pur + tests exhaustifs | T08 | moyen | Sonnet 5 · medium | livrée |
 | T28 | RDP : lancement par `/args-from:stdin`, suivi, journal filtré, tunnel via bastion (+ ipc et mock) | T23, T27 | **élevé** | Opus 5 · high | prête |
 | T28b | Onglet RDP : carte de session, étapes, journal, fin traduite, client introuvable | T28 | moyen | Sonnet 5 · medium | à écrire |
 
