@@ -10,6 +10,7 @@ pub mod settings;
 pub mod sftp;
 pub mod ssh;
 pub mod store;
+pub mod transfer;
 pub mod wol;
 
 #[cfg(test)]
@@ -35,3 +36,6 @@ mod ipc_import_tests;
 
 #[cfg(test)]
 mod ipc_ssh_tests;
+
+#[cfg(test)]
+mod ipc_transfer_tests;

@@ -15,6 +15,7 @@ import type { SessionEvent } from "@/bindings/SessionEvent";
 import type { SessionTarget } from "@/bindings/SessionTarget";
 import type { Settings } from "@/bindings/Settings";
 import type { StoreSnapshot } from "@/bindings/StoreSnapshot";
+import type { TransferEvent } from "@/bindings/TransferEvent";
 import { mockInvoke } from "./ipc-mock";
 
 type Args = Record<string, unknown>;
@@ -49,6 +50,11 @@ function sessionChannels(callbacks: SessionCallbacks) {
         onEvent: new Channel<SessionEvent>(callbacks.onEvent),
         onOutput: new Channel<ArrayBuffer>((buffer) => callbacks.onOutput(new Uint8Array(buffer))),
       };
+}
+
+/** A transfer's events back to the UI: the callback for the mock, one `Channel` in Tauri. */
+function transferChannel(onEvent: (event: TransferEvent) => void) {
+  return isMockBackend ? onEvent : new Channel<TransferEvent>(onEvent);
 }
 
 /**
@@ -135,6 +141,36 @@ export const ipc = {
   sftpRemove: (sessionId: string, path: string) => call<void>("sftp_remove", { sessionId, path }),
   sftpChmod: (sessionId: string, path: string, mode: number) =>
     call<void>("sftp_chmod", { sessionId, path, mode }),
+
+  // Transfers (T26): download a remote file, upload a local one, cancel one. The steps and the end
+  // come back through one `Channel` (built by `transferChannel`), the callback itself with the mock.
+  sftpDownload: (
+    sessionId: string,
+    transferId: string,
+    remotePath: string,
+    onEvent: (event: TransferEvent) => void,
+  ) =>
+    call<void>("sftp_download", {
+      sessionId,
+      transferId,
+      remotePath,
+      onEvent: transferChannel(onEvent),
+    }),
+  sftpUpload: (
+    sessionId: string,
+    transferId: string,
+    localPath: string,
+    remoteDir: string,
+    onEvent: (event: TransferEvent) => void,
+  ) =>
+    call<void>("sftp_upload", {
+      sessionId,
+      transferId,
+      localPath,
+      remoteDir,
+      onEvent: transferChannel(onEvent),
+    }),
+  transferCancel: (transferId: string) => call<void>("transfer_cancel", { transferId }),
 
   // Prompts (T17): answer the question the backend posed, and forget a known host.
   promptAnswer: (id: string, answer: PromptAnswer) => call<void>("prompt_answer", { id, answer }),

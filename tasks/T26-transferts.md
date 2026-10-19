@@ -584,10 +584,10 @@ describe("mock transfers", () => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T26 --check` affiche `OK`
+- [x] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T26 --check` affiche `OK`
       partout.
-- [ ] `grep -rn "create_new(true)" src-tauri/src/sftp/transfer.rs` trouve la création du `.part` local.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `grep -rn "create_new(true)" src-tauri/src/sftp/transfer.rs` trouve la création du `.part` local.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 

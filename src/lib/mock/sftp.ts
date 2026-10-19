@@ -107,6 +107,30 @@ export const sftpHandlers: Record<string, Handler<Record<string, unknown>>> = {
   }),
 };
 
+/**
+ * A remote file's node, or `undefined` when the tab is connected but the path is absent. Throws
+ * `notFound` when the tab is not (no longer) connected, like the other tab commands.
+ */
+export function mockRemoteNode(sessionId: string, path: string): sftpFs.MockNode | undefined {
+  const home = homeOf(sessionId);
+  try {
+    return fs.get(sftpFs.realpath(fs, path, home));
+  } catch {
+    return undefined;
+  }
+}
+
+/** The names of a remote directory's entries, for choosing a free destination name. */
+export function mockRemoteNames(sessionId: string, dir: string): string[] {
+  homeOf(sessionId);
+  return sftpFs.list(fs, dir).map((entry) => entry.name);
+}
+
+/** Add a file to the shared remote tree (an upload's destination); the tree is replaced, not mutated. */
+export function mockRemoteWrite(path: string, size: number): void {
+  fs = new Map(fs).set(path, { kind: "file", size, modifiedAt: Date.now(), permissions: 0o644 });
+}
+
 /** Back to the demo file system with no connected tab, for `resetMockBackend()`. */
 export function resetMockSftp(): void {
   fs = sftpFs.demoFs();

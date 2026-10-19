@@ -9,7 +9,7 @@ use crate::paths::AppPaths;
 use crate::prompts::PromptBroker;
 use crate::secrets::SecretStore;
 use crate::sessions::SessionRegistry;
-use crate::sftp::SftpRegistry;
+use crate::sftp::{SftpRegistry, TransferRegistry};
 use crate::ssh::known_hosts::KnownHosts;
 use crate::store::{Store, load_settings, load_store, save_settings, save_store};
 
@@ -36,6 +36,8 @@ pub struct AppState {
     pub sessions: Arc<SessionRegistry>,
     /// The connected SFTP tabs, one per tab id (T24).
     pub sftp: Arc<SftpRegistry>,
+    /// The transfers in progress, with the token that cancels each one (T26).
+    pub transfers: Arc<TransferRegistry>,
 }
 
 impl AppState {
@@ -84,6 +86,7 @@ impl AppState {
             known_hosts: Arc::new(KnownHosts::for_app(&paths.config_dir)),
             sessions: Arc::new(SessionRegistry::new()),
             sftp: Arc::new(SftpRegistry::default()),
+            transfers: Arc::new(TransferRegistry::default()),
         })
     }
 
@@ -103,6 +106,7 @@ impl AppState {
             known_hosts: Arc::new(KnownHosts::for_app(&paths.config_dir)),
             sessions: Arc::new(SessionRegistry::new()),
             sftp: Arc::new(SftpRegistry::default()),
+            transfers: Arc::new(TransferRegistry::default()),
         }
     }
 

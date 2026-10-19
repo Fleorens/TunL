@@ -7,6 +7,7 @@ use std::sync::Mutex;
 
 use russh_sftp::client::SftpSession;
 use serde::Serialize;
+use tokio_util::sync::CancellationToken;
 use ts_rs::TS;
 use uuid::Uuid;
 
@@ -14,9 +15,12 @@ use crate::error::{AppError, AppResult};
 
 pub mod ops;
 pub mod session;
+pub mod transfer;
 
 #[cfg(test)]
 mod ops_tests;
+#[cfg(test)]
+mod transfer_tests;
 
 /// The kind of a remote entry, from the mode bits of its attributes (docs/05 §8).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, TS)]
@@ -80,6 +84,43 @@ impl SftpRegistry {
     /// Forget the session `id` without cancelling it. Idempotent.
     pub fn remove(&self, id: Uuid) {
         if let Ok(mut map) = self.sessions.lock() {
+            map.remove(&id);
+        }
+    }
+}
+
+/// The transfers in progress, by id: the token that cancels each one (T26).
+#[derive(Default)]
+pub struct TransferRegistry {
+    running: Mutex<HashMap<Uuid, CancellationToken>>,
+}
+
+impl TransferRegistry {
+    /// Register `cancel` under `id`; an id already in use is a validation error.
+    pub fn insert(&self, id: Uuid, cancel: CancellationToken) -> AppResult<()> {
+        let mut map = self
+            .running
+            .lock()
+            .map_err(|e| AppError::internal(format!("transfer registry poisoned: {e}")))?;
+        if map.contains_key(&id) {
+            return Err(AppError::validation("transferId", "already in use"));
+        }
+        map.insert(id, cancel);
+        Ok(())
+    }
+
+    /// Cancel the transfer `id`; unknown or finished: nothing.
+    pub fn cancel(&self, id: Uuid) {
+        if let Ok(map) = self.running.lock()
+            && let Some(token) = map.get(&id)
+        {
+            token.cancel();
+        }
+    }
+
+    /// Forget the transfer `id`. Idempotent.
+    pub fn remove(&self, id: Uuid) {
+        if let Ok(mut map) = self.running.lock() {
             map.remove(&id);
         }
     }

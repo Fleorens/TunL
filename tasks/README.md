@@ -109,7 +109,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | T24 | Backend SFTP : session, list, mkdir, rename, remove, chmod (+ ipc et mock) | T23 | moyen | Sonnet 5 · high | livrée |
 | T25 | Onglet SFTP : explorateur (fil d'Ariane, tableau virtualisé, tri, fichiers cachés) | T24 | moyen | Sonnet 5 · medium | livrée |
 | T25b | Explorateur SFTP : nouveau dossier, renommer, supprimer (avec le compte), droits, copier le chemin | T25 | moyen | Sonnet 5 · medium | livrée |
-| T26 | Transferts : moteur Rust (téléchargement, envoi), annulation, commandes, ipc et mock | T25b | **élevé** | Opus 5 · high | prête |
+| T26 | Transferts : moteur Rust (téléchargement, envoi), annulation, commandes, ipc et mock | T25b | **élevé** | Opus 5 · high | livrée |
 | T26c | Transferts : modèle et store (frontend) | T26 | moyen | Sonnet 5 · medium | prête |
 | T26d | Transferts : panneau, téléchargement depuis l'explorateur (double-clic, menu) | T26c | moyen | Sonnet 5 · medium | prête |
 | T26b | Envoi de fichiers : sélecteur natif et glisser-déposer depuis le bureau | T26d, T28b | moyen | Sonnet 5 · medium | prête |
@@ -120,7 +120,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 |---|---|---|---|---|---|
 | T27 | Détection FreeRDP + constructeur d'arguments pur + tests exhaustifs | T08 | moyen | Sonnet 5 · medium | livrée |
 | T28 | RDP : lancement par `/args-from:stdin`, suivi, journal filtré, tunnel via bastion (+ ipc et mock) | T23, T27 | **élevé** | Opus 5 · high | livrée |
-| T28b | Onglet RDP : carte de session, journal, fin traduite, client introuvable | T28, T26 | moyen | Sonnet 5 · medium | prête |
+| T28b | Onglet RDP : carte de session, journal, fin traduite, client introuvable | T28, T26d | moyen | Sonnet 5 · medium | prête |
 
 ### M6 — Wake-on-LAN et disponibilité
 
