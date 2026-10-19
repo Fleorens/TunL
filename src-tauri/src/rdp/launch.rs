@@ -105,9 +105,9 @@ where
 
 /// Follow the client until it ends, and report why.
 ///
-/// stdout and stderr are read together. When the client exits, its streams close and we reap its code;
-/// when `cancel` fires, the client is killed and the tab is reported closed. The stdout/stderr handles
-/// are taken out of `child` before the wait, so `child` is free to be killed on cancel.
+/// stdout and stderr are read, then the exit code reaped, in one future raced against `cancel`: a client
+/// that closes its streams without exiting can still be killed by closing the tab. That future borrows
+/// `child`, so it is finished inside the block (which yields `None` on cancel) before `start_kill`.
 pub async fn watch(
     mut child: Child,
     cancel: CancellationToken,
@@ -116,16 +116,25 @@ pub async fn watch(
     let stdout = child.stdout.take();
     let stderr = child.stderr.take();
 
-    tokio::select! {
-        biased;
-        _ = read_both(stdout, stderr, sink) => match child.wait().await {
-            Ok(status) => (CloseReason::ProcessExited, status.code()),
-            Err(error) => {
-                log::warn!("cannot read the RDP client to the end: {error}");
-                (CloseReason::Error, None)
-            }
-        },
-        _ = cancel.cancelled() => {
+    let finished = {
+        let run = async {
+            read_both(stdout, stderr, sink).await;
+            child.wait().await
+        };
+        tokio::select! {
+            biased;
+            result = run => Some(result),
+            _ = cancel.cancelled() => None,
+        }
+    };
+
+    match finished {
+        Some(Ok(status)) => (CloseReason::ProcessExited, status.code()),
+        Some(Err(error)) => {
+            log::warn!("cannot read the RDP client to the end: {error}");
+            (CloseReason::Error, None)
+        }
+        None => {
             let _ = child.start_kill();
             let _ = child.wait().await;
             (CloseReason::UserClosed, None)

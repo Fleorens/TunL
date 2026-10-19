@@ -8,7 +8,7 @@ import { importHandlers } from "./mock/import";
 import { probeHandlers } from "./mock/probe";
 import { promptHandlers, resetMockPrompts } from "./mock/prompts";
 import { rdpHandlers } from "./mock/rdp";
-import { rdpSessionHandlers, resetMockRdpSessions } from "./mock/rdp-session";
+import { rdpSessionHandlers } from "./mock/rdp-session";
 import { secretHandlers } from "./mock/secrets";
 import { resetMockSessions, sessionHandlers } from "./mock/sessions";
 import { settingsHandlers } from "./mock/settings";
@@ -78,7 +78,6 @@ export function resetMockBackend(): void {
   state = freshState();
   pendingFailure = null;
   resetMockSessions();
-  resetMockRdpSessions();
   resetMockSftp();
   resetMockPrompts();
 }

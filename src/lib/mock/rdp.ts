@@ -27,7 +27,7 @@ function missing(path: string): AppError {
 }
 
 /** Resolve the FreeRDP 3 client the UI would launch with: the default, or a forced path (this sheet). */
-export function detectClient(state: MockState): RdpClient {
+export function mockDetect(state: MockState): RdpClient {
   const clientPath = state.settings.rdp.clientPath;
 
   // No forced path: the default client.
@@ -42,6 +42,6 @@ export function detectClient(state: MockState): RdpClient {
 
 export const rdpHandlers: Record<string, Handler> = {
   rdp_detect(state) {
-    return { state, result: detectClient(state) };
+    return { state, result: mockDetect(state) };
   },
 };
