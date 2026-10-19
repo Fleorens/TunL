@@ -51,12 +51,10 @@ pub async fn launch(client: &Path, args: &RdpArgs) -> AppResult<Child> {
         .stderr(Stdio::piped())
         .kill_on_drop(true);
 
-    let mut child = spawn_retrying(&mut command)
-        .await
-        .map_err(|error| {
-            log::warn!("cannot start the RDP client: {error}");
-            AppError::new(ErrorKind::Rdp, "cannot start the RDP client")
-        })?;
+    let mut child = spawn_retrying(&mut command).await.map_err(|error| {
+        log::warn!("cannot start the RDP client: {error}");
+        AppError::new(ErrorKind::Rdp, "cannot start the RDP client")
+    })?;
 
     // Write every argument, then drop stdin: closing the write end is what tells FreeRDP to start.
     let text = args.stdin_text();
@@ -64,7 +62,10 @@ pub async fn launch(client: &Path, args: &RdpArgs) -> AppResult<Child> {
         && let Err(error) = stdin.write_all(text.as_bytes()).await
     {
         log::warn!("cannot write the RDP arguments: {error}");
-        return Err(AppError::new(ErrorKind::Rdp, "cannot write the RDP arguments"));
+        return Err(AppError::new(
+            ErrorKind::Rdp,
+            "cannot write the RDP arguments",
+        ));
     }
 
     Ok(child)

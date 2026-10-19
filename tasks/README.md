@@ -117,7 +117,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
 | T27 | Détection FreeRDP + constructeur d'arguments pur + tests exhaustifs | T08 | moyen | Sonnet 5 · medium | livrée |
-| T28 | RDP : lancement par `/args-from:stdin`, suivi, journal filtré, tunnel via bastion (+ ipc et mock) | T23, T27 | **élevé** | Opus 5 · high | prête |
+| T28 | RDP : lancement par `/args-from:stdin`, suivi, journal filtré, tunnel via bastion (+ ipc et mock) | T23, T27 | **élevé** | Opus 5 · high | livrée |
 | T28b | Onglet RDP : carte de session, journal, fin traduite, client introuvable | T28, T26 | moyen | Sonnet 5 · medium | prête |
 
 ### M6 — Wake-on-LAN et disponibilité

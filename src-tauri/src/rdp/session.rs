@@ -12,13 +12,13 @@ use uuid::Uuid;
 
 use crate::error::{AppError, AppResult};
 use crate::model::{ProtocolSettings, RdpSettings, SshDefaults};
-use crate::rdp::args::{build_args, RdpCredentials, RdpEndpoint};
+use crate::rdp::args::{RdpCredentials, RdpEndpoint, build_args};
 use crate::rdp::launch::{launch, watch};
 use crate::sessions::{SessionEvent, SessionSink, StepKind};
-use crate::ssh::forward::{bind_local, forward};
-use crate::ssh::link::{establish, SshLink};
-use crate::ssh::session::{connect_step, resolve_target, SessionTarget, SshTarget};
 use crate::ssh::SshContext;
+use crate::ssh::forward::{bind_local, forward};
+use crate::ssh::link::{SshLink, establish};
+use crate::ssh::session::{SessionTarget, SshTarget, connect_step, resolve_target};
 use crate::store::Store;
 
 /// Everything a stored RDP connection connects to: its address, and the bastion as an SSH target.
@@ -55,7 +55,9 @@ pub fn resolve_rdp(
     // The bastion, if any, keeps its own chain, user and authentication (resolved as a SSH target).
     let via = match connection.jump_host_id {
         Some(jump_id) => Some(resolve_target(
-            &SessionTarget::Saved { connection_id: jump_id },
+            &SessionTarget::Saved {
+                connection_id: jump_id,
+            },
             store,
             defaults,
             default_user,
@@ -91,11 +93,11 @@ pub struct RdpRun {
 async fn establish_bastion(
     ctx: &SshContext,
     id: Uuid,
+    via: SshTarget,
     target: &mut RdpTarget,
     cancel: CancellationToken,
     sink: &dyn SessionSink,
 ) -> Option<Arc<SshLink>> {
-    let via = target.via.clone().expect("via is Some when establish_bastion is called");
     let link = establish(ctx, &via, id, cancel.clone(), sink).await?;
     let link = Arc::new(link);
 
@@ -169,16 +171,18 @@ pub async fn run_rdp_session(ctx: SshContext, run: RdpRun, sink: Arc<dyn Session
     } = run;
 
     // Behind a bastion: establish the link and open the tunnel (the target's address becomes the tunnel).
-    let link: Option<Arc<SshLink>> = match &target.via {
+    let link: Option<Arc<SshLink>> = match target.via.clone() {
         None => None,
-        Some(_) => match establish_bastion(&ctx, id, &mut target, cancel.clone(), &*sink).await {
-            Some(link) => Some(link),
-            None => {
-                // The link or the tunnel step failed: its steps went out. Stop.
-                cancel.cancel();
-                return;
+        Some(via) => {
+            match establish_bastion(&ctx, id, via, &mut target, cancel.clone(), &*sink).await {
+                Some(link) => Some(link),
+                None => {
+                    // The link or the tunnel step failed: its steps went out. Stop.
+                    cancel.cancel();
+                    return;
+                }
             }
-        },
+        }
     };
 
     // The launch: build the arguments, then start the client, in one task (a refused argument fails it).
@@ -188,16 +192,10 @@ pub async fn run_rdp_session(ctx: SshContext, run: RdpRun, sink: Arc<dyn Session
         host: &target.host,
         port: target.port,
     };
-    let child = match connect_step(
-        cancel.clone(),
-        &*sink,
-        StepKind::Launch,
-        &label,
-        || async {
-            let args = build_args(&endpoint, &target.settings, &credentials)?;
-            launch(&client, &args).await
-        },
-    )
+    let child = match connect_step(cancel.clone(), &*sink, StepKind::Launch, &label, || async {
+        let args = build_args(&endpoint, &target.settings, &credentials)?;
+        launch(&client, &args).await
+    })
     .await
     {
         Ok(child) => child,

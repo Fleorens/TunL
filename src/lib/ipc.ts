@@ -144,6 +144,15 @@ export const ipc = {
   // RDP (T27): the FreeRDP 3 client TunL would launch with, or none.
   rdpDetect: () => call<RdpClient>("rdp_detect"),
 
+  // RDP (T28): open a tab (its events come back through one `Channel`, the callback itself with the
+  // mock), then run it in the background.
+  rdpOpen: (sessionId: string, connectionId: string, onEvent: (event: SessionEvent) => void) =>
+    call<void>("rdp_open", {
+      sessionId,
+      connectionId,
+      onEvent: isMockBackend ? onEvent : new Channel<SessionEvent>(onEvent),
+    }),
+
   // Wake-on-LAN (T29): send a connection's magic packet, no wait.
   wolWake: (id: string) => call<void>("wol_wake", { id }),
 

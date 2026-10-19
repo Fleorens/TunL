@@ -14,7 +14,7 @@ use uuid::Uuid;
 use crate::commands::sftp::EventSink;
 use crate::error::AppResult;
 use crate::rdp::args::RdpCredentials;
-use crate::rdp::detect::{detect, RdpClient, VERSION_TIMEOUT};
+use crate::rdp::detect::{RdpClient, VERSION_TIMEOUT, detect};
 use crate::rdp::session::{RdpRun, resolve_rdp, run_rdp_session};
 use crate::secrets::SecretKind;
 use crate::sessions::{SessionEvent, SessionHandle, SessionSink};
@@ -52,11 +52,13 @@ pub async fn rdp_open(
 
     // The connection must exist and be RDP; the client must be a FreeRDP 3 binary. These errors come
     // back at once, before anything starts.
-    let connection = store
-        .connections
-        .iter()
-        .find(|c| c.id == connection_id);
-    let target = resolve_rdp(connection_id, &store, &settings.ssh, default_username().as_deref())?;
+    let connection = store.connections.iter().find(|c| c.id == connection_id);
+    let target = resolve_rdp(
+        connection_id,
+        &store,
+        &settings.ssh,
+        default_username().as_deref(),
+    )?;
     let client = detect(
         settings.rdp.client_path.as_deref(),
         &std::env::var_os("PATH").unwrap_or_default(),
