@@ -69,6 +69,7 @@
     "connect": "Connect",
     "openSftp": "Open in SFTP",
     "wake": "Wake up",
+    "wakeSent": "Magic packet sent to {{name}}",
     "edit": "Edit",
     "duplicate": "Duplicate",
     "addFavorite": "Add to favorites",

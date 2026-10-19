@@ -26,6 +26,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { useConnections } from "@/features/connections/store";
+import { wakeConnection } from "@/features/connections/wake";
 import { openSession } from "@/features/sessions/open-session";
 import { notifyComingSoon } from "@/features/shell/coming-soon";
 import { useUi } from "@/features/shell/ui-store";
@@ -89,7 +90,7 @@ export function ConnectionContextMenu({
         )}
 
         {connection.wol !== null && (
-          <ContextMenuItem onClick={notifyComingSoon}>
+          <ContextMenuItem onClick={() => wakeConnection(connection)}>
             <Power className="size-3.5" />
             {t("connectionMenu.wake")}
           </ContextMenuItem>

@@ -9,6 +9,7 @@ pub mod secrets;
 pub mod settings;
 pub mod ssh;
 pub mod store;
+pub mod wol;
 
 #[cfg(test)]
 mod ipc_prompts_tests;
@@ -18,6 +19,9 @@ mod ipc_probe_tests;
 
 #[cfg(test)]
 mod ipc_rdp_tests;
+
+#[cfg(test)]
+mod ipc_wol_tests;
 
 #[cfg(test)]
 mod ipc_tests;

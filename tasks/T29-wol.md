@@ -566,12 +566,12 @@ test("a connection set to wake before connecting shows the Wake step first", asy
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T29 --check` affiche `OK`
+- [x] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T29 --check` affiche `OK`
       partout.
-- [ ] `grep -n "notifyComingSoon" src/features/shell/sidebar/ConnectionContextMenu.tsx` ne montre plus l'élément
+- [x] `grep -n "notifyComingSoon" src/features/shell/sidebar/ConnectionContextMenu.tsx` ne montre plus l'élément
       « Réveiller » (SFTP peut encore l'utiliser).
-- [ ] `wc -l src-tauri/src/ssh/session.rs` : 400 lignes au plus.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `wc -l src-tauri/src/ssh/session.rs` : 400 lignes au plus.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 
