@@ -80,7 +80,8 @@ pub async fn detect(forced: Option<&str>, path_var: &OsStr, timeout: Duration) -
 | `flavor_of` | d'après le **nom de fichier**, `3` final retiré : `sdl-freerdp` → `Sdl`, `xfreerdp` → `X11`, `wlfreerdp` → `Wayland`, autre → `None` |
 | `parse_version` | cherche `FreeRDP version `, puis lit chiffres et points : `"3.10.3"`. `Some` seulement si la majeure vaut **exactement** `3` et qu'une mineure suit (`2.11.7`, `30.1.0`, `3` → `None`). La bannière peut être précédée d'autres lignes |
 | `candidates` | pour chaque nom de `CLIENT_NAMES` dans l'ordre, chaque dossier de `path_var` (`std::env::split_paths`) dans l'ordre : garde les **fichiers exécutables** (un bit `x`) |
-| `client_version` | `tokio::process::Command::new(path).arg("--version")`, stdin `null`, stdout et stderr capturés, `kill_on_drop(true)`, le tout sous `tokio::time::timeout`. Lit stdout **et** stderr, puis `parse_version`. Échec, délai dépassé, ou pas une 3.x → `None` |
+| `client_version` | `tokio::process::Command::new(path).arg("--version")`, stdin `null`, stdout et stderr capturés, `kill_on_drop(true)` ; lancé par `spawn_retrying`, puis `wait_with_output`, le tout sous `tokio::time::timeout`. Lit stdout **et** stderr, puis `parse_version`. Échec, délai dépassé, ou pas une 3.x → `None` |
+| `spawn_retrying` | `pub(crate) async fn spawn_retrying(command: &mut Command) -> std::io::Result<Child>` : `command.spawn()`, réessayé 5 fois au plus, à 20 ms d'intervalle, **tant que** l'erreur est `std::io::ErrorKind::ExecutableFileBusy` ; toute autre issue est rendue telle quelle. T28 s'en sert aussi |
 | `detect` | `forced` présent : **seul** ce chemin est essayé (exécutable et 3.x, sinon `RdpClientMissing` avec un message qui nomme le chemin), saveur d'après le nom, `Sdl` si le nom est inconnu (un script maison). Sinon : le premier de `candidates(path_var)` qui donne une version 3.x. Aucun → `AppError::new(ErrorKind::RdpClientMissing, "no FreeRDP 3 client found")` |
 
 Un candidat refusé laisse une ligne `log::info!` (son chemin, rien d'autre).
@@ -161,6 +162,10 @@ pub async fn rdp_detect(state: State<'_, AppState>) -> AppResult<RdpClient>
 - `client_version` doit lire **stdout et stderr** : selon la version et la saveur, la bannière sort sur l'un ou
   l'autre.
 - Sans `kill_on_drop(true)`, un client qui ne répond pas reste en vie après le délai dépassé.
+- **« Text file busy » (ETXTBSY)** : un fichier qu'on vient d'écrire peut rester « occupé » un instant si un autre
+  fil de TunL lance un processus au même moment (il hérite brièvement du descripteur ouvert). Les tests écrivent
+  leurs faux clients puis les lancent, en parallèle d'autres tests qui lancent des processus : sans `spawn_retrying`,
+  un test échoue au hasard (vu au prototype, 1 fois sur une vingtaine de passages complets).
 - `std::os::unix::fs::PermissionsExt` (`mode() & 0o111`) pour le bit exécutable : un fichier présent mais non
   exécutable n'est pas un candidat.
 
