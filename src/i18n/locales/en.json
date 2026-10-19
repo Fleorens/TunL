@@ -458,6 +458,39 @@
       "size": "Size",
       "modified": "Modified",
       "permissions": "Permissions"
+    },
+    "invalidName": "A name cannot be empty, “.” or “..”, nor contain “/”.",
+    "newFolder": {
+      "title": "New folder",
+      "name": "Folder name",
+      "create": "Create"
+    },
+    "delete": {
+      "title": "Delete “{{name}}”?",
+      "folder_one": "This folder and its content will be deleted: {{count}} item in all. This cannot be undone.",
+      "folder_other": "This folder and its content will be deleted: {{count}} items in all. This cannot be undone.",
+      "file": "This cannot be undone.",
+      "confirm": "Delete"
+    },
+    "permissions": {
+      "title": "Permissions of “{{name}}”",
+      "owner": "Owner",
+      "group": "Group",
+      "other": "Others",
+      "read": "Read",
+      "write": "Write",
+      "execute": "Execute",
+      "box": "{{who}}: {{what}}",
+      "octal": "Octal",
+      "invalid": "1 to 4 digits from 0 to 7.",
+      "apply": "Apply"
+    },
+    "menu": {
+      "rename": "Rename",
+      "copyPath": "Copy path",
+      "permissions": "Permissions…",
+      "newFolder": "New folder",
+      "delete": "Delete…"
     }
   }
 }

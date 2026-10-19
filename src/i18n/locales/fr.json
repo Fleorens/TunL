@@ -460,6 +460,39 @@
       "size": "Taille",
       "modified": "Modifié",
       "permissions": "Droits"
+    },
+    "invalidName": "Un nom ne peut être ni vide, ni « . » ou « .. », ni contenir « / ».",
+    "newFolder": {
+      "title": "Nouveau dossier",
+      "name": "Nom du dossier",
+      "create": "Créer"
+    },
+    "delete": {
+      "title": "Supprimer « {{name}} » ?",
+      "folder_one": "Ce dossier et son contenu seront supprimés : {{count}} élément en tout. Cette action est irréversible.",
+      "folder_other": "Ce dossier et son contenu seront supprimés : {{count}} éléments en tout. Cette action est irréversible.",
+      "file": "Cette action est irréversible.",
+      "confirm": "Supprimer"
+    },
+    "permissions": {
+      "title": "Droits de « {{name}} »",
+      "owner": "Propriétaire",
+      "group": "Groupe",
+      "other": "Autres",
+      "read": "Lecture",
+      "write": "Écriture",
+      "execute": "Exécution",
+      "box": "{{who}} : {{what}}",
+      "octal": "Octal",
+      "invalid": "1 à 4 chiffres de 0 à 7.",
+      "apply": "Appliquer"
+    },
+    "menu": {
+      "rename": "Renommer",
+      "copyPath": "Copier le chemin",
+      "permissions": "Droits…",
+      "newFolder": "Nouveau dossier",
+      "delete": "Supprimer…"
     }
   }
 }

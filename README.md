@@ -19,6 +19,7 @@ A modern SSH, SFTP and RDP connection manager for Linux, built with Tauri 2, Rea
 | Availability dots: TCP probes, sidebar and home, latency in the status bar (T30) | |
 | Wake-on-LAN: send the magic packet from the connection menu, and wake a host before connecting (T29) | |
 | SFTP tab: browse a server's folders (breadcrumb, typed path, sortable virtualized table, hidden files, keyboard) (T25) | |
+| SFTP actions: new folder, rename in place (F2), delete with the item count (Del), permissions, copy the path (T25b) | |
 
 The progress of each task is in [`tasks/README.md`](tasks/README.md).
 

@@ -277,9 +277,9 @@ test("Copy path puts the full path on the clipboard", async ({ page, context }) 
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T25b --check` affiche `OK` partout.
-- [ ] `grep -rn "sftpRemove" src/features/sftp` ne montre qu'un appel, précédé d'un `sftpCount` dans le même fichier.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T25b --check` affiche `OK` partout.
+- [x] `grep -rn "sftpRemove" src/features/sftp` ne montre qu'un appel, précédé d'un `sftpCount` dans le même fichier.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 - [ ] Visuel : le dialogue des droits aligne ses cases sous leurs en-têtes, en clair et en sombre ; « Supprimer… » se
       lit comme une action destructive sans être criarde.
 

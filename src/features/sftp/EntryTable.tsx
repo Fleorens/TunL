@@ -3,10 +3,11 @@
 
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ChevronDown, ChevronUp, File, FileQuestion, Folder, Link2 } from "lucide-react";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { EntryKind } from "@/bindings/EntryKind";
 import type { RemoteEntry } from "@/bindings/RemoteEntry";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import type { SortKey, SortOrder } from "./sftp-model";
 import { formatMode, formatSize } from "./sftp-model";
@@ -24,6 +25,12 @@ interface EntryTableProps {
   onSelect: (path: string) => void;
   onOpen: (entry: RemoteEntry) => void;
   onUp: () => void;
+  /** The path of the entry being renamed in place, or `null`. */
+  renaming: string | null;
+  onRename: (entry: RemoteEntry) => void;
+  /** The new name (Enter), or `null` when the rename is given up (Escape, focus lost). */
+  onRenameDone: (entry: RemoteEntry, name: string | null) => void;
+  onDelete: (entry: RemoteEntry) => void;
 }
 
 /** The icon of one entry: a folder, a file, a link, or an unknown kind. */
@@ -69,6 +76,53 @@ function SortHeader({
 }
 
 /**
+ * The name cell while renaming: the name selected without its extension, Enter keeps, Escape or a lost focus gives
+ * up. Every key stops here, or Enter would open the entry and Backspace go up a folder.
+ */
+function RenameField({
+  entry,
+  onDone,
+}: {
+  entry: RemoteEntry;
+  onDone: (entry: RemoteEntry, name: string | null) => void;
+}) {
+  const { t } = useTranslation();
+  const [value, setValue] = useState(entry.name);
+  // Enter then the blur of the unmount would answer twice: only the first one counts.
+  const done = useRef(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    const dot = entry.name.lastIndexOf(".");
+    inputRef.current?.setSelectionRange(0, dot > 0 ? dot : entry.name.length);
+  }, [entry.name]);
+
+  const finish = (name: string | null): void => {
+    if (done.current) return;
+    done.current = true;
+    onDone(entry, name);
+  };
+
+  return (
+    <Input
+      ref={inputRef}
+      autoFocus
+      autoComplete="off"
+      aria-label={t("sftp.menu.rename")}
+      className="h-6 min-w-0 px-1 py-0 text-sm"
+      value={value}
+      onChange={(event) => setValue(event.target.value)}
+      onBlur={() => finish(null)}
+      onKeyDown={(event) => {
+        event.stopPropagation();
+        if (event.key === "Enter") finish(value);
+        else if (event.key === "Escape") finish(null);
+      }}
+    />
+  );
+}
+
+/**
  * One row: icon, truncated name (grayed when hidden), size, date, rights. Declared at module level, so React keeps
  * the same instance across renders.
  */
@@ -82,8 +136,10 @@ function EntryRow({
   locale,
   dateFormat,
   rowRef,
+  renaming,
   onSelect,
   onOpen,
+  onRenameDone,
 }: {
   entry: RemoteEntry;
   index: number;
@@ -94,8 +150,10 @@ function EntryRow({
   locale: string;
   dateFormat: Intl.DateTimeFormat;
   rowRef: (node: HTMLTableRowElement | null) => void;
+  renaming: boolean;
   onSelect: (path: string) => void;
   onOpen: (entry: RemoteEntry) => void;
+  onRenameDone: (entry: RemoteEntry, name: string | null) => void;
 }) {
   const sizeText = entry.kind === "dir" ? "—" : formatSize(entry.size, locale);
   const dateText = entry.modifiedAt == null ? "—" : dateFormat.format(entry.modifiedAt);
@@ -109,7 +167,10 @@ function EntryRow({
       tabIndex={tabIndex}
       aria-selected={isSelected}
       onClick={() => onSelect(entry.path)}
-      onDoubleClick={() => onOpen(entry)}
+      onDoubleClick={() => {
+        if (!renaming) onOpen(entry);
+      }}
+      onContextMenu={() => onSelect(entry.path)}
       className={cn(
         ROW_GRID,
         "cursor-default items-center outline-none hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset",
@@ -118,9 +179,13 @@ function EntryRow({
     >
       <td className="flex min-w-0 items-center gap-1.5 px-2">
         <EntryIcon kind={entry.kind} />
-        <span className={cn("min-w-0 truncate", entry.hidden && "text-muted-foreground")}>
-          {entry.name}
-        </span>
+        {renaming ? (
+          <RenameField entry={entry} onDone={onRenameDone} />
+        ) : (
+          <span className={cn("min-w-0 truncate", entry.hidden && "text-muted-foreground")}>
+            {entry.name}
+          </span>
+        )}
       </td>
       <td className="whitespace-nowrap px-2 text-right text-xs text-muted-foreground">
         {sizeText}
@@ -143,6 +208,10 @@ export function EntryTable({
   onSelect,
   onOpen,
   onUp,
+  renaming,
+  onRename,
+  onRenameDone,
+  onDelete,
 }: EntryTableProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -166,12 +235,14 @@ export function EntryTable({
   const totalSize = virtualizer.getTotalSize();
   const virtualItems = virtualizer.getVirtualItems();
 
-  // After a keyboard move, focus the newly selected row if the table was focused.
+  // The selected row takes the focus when it is in the table or nowhere (after a rename or a dialog), never while
+  // renaming.
   useEffect(() => {
-    if (!tableHasFocus.current) return;
+    if (renaming !== null) return;
+    if (!tableHasFocus.current && document.activeElement !== document.body) return;
     const index = entries.findIndex((entry) => entry.path === selectedPath);
     rowRefs.current[index]?.focus();
-  }, [selectedPath, entries]);
+  }, [selectedPath, entries, renaming]);
 
   const focusIndex = (index: number): void => {
     const entry = entries[index];
@@ -208,6 +279,15 @@ export function EntryTable({
       case "Backspace":
         onUp();
         return;
+      case "F2":
+      case "Delete": {
+        const entry = currentIndex >= 0 ? entries[currentIndex] : undefined;
+        if (!entry) return;
+        event.preventDefault();
+        if (event.key === "F2") onRename(entry);
+        else onDelete(entry);
+        return;
+      }
       default:
         return;
     }
@@ -261,8 +341,10 @@ export function EntryTable({
                 rowRef={(node) => {
                   rowRefs.current[virtual.index] = node;
                 }}
+                renaming={renaming === entry.path}
                 onSelect={onSelect}
                 onOpen={onOpen}
+                onRenameDone={onRenameDone}
               />
             );
           })}
