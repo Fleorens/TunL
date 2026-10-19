@@ -1,4 +1,4 @@
-import { openUrl } from "@tauri-apps/plugin-opener";
+import { openUrl, revealItemInDir } from "@tauri-apps/plugin-opener";
 import { isOpenableUrl } from "@/features/terminal/terminal-keys";
 import { isMockBackend } from "@/lib/ipc";
 
@@ -16,4 +16,16 @@ export async function openExternal(url: string): Promise<void> {
     return;
   }
   await openUrl(url);
+}
+
+/**
+ * Reveal a file or folder in its parent folder (the "Show in folder" button). Tauri uses the opener
+ * plugin; the browser does nothing. The only place, together with `openExternal`, that touches the
+ * opener plugin.
+ */
+export async function revealInFolder(path: string): Promise<void> {
+  if (isMockBackend) {
+    return;
+  }
+  await revealItemInDir(path);
 }
