@@ -492,7 +492,20 @@
       "copyPath": "Copier le chemin",
       "permissions": "Droits…",
       "newFolder": "Nouveau dossier",
-      "delete": "Supprimer…"
+      "delete": "Supprimer…",
+      "download": "Télécharger"
+    },
+    "transfers": {
+      "title_one": "Transferts ({{count}})",
+      "title_other": "Transferts ({{count}})",
+      "list": "Transferts",
+      "clear": "Effacer les terminés",
+      "rate": "{{rate}}/s",
+      "done": "Terminé",
+      "failed": "Échoué",
+      "cancelled": "Annulé",
+      "cancel": "Annuler {{name}}",
+      "reveal": "Afficher dans le dossier de {{name}}"
     }
   }
 }

@@ -8,6 +8,7 @@ import { copyText } from "@/lib/clipboard";
 import { notifyError } from "@/lib/errors";
 import { ipc } from "@/lib/ipc";
 import { isValidName, joinPath } from "./sftp-model";
+import { useTransfers } from "./transfers-store";
 
 /** The dialog open over the explorer, if any. */
 export type EntryDialog =
@@ -60,6 +61,12 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
     await copyText(entry.path);
   };
 
+  // A download runs in the background (its events come back through the store's channel); the menu never rerenders
+  // on progress, so it reads the store directly instead of subscribing.
+  const download = (entry: RemoteEntry): void => {
+    useTransfers.getState().download(sessionId, entry);
+  };
+
   const permissions = (entry: RemoteEntry): void => setDialog({ type: "permissions", entry });
 
   const chmod = async (entry: RemoteEntry, mode: number): Promise<void> => {
@@ -105,5 +112,6 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
     chmod,
     askDelete,
     remove,
+    download,
   };
 }

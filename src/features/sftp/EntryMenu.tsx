@@ -1,5 +1,5 @@
 // The explorer's context menu: the actions on one entry, or only "New folder" on the empty area (docs/04 §6).
-import { ClipboardCopy, FolderPlus, Pencil, ShieldCheck, Trash2 } from "lucide-react";
+import { ClipboardCopy, Download, FolderPlus, Pencil, ShieldCheck, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { RemoteEntry } from "@/bindings/RemoteEntry";
 import {
@@ -18,9 +18,17 @@ interface EntryMenuProps {
 
 export function EntryMenu({ entry, actions }: EntryMenuProps) {
   const { t } = useTranslation();
+  // A download is offered on a file (or an unknown entry), never on a folder or a link: those open in the explorer.
+  const downloadable = entry?.kind === "file" || entry?.kind === "other";
   return (
     // No focus back to the trigger on close: the rename field must keep it (see the T25b traps).
     <ContextMenuContent className="w-52" onCloseAutoFocus={(event) => event.preventDefault()}>
+      {downloadable && (
+        <ContextMenuItem onSelect={() => actions.download(entry)}>
+          <Download />
+          {t("sftp.menu.download")}
+        </ContextMenuItem>
+      )}
       {entry && (
         <>
           <ContextMenuItem onSelect={() => actions.rename(entry)}>

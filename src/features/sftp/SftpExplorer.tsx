@@ -15,6 +15,8 @@ import { NewFolderDialog } from "./NewFolderDialog";
 import { PermissionsDialog } from "./PermissionsDialog";
 import { SftpToolbar } from "./SftpToolbar";
 import { DEFAULT_SORT, nextSort, parentPath, visibleEntries } from "./sftp-model";
+import { TransfersPanel } from "./TransfersPanel";
+import { useTransfers } from "./transfers-store";
 import { type EntryActions, useEntryActions } from "./use-entry-actions";
 
 interface SftpExplorerProps {
@@ -94,9 +96,12 @@ export function SftpExplorer({ sessionId }: SftpExplorerProps) {
     navigate(".");
   }, [navigate]);
 
-  // A folder or a link goes in (the server follows the link); a file does nothing until T26.
+  // A folder or a link goes in (the server follows the link); a file (or an unknown entry) downloads on double-click.
   const onOpen = (entry: RemoteEntry): void => {
-    if (entry.kind === "file") return;
+    if (entry.kind === "file" || entry.kind === "other") {
+      useTransfers.getState().download(sessionId, entry);
+      return;
+    }
     navigate(entry.path);
   };
 
@@ -151,6 +156,7 @@ export function SftpExplorer({ sessionId }: SftpExplorerProps) {
         </ContextMenuTrigger>
         <EntryMenu entry={selectedEntry} actions={actions} />
       </ContextMenu>
+      <TransfersPanel sessionId={sessionId} />
       {dialogFor(actions)}
     </div>
   );
