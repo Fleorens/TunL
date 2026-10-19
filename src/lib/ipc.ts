@@ -7,6 +7,7 @@ import type { Group } from "@/bindings/Group";
 import type { GroupInput } from "@/bindings/GroupInput";
 import type { ImportPreview } from "@/bindings/ImportPreview";
 import type { PromptAnswer } from "@/bindings/PromptAnswer";
+import type { ProbeResult } from "@/bindings/ProbeResult";
 import type { RdpClient } from "@/bindings/RdpClient";
 import type { SecretKind } from "@/bindings/SecretKind";
 import type { SessionEvent } from "@/bindings/SessionEvent";
@@ -121,4 +122,7 @@ export const ipc = {
 
   // RDP (T27): the FreeRDP 3 client TunL would launch with, or none.
   rdpDetect: () => call<RdpClient>("rdp_detect"),
+
+  // Reachability (T30): probe a set of connections (TCP connect only), in the order given.
+  probeCheck: (ids: string[]) => call<ProbeResult[]>("probe_check", { ids }),
 };
