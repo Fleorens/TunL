@@ -125,7 +125,7 @@ function write(files) {
 function deliveredSheets() {
   const rows = readFileSync("tasks/README.md", "utf8").split("\n");
   return rows
-    .map((row) => row.match(/^\| (T\d+b?) \|.*\| (livrée|validée) \|$/)?.[1])
+    .map((row) => row.match(/^\| (T\d+[a-z]?) \|.*\| (livrée|validée) \|$/)?.[1])
     .filter((id) => id !== undefined);
 }
 
@@ -133,7 +133,7 @@ function deliveredSheets() {
 function missingDependencies(markdown) {
   const row = markdown.split("\n").find((line) => line.startsWith("| **Dépend de** |")) ?? "";
   const delivered = new Set(deliveredSheets());
-  return [...row.matchAll(/\bT\d+b?\b/g)].map((m) => m[0]).filter((dep) => !delivered.has(dep));
+  return [...row.matchAll(/\bT\d+[a-z]?\b/g)].map((m) => m[0]).filter((dep) => !delivered.has(dep));
 }
 
 function checkAll() {
@@ -166,7 +166,7 @@ function checkAll() {
 function main() {
   if (process.argv[2] === "--all") return checkAll();
   const [id, flag] = process.argv.slice(2);
-  if (!/^T\d+b?$/.test(id ?? "") || (flag !== undefined && flag !== "--check")) {
+  if (!/^T\d+[a-z]?$/.test(id ?? "") || (flag !== undefined && flag !== "--check")) {
     console.error(USAGE);
     return 2;
   }
