@@ -110,7 +110,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | T25 | Onglet SFTP : explorateur (fil d'Ariane, tableau virtualisé, tri, fichiers cachés) | T24 | moyen | Sonnet 5 · medium | livrée |
 | T25b | Explorateur SFTP : nouveau dossier, renommer, supprimer (avec le compte), droits, copier le chemin | T25 | moyen | Sonnet 5 · medium | livrée |
 | T26 | Transferts : moteur Rust (téléchargement, envoi), annulation, commandes, ipc et mock | T25b | **élevé** | Opus 5 · high | livrée |
-| T26c | Transferts : modèle et store (frontend) | T26 | moyen | Sonnet 5 · medium | prête |
+| T26c | Transferts : modèle et store (frontend) | T26 | moyen | Sonnet 5 · medium | livrée |
 | T26d | Transferts : panneau, téléchargement depuis l'explorateur (double-clic, menu) | T26c | moyen | Sonnet 5 · medium | prête |
 | T26b | Envoi de fichiers : sélecteur natif et glisser-déposer depuis le bureau | T26d, T28b | moyen | Sonnet 5 · medium | prête |
 

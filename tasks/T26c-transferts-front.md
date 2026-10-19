@@ -116,10 +116,10 @@ describe("transfers", () => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T26c --check` affiche `OK` partout.
-- [ ] `grep -rn "plugin-opener" src` ne trouve que `src/lib/opener.ts`.
-- [ ] `grep -rn "new Channel" src` ne trouve que `src/lib/ipc.ts`.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T26c --check` affiche `OK` partout.
+- [x] `grep -rn "plugin-opener" src` ne trouve que `src/lib/opener.ts`.
+- [x] `grep -rn "new Channel" src` ne trouve que `src/lib/ipc.ts`.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 
