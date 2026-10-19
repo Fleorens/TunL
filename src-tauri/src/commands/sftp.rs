@@ -179,8 +179,8 @@ pub async fn sftp_chmod(
 
 /// An SFTP tab's sink on the Tauri side: its events go out through the `Channel` passed at open time,
 /// its (unused) output is dropped. A send that fails (the window closed) is logged, never panicked.
-struct EventSink {
-    on_event: Channel<SessionEvent>,
+pub(crate) struct EventSink {
+    pub(crate) on_event: Channel<SessionEvent>,
 }
 
 impl SessionSink for EventSink {

@@ -49,11 +49,11 @@ export interface ResolvedTarget {
 /** Every live mock session, shell or SFTP. */
 export const sessions = new Map<string, LiveSession>();
 
-function validation(message: string): AppError {
+export function validation(message: string): AppError {
   return { kind: "validation", message, detail: null };
 }
 
-function notFound(what: string): AppError {
+export function notFound(what: string): AppError {
   return { kind: "notFound", message: what, detail: null };
 }
 

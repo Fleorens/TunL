@@ -128,6 +128,7 @@ pub fn invoke_handler<R: tauri::Runtime>()
         commands::secrets::secret_has,
         commands::secrets::secret_delete,
         commands::rdp::rdp_detect,
+        commands::rdp::rdp_open,
         commands::wol::wol_wake,
     ]
 }

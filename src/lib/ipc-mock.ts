@@ -8,6 +8,7 @@ import { importHandlers } from "./mock/import";
 import { probeHandlers } from "./mock/probe";
 import { promptHandlers, resetMockPrompts } from "./mock/prompts";
 import { rdpHandlers } from "./mock/rdp";
+import { rdpSessionHandlers } from "./mock/rdp-session";
 import { secretHandlers } from "./mock/secrets";
 import { resetMockSessions, sessionHandlers } from "./mock/sessions";
 import { settingsHandlers } from "./mock/settings";
@@ -52,6 +53,7 @@ const HANDLERS: Record<string, Handler> = {
   ...probeHandlers,
   ...promptHandlers,
   ...rdpHandlers,
+  ...rdpSessionHandlers,
   ...secretHandlers,
   ...settingsHandlers,
   ...sessionHandlers,

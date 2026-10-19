@@ -1,7 +1,7 @@
 // Mock handler for `rdp_detect`: the FreeRDP 3 client the UI of T28 and T31 sees in the browser.
 import type { AppError } from "@/bindings/AppError";
 import type { RdpClient } from "@/bindings/RdpClient";
-import type { Handler } from "./data";
+import type { Handler, MockState } from "./data";
 
 /** The client the mock reports by default: an SDL build of FreeRDP 3.10.3. */
 export const MOCK_RDP_CLIENT: RdpClient = {
@@ -26,24 +26,22 @@ function missing(path: string): AppError {
   };
 }
 
+/** Resolve the FreeRDP 3 client the UI would launch with: the default, or a forced path (this sheet). */
+export function mockDetect(state: MockState): RdpClient {
+  const clientPath = state.settings.rdp.clientPath;
+
+  // No forced path: the default client.
+  if (!clientPath) return MOCK_RDP_CLIENT;
+
+  // A forced path that is not FreeRDP is a missing client.
+  if (!clientPath.includes("freerdp")) throw missing(clientPath);
+
+  // A FreeRDP path is used as is, with its flavor from the name.
+  return { path: clientPath, version: "3.10.3", flavor: flavorOf(clientPath) };
+}
+
 export const rdpHandlers: Record<string, Handler> = {
   rdp_detect(state) {
-    const clientPath = state.settings.rdp.clientPath;
-
-    // No forced path: the default client.
-    if (!clientPath) {
-      return { state, result: MOCK_RDP_CLIENT };
-    }
-
-    // A forced path that is not FreeRDP is a missing client.
-    if (!clientPath.includes("freerdp")) {
-      throw missing(clientPath);
-    }
-
-    // A FreeRDP path is used as is, with its flavor from the name.
-    return {
-      state,
-      result: { path: clientPath, version: "3.10.3", flavor: flavorOf(clientPath) },
-    };
+    return { state, result: mockDetect(state) };
   },
 };
