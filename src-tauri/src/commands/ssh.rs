@@ -16,6 +16,7 @@ use crate::sessions::{SessionEvent, SessionHandle, SessionSink, ShellInput};
 use crate::ssh::session::{SessionTarget, default_username, resolve_target, run_ssh_session};
 use crate::ssh::shell::validate_size;
 use crate::state::AppState;
+use crate::wol::{WAKE_POLL_INTERVAL, run_wake_step, wake_target};
 
 /// Open a shell session against a saved connection or a quick target (docs/01-architecture.md §6).
 ///
@@ -42,6 +43,17 @@ pub async fn ssh_open(
         default_username().as_deref(),
     )?;
 
+    // A direct connection that asked to be woken first: send its packet before connecting (T29). Behind
+    // a bastion this is `None` (see `wake_target`), and a quick target never is.
+    let wake = match &target {
+        SessionTarget::Saved { connection_id } => store
+            .connections
+            .iter()
+            .find(|connection| connection.id == *connection_id)
+            .and_then(wake_target),
+        SessionTarget::Quick { .. } => None,
+    };
+
     // The session's input channel and cancel token, so the UI can write to it and end it.
     let (input, output) = mpsc::unbounded_channel::<ShellInput>();
     let cancel = CancellationToken::new();
@@ -57,21 +69,30 @@ pub async fn ssh_open(
     let sessions = state.sessions.clone();
     let prompts = state.prompts.clone();
     let ctx = state.ssh_context();
-    let sink = TauriSessionSink {
+    // One sink for the wake step and the session, so both report through the same two channels.
+    let sink: Arc<dyn SessionSink> = Arc::new(TauriSessionSink {
         on_event,
         on_output,
-    };
+    });
 
     tauri::async_runtime::spawn(async move {
-        let session = crate::ssh::session::ShellSession {
-            id: session_id,
-            target: resolved_target,
-            cols,
-            rows,
-            input: output,
-            cancel,
+        // Wake first, and only connect when it finished (a failure or a closed tab stops here). The
+        // cleanup below runs in every case.
+        let woke = match wake {
+            Some(wake) => run_wake_step(&wake, WAKE_POLL_INTERVAL, cancel.clone(), &*sink).await,
+            None => true,
         };
-        run_ssh_session(ctx, session, Arc::new(sink)).await;
+        if woke {
+            let session = crate::ssh::session::ShellSession {
+                id: session_id,
+                target: resolved_target,
+                cols,
+                rows,
+                input: output,
+                cancel,
+            };
+            run_ssh_session(ctx, session, Arc::clone(&sink)).await;
+        }
         sessions.remove(session_id);
         prompts.cancel_session(session_id);
     });

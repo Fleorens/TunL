@@ -12,6 +12,7 @@ pub mod sessions;
 pub mod ssh;
 pub mod state;
 pub mod store;
+pub mod wol;
 
 #[cfg(test)]
 mod probe_tests;
@@ -21,6 +22,8 @@ mod prompts_tests;
 mod secrets_tests;
 #[cfg(test)]
 mod sessions_tests;
+#[cfg(test)]
+mod wol_tests;
 
 use tauri::{Emitter, Manager};
 
@@ -116,6 +119,7 @@ pub fn invoke_handler<R: tauri::Runtime>()
         commands::secrets::secret_has,
         commands::secrets::secret_delete,
         commands::rdp::rdp_detect,
+        commands::wol::wol_wake,
     ]
 }
 

@@ -17,6 +17,7 @@ A modern SSH, SFTP and RDP connection manager for Linux, built with Tauri 2, Rea
 | SSH sessions in tabs: terminal, connecting steps, error card with Retry, end banner with Reconnect, through a chain of jump hosts (T21, T22) | |
 | Connection prompts: host key, password/passphrase (keyring), 2FA, changed host key (T21b) | |
 | Availability dots: TCP probes, sidebar and home, latency in the status bar (T30) | |
+| Wake-on-LAN: send the magic packet from the connection menu, and wake a host before connecting (T29) | |
 
 The progress of each task is in [`tasks/README.md`](tasks/README.md).
 

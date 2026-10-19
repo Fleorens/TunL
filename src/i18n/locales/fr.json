@@ -70,6 +70,7 @@
     "connect": "Se connecter",
     "openSftp": "Ouvrir en SFTP",
     "wake": "Réveiller",
+    "wakeSent": "Paquet magique envoyé à {{name}}",
     "edit": "Modifier",
     "duplicate": "Dupliquer",
     "addFavorite": "Ajouter aux favoris",

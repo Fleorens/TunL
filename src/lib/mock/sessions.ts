@@ -40,6 +40,8 @@ interface ResolvedTarget {
   name: string;
   /** The bastions to cross first (dial order), empty for a direct connection or a quick target (T22). */
   bastions: string[];
+  /** Wake this host before connecting (T29): a direct connection that asked for it. */
+  wake: boolean;
   /** A quick target that refuses the connection at the Target step. */
   unreachable?: boolean;
 }
@@ -88,6 +90,8 @@ function resolveTarget(state: Parameters<Handler>[0], target: SessionTarget): Re
       user,
       name: connection.name,
       bastions,
+      // Wake a direct connection that asked for it (T29); never behind a bastion.
+      wake: connection.wol?.wakeBeforeConnect === true && connection.jumpHostId == null,
     };
   }
 
@@ -101,6 +105,7 @@ function resolveTarget(state: Parameters<Handler>[0], target: SessionTarget): Re
     user,
     name: target.username ? `${target.username}@${target.host}` : target.host,
     bastions: [],
+    wake: false,
     unreachable: target.host === "unreachable.test",
   };
 }
@@ -144,6 +149,12 @@ async function promptStep(
 async function runSession(session: LiveSession, target: ResolvedTarget): Promise<void> {
   const { event, output } = scheduler(session);
   const address = `${target.host}:${target.port}`;
+
+  // Wake the host first, if this direct connection asked for it (T29): the mock comes alive at once.
+  if (target.wake) {
+    await event({ type: "step", step: "wake", label: target.name, state: "started" });
+    await event({ type: "step", step: "wake", label: target.name, state: "done" });
+  }
 
   // One Hop step per bastion, in dial order (the first dialled first, T22).
   for (const bastion of target.bastions) {

@@ -11,6 +11,7 @@ import { rdpHandlers } from "./mock/rdp";
 import { secretHandlers } from "./mock/secrets";
 import { resetMockSessions, sessionHandlers } from "./mock/sessions";
 import { settingsHandlers } from "./mock/settings";
+import { wolHandlers } from "./mock/wol";
 
 type Args = Record<string, unknown> | undefined;
 
@@ -53,6 +54,7 @@ const HANDLERS: Record<string, Handler> = {
   ...secretHandlers,
   ...settingsHandlers,
   ...sessionHandlers,
+  ...wolHandlers,
 };
 
 /** The commands the mock answers (checked against `ipc.ts` by `ipc-contract.test.ts`). */

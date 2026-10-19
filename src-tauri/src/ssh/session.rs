@@ -301,7 +301,7 @@ pub async fn run_ssh_session(ctx: SshContext, session: ShellSession, sink: Arc<d
 /// `Error`. A cancel stops with `Closed { UserClosed, None }`, reported as `Err(())`. Each `await`
 /// inside `work` is cancelable (docs/01 §6): dropping the step future on cancel lets a pending prompt
 /// forget itself (T17).
-async fn connect_step<F, Fut, T>(
+pub(crate) async fn connect_step<F, Fut, T>(
     cancel: CancellationToken,
     sink: &dyn SessionSink,
     step: StepKind,

@@ -123,6 +123,9 @@ export const ipc = {
   // RDP (T27): the FreeRDP 3 client TunL would launch with, or none.
   rdpDetect: () => call<RdpClient>("rdp_detect"),
 
+  // Wake-on-LAN (T29): send a connection's magic packet, no wait.
+  wolWake: (id: string) => call<void>("wol_wake", { id }),
+
   // Reachability (T30): probe a set of connections (TCP connect only), in the order given.
   probeCheck: (ids: string[]) => call<ProbeResult[]>("probe_check", { ids }),
 };

@@ -124,7 +124,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T29 | WoL : paquet magique, bouton, réveil avant connexion + attente du port | T22 | faible | Sonnet 5 · low | prête |
+| T29 | WoL : paquet magique, bouton, réveil avant connexion + attente du port | T22 | faible | Sonnet 5 · low | livrée |
 | T30 | Sondes de disponibilité (TCP, pastilles, latence) | T09 | moyen | Sonnet 5 · medium | livrée |
 
 ### M7 — Finitions
