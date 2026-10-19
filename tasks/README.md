@@ -167,5 +167,5 @@ local qui écrit le code (voir `AGENTS.md`).
 | 2 | T06 → T11 | **validé** à la revue du 2026-09-27 (format contrat) |
 | 3 | T12, T15, T15b, T13, T14, T16 | **validé** à la revue du 2026-09-28 |
 | 4 | T17 → T21b | **validé** à la revue du 2026-10-18 (T19b ajoutée le 2026-10-11 après une revue de T17 → T19) |
-| 5 | T22 → T30 | fin du lot 4 |
+| 5 | T22 → T30 (+ T25b, T26b, T28b) | **prêt**, écrit les 18 et 19/10 après la revue du lot 4 ; chaque fiche prototypée (SSH, SFTP, tunnel et RDP contre podman, RDP avec un faux FreeRDP) |
 | 6 | T31 → T40 | fin du lot 5 |
