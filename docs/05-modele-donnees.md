@@ -284,7 +284,7 @@ pub enum CloseReason { UserClosed, RemoteClosed, ProcessExited, Error }
 #[serde(tag = "type", rename_all = "camelCase", rename_all_fields = "camelCase")]
 pub enum TransferEvent {
     Progress { transferred: u64, total: Option<u64>, bytes_per_sec: u64 },
-    Done,
+    Done { path: String },   // où le fichier a fini : local (téléchargement) ou distant (envoi) — T26
     Failed { error: AppError },
     Cancelled,
 }

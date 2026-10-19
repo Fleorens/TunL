@@ -8,7 +8,8 @@ le modèle a réellement livré. Une fiche qui cite des signatures de code pas e
 
 - Lots 1 à 4 : **validés** (T01 → T21b, revue du lot 4 le 2026-10-18 : deux défauts corrigés et figés dans
   `e2e/review-lot4.spec.ts`).
-- Lot 5 (T22 → T30) : en cours d'écriture. Prêtes, et prototypées : **T22** (chaîne de bastions), **T27** (FreeRDP : détection, arguments), **T30** (sondes), **T29** (Wake-on-LAN).
+- Lot 5 (T22 → T30) : T22 **livrée**. Prêtes, et prototypées (contre podman pour le SSH) : T27, T30, T29, T23,
+  T24, T25, T25b, T26. Restent à écrire : T26b (envoi de fichiers) et T28 (lancement RDP).
 - À partir de T17b, `npm run review` démarre aussi les conteneurs SSH de test (podman, `npm run test:ssh`).
 - En attente de Florian, dans la vraie app (`npm run tauri dev`) :
   - T10 et T11 : créer, modifier et supprimer une connexion, avec un bastion (voir « À regarder » des deux fiches) ;
@@ -99,15 +100,17 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
 | T22 | Chaîne de bastions : résolution, cycles, direct-tcpip + connect_stream, étapes | T21b | **élevé** | Opus 5 · high | livrée |
-| T23 | Tunnel local 127.0.0.1:port → cible via la chaîne (moteur pour le RDP) | T22 | **élevé** | Opus 5 · high | à écrire |
+| T23 | Lien SSH réutilisable (`establish`) + tunnel local 127.0.0.1:port → cible via la chaîne (moteur pour le RDP) | T22, T29 | **élevé** | Opus 5 · high | prête |
 
 ### M4 — SFTP
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T24 | Backend SFTP : ouverture, list, mkdir, rename, remove, chmod | T22 | moyen | Sonnet 5 · high | à écrire |
-| T25 | Explorateur SFTP : fil d'Ariane, tableau virtualisé, tri, menu contextuel | T24 | moyen | Sonnet 5 · medium | à écrire |
-| T26 | Transferts : upload / download en flux, progression, annulation, glisser-déposer | T25 | **élevé** | Opus 5 · high | à écrire |
+| T24 | Backend SFTP : session, list, mkdir, rename, remove, chmod (+ ipc et mock) | T23 | moyen | Sonnet 5 · high | prête |
+| T25 | Onglet SFTP : explorateur (fil d'Ariane, tableau virtualisé, tri, fichiers cachés) | T24 | moyen | Sonnet 5 · medium | prête |
+| T25b | Explorateur SFTP : nouveau dossier, renommer, supprimer (avec le compte), droits, copier le chemin | T25 | moyen | Sonnet 5 · medium | prête |
+| T26 | Transferts : moteur (téléchargement, envoi), annulation, panneau, téléchargement depuis l'explorateur | T25b | **élevé** | Opus 5 · high | prête |
+| T26b | Envoi de fichiers : sélecteur natif et glisser-déposer depuis le bureau | T26 | moyen | Sonnet 5 · medium | à écrire |
 
 ### M5 — RDP
 
@@ -146,10 +149,9 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 ## Chemin critique
 
 ```
-T01 → … → T11 → T12 ─┬─ T17 → T17b → T18 → T19 → T19b → T20 → T21 → T21b → T22 ─┬─ T24 → T25 → T26
-                     │          ↑                                         ├─ T23 → T28
-       T05b ─ T16 ───┼──────────┘                                         └─ T29
-                     └─ T15 → T15b → T13 → T14      (tout est validé jusqu'à T21b)
+T01 → … → T12 ─┬─ T17 → … → T21b → T22 → T29 → T23 ─┬─ T24 → T25 → T25b → T26 → T26b
+T05b → T16 ─────┤                                     └─ T28 (avec T27)
+                └─ T15 → T15b → T13 → T14        (validé jusqu'à T21b)
 T27, T32 : parallélisables après T08 · T30 : après T09
 ```
 
