@@ -2,6 +2,7 @@
 //
 // The probe is a TCP connect only: a direct host either answers or not, one behind a bastion is never
 // probed (S15), and the latency is fixed so captures stay stable.
+import type { ProbeResult } from "@/bindings/ProbeResult";
 import type { Handler } from "./data";
 import { arg } from "./data";
 
@@ -14,29 +15,27 @@ function fixedLatency(name: string): number {
 }
 
 export const probeHandlers: Record<string, Handler<Record<string, unknown>>> = {
-  probe_check(_state, args) {
+  probe_check(state, args) {
     const { ids } = arg<{ ids: string[] }>(args);
-    const enabled = _state.settings.reachability.enabled;
-    const byId = new Map(_state.connections.map((connection) => [connection.id, connection]));
+    const enabled = state.settings.reachability.enabled;
+    const byId = new Map(state.connections.map((connection) => [connection.id, connection]));
 
     // The backend omits unknown ids and keeps `ids` order; the mock does the same.
-    const results = ids
-      .filter((id) => byId.has(id))
-      .map((id) => {
-        const connection = byId.get(id);
-        if (!connection) {
-          return { connectionId: id, status: "online", latencyMs: 2 };
-        }
-        if (!enabled || connection.jumpHostId != null) {
-          // Probes off, or behind a bastion (S15): never probed, the dot stays unknown.
-          return { connectionId: id, status: "skipped", latencyMs: null };
-        }
-        if (MOCK_OFFLINE.includes(connection.name)) {
-          return { connectionId: id, status: "offline", latencyMs: null };
-        }
-        return { connectionId: id, status: "online", latencyMs: fixedLatency(connection.name) };
-      });
+    const results = ids.flatMap((id): ProbeResult[] => {
+      const connection = byId.get(id);
+      if (!connection) {
+        return [];
+      }
+      if (!enabled || connection.jumpHostId != null) {
+        // Probes off, or behind a bastion (S15): never probed, the dot stays unknown.
+        return [{ connectionId: id, status: "skipped", latencyMs: null }];
+      }
+      if (MOCK_OFFLINE.includes(connection.name)) {
+        return [{ connectionId: id, status: "offline", latencyMs: null }];
+      }
+      return [{ connectionId: id, status: "online", latencyMs: fixedLatency(connection.name) }];
+    });
 
-    return { state: _state, result: results };
+    return { state, result: results };
   },
 };
