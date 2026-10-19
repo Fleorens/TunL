@@ -490,7 +490,20 @@
       "copyPath": "Copy path",
       "permissions": "Permissions…",
       "newFolder": "New folder",
-      "delete": "Delete…"
+      "delete": "Delete…",
+      "download": "Download"
+    },
+    "transfers": {
+      "title_one": "Transfers ({{count}})",
+      "title_other": "Transfers ({{count}})",
+      "list": "Transfers",
+      "clear": "Clear finished",
+      "rate": "{{rate}}/s",
+      "done": "Done",
+      "failed": "Failed",
+      "cancelled": "Cancelled",
+      "cancel": "Cancel {{name}}",
+      "reveal": "Show {{name}} in its folder"
     }
   }
 }

@@ -15,6 +15,7 @@ import { NewFolderDialog } from "./NewFolderDialog";
 import { PermissionsDialog } from "./PermissionsDialog";
 import { SftpToolbar } from "./SftpToolbar";
 import { DEFAULT_SORT, nextSort, parentPath, visibleEntries } from "./sftp-model";
+import { TransfersPanel } from "./TransfersPanel";
 import { type EntryActions, useEntryActions } from "./use-entry-actions";
 
 interface SftpExplorerProps {
@@ -94,14 +95,17 @@ export function SftpExplorer({ sessionId }: SftpExplorerProps) {
     navigate(".");
   }, [navigate]);
 
-  // A folder or a link goes in (the server follows the link); a file does nothing until T26.
+  // A folder or a link goes in (the server follows the link); a file (or an unknown entry) downloads on double-click.
+  const actions = useEntryActions(sessionId, path, (select) => navigate(path, select));
   const onOpen = (entry: RemoteEntry): void => {
-    if (entry.kind === "file") return;
+    if (entry.kind === "file" || entry.kind === "other") {
+      actions.download(entry);
+      return;
+    }
     navigate(entry.path);
   };
 
   const entriesToShow = visibleEntries(entries, sort, showHidden);
-  const actions = useEntryActions(sessionId, path, (select) => navigate(path, select));
   const selectedEntry = entriesToShow.find((entry) => entry.path === selectedPath) ?? null;
 
   // A right click off a row empties the selection: the menu then offers "New folder" only.
@@ -151,6 +155,7 @@ export function SftpExplorer({ sessionId }: SftpExplorerProps) {
         </ContextMenuTrigger>
         <EntryMenu entry={selectedEntry} actions={actions} />
       </ContextMenu>
+      <TransfersPanel sessionId={sessionId} />
       {dialogFor(actions)}
     </div>
   );
