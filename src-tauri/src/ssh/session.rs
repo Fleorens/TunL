@@ -5,8 +5,6 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use russh::Disconnect;
-use russh::client::Handle;
 use serde::Deserialize;
 use tokio::sync::mpsc;
 use tokio_util::sync::CancellationToken;
@@ -19,10 +17,11 @@ use crate::model::{
     normalize_connection_input,
 };
 use crate::sessions::{CloseReason, SessionEvent, SessionSink, ShellInput, StepKind, StepState};
-use crate::ssh::auth::{AuthPlan, authenticate, plan_for};
-use crate::ssh::chain::{auth_target_of, connect_hop, dial, handshake_with, resolve_chain};
+use crate::ssh::SshContext;
+use crate::ssh::auth::{AuthPlan, plan_for};
+use crate::ssh::chain::resolve_chain;
+use crate::ssh::link::establish;
 use crate::ssh::shell::{open_shell, pump};
-use crate::ssh::{SshContext, handler::ClientHandler};
 use crate::store::Store;
 
 /// A shell session opens against a saved connection or a quick target typed in the UI (docs/01 §6).
@@ -192,12 +191,12 @@ fn connect_timeout(connect_timeout_secs: Option<u32>, default_secs: u32) -> Dura
 
 /// Run one shell session: the steps, the shell, and the end (docs/01-architecture.md §5, §6).
 ///
-/// Before the target, one `Hop` step crosses each bastion (first dialled first, T22): its stream, its
-/// handshake, then its authentication. Each step then emits `Started` then `Done` or `Failed`. A failed step
-/// emits `Error` and stops, with no `Closed`. A cancel during any step stops with `Closed { UserClosed, None }`
-/// (the prompt it left behind is forgotten by the broker when its future is dropped). When the shell ends,
-/// `Closed { reason, exit_status }` is emitted, then a clean disconnect of the target and, after it, of the
-/// bastions from the nearest to the first.
+/// `establish` crosses the bastions (one `Hop` step each, first dialled first, T22), then the target, its
+/// host key and its authentication, returning an `SshLink` that keeps them all alive. It stops on the first
+/// failed step or cancel, with `Error` or `Closed { UserClosed, None }` already emitted (the prompt left
+/// behind is forgotten by the broker when its future is dropped). Then the shell opens on the link, runs, and
+/// `Closed { reason, exit_status }` ends it, after which the link disconnects cleanly: the target first, then
+/// the bastions from the nearest to the first.
 pub async fn run_ssh_session(ctx: SshContext, session: ShellSession, sink: Arc<dyn SessionSink>) {
     let ShellSession {
         id,
@@ -208,93 +207,30 @@ pub async fn run_ssh_session(ctx: SshContext, session: ShellSession, sink: Arc<d
         cancel,
     } = session;
 
-    // The bastions before the target, kept alive until the end of the session (a dropped handle would close
-    // the target's channel). One Hop step crosses each of them, first dialled first (T22): the stream, the
-    // handshake, then authentication with the bastion's own plan.
-    let mut handles: Vec<Handle<ClientHandler>> = Vec::new();
-    let mut names: Vec<String> = Vec::new();
-    for hop in &target.jump_hosts {
-        // The channel is opened through the bastion before this one (the previous handle), named `via` in
-        // errors; empty for the first, opened by TCP.
-        let via_name = names.last().cloned().unwrap_or_default();
-        let Ok(hop_handle) = connect_step(
-            cancel.clone(),
-            &*sink,
-            StepKind::Hop,
-            &hop.connection_name,
-            || async {
-                let mut handle = connect_hop(hop, handles.last(), &via_name, id, &ctx).await?;
-                authenticate(&mut handle, &auth_target_of(hop, id), &ctx).await?;
-                Ok(handle)
-            },
-        )
-        .await
-        else {
-            return;
-        };
-        handles.push(hop_handle);
-        names.push(hop.connection_name.clone());
-    }
-
-    // Target: through the last bastion, or by TCP when there is none.
-    let address = format!("{}:{}", target.host, target.port);
-    let via_name = names.last().cloned().unwrap_or_default();
-    let Ok(stream) = connect_step(cancel.clone(), &*sink, StepKind::Target, &address, || {
-        dial(handles.last(), &via_name, &target, target.connect_timeout)
-    })
-    .await
-    else {
+    // The authenticated link: bastions, target, host key, authentication. Stops on the first failure or
+    // cancel (its events already gone).
+    let Some(link) = establish(&ctx, &target, id, cancel.clone(), &*sink).await else {
         return;
     };
 
-    // Host key: russh negotiates the session and checks the server's key.
-    let Ok(mut handle) = connect_step(
-        cancel.clone(),
-        &*sink,
-        StepKind::HostKey,
-        &target.host,
-        || handshake_with(stream, &target, id, &ctx),
-    )
-    .await
-    else {
-        return;
-    };
-
-    // Authentication.
-    let auth_target = auth_target_of(&target, id);
-    let Ok(()) = connect_step(
-        cancel.clone(),
-        &*sink,
-        StepKind::Auth,
-        &target.username,
-        || authenticate(&mut handle, &auth_target, &ctx),
-    )
-    .await
-    else {
-        return;
-    };
-
-    // Open the shell on its PTY.
+    // Open the shell on the link's target.
     let Ok(channel) = connect_step(cancel.clone(), &*sink, StepKind::Open, "shell", || {
-        open_shell(&handle, cols, rows)
+        open_shell(&link.target, cols, rows)
     })
     .await
     else {
         return;
     };
 
-    // The shell runs until it ends, then we disconnect cleanly: the target first, then the bastions from the
-    // nearest to the first (their handles, still alive, close the channels they hold open).
+    // The shell runs until it ends, then we disconnect the link cleanly: the target first, then the bastions
+    // from the nearest to the first (their handles, still alive, close the channels they hold open).
     sink.event(SessionEvent::Connected);
     let (reason, exit_status) = pump(channel, input, cancel.clone(), &*sink).await;
     sink.event(SessionEvent::Closed {
         reason,
         exit_status,
     });
-    let _ = handle.disconnect(Disconnect::ByApplication, "", "en").await;
-    for handle in handles.into_iter().rev() {
-        let _ = handle.disconnect(Disconnect::ByApplication, "", "en").await;
-    }
+    link.disconnect().await;
 }
 
 /// Run one step's work, emitting `Started`, then `Done` (and returning the value) or `Failed` +

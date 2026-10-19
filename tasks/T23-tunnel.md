@@ -331,13 +331,13 @@ async fn cancelling_closes_the_port_and_the_open_connections() {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T23 --check` affiche `OK`
+- [x] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T23 --check` affiche `OK`
       partout.
-- [ ] `git diff main -- src-tauri/tests/ssh_shell.rs src-tauri/tests/ssh_chain.rs` est vide.
-- [ ] `grep -n "jump_hosts" src-tauri/src/ssh/session.rs` ne montre plus de boucle (seulement la résolution dans
+- [x] `git diff main -- src-tauri/tests/ssh_shell.rs src-tauri/tests/ssh_chain.rs` est vide.
+- [x] `grep -n "jump_hosts" src-tauri/src/ssh/session.rs` ne montre plus de boucle (seulement la résolution dans
       `resolve_target`).
-- [ ] `grep -rn "0.0.0.0\|UNSPECIFIED" src-tauri/src/ssh/forward.rs` ne trouve rien.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `grep -rn "0.0.0.0\|UNSPECIFIED" src-tauri/src/ssh/forward.rs` ne trouve rien.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 

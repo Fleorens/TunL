@@ -4,9 +4,11 @@ pub mod auth_secret;
 pub mod chain;
 pub mod connect;
 pub mod error;
+pub mod forward;
 pub mod handler;
 pub mod known_hosts;
 pub mod known_hosts_file;
+pub mod link;
 pub mod session;
 pub mod shell;
 
