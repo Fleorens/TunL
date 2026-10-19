@@ -444,5 +444,20 @@
       "caseSensitive": "Match case",
       "regex": "Regular expression"
     }
+  },
+  "sftp": {
+    "files": "Files",
+    "up": "Parent folder",
+    "refresh": "Refresh",
+    "editPath": "Type a path",
+    "path": "Path",
+    "showHidden": "Show hidden files",
+    "empty": "This folder is empty",
+    "columns": {
+      "name": "Name",
+      "size": "Size",
+      "modified": "Modified",
+      "permissions": "Permissions"
+    }
   }
 }

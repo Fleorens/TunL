@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useConnections } from "@/features/connections/store";
 import { HostKeyChangedCard } from "@/features/prompts/HostKeyChangedCard";
+import { SftpExplorer } from "@/features/sftp/SftpExplorer";
 import { useUi } from "@/features/shell/ui-store";
 import { TerminalView } from "@/features/terminal/TerminalView";
 import { describeError } from "@/lib/errors";
@@ -22,11 +23,17 @@ export function SessionView({ session, active }: { session: Session; active: boo
   const editable = useConnections((state) =>
     state.connections.some((c) => c.id === session.connectionId),
   );
-  if (!port) return null;
+  // An SSH tab renders its terminal only once it has a port; an SFTP tab has none and renders the
+  // explorer only when connected (the home is not ready before then, under the overlays and banner).
+  if (session.kind === "ssh" && !port) return null;
   return (
     <section aria-label={session.title} hidden={!active} className="flex h-full flex-col">
       <div className="relative min-h-0 flex-1">
-        <TerminalView port={port} active={active} />
+        {session.kind === "ssh" && port ? (
+          <TerminalView port={port} active={active} />
+        ) : session.status === "connected" ? (
+          <SftpExplorer key={session.runId} sessionId={session.runId} />
+        ) : null}
         <AnimatePresence>
           {session.status === "connecting" && (
             <ConnectingOverlay key="connecting" session={session} onClose={cancel(session.id)} />

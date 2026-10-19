@@ -20,6 +20,7 @@ describe("session model", () => {
   test("a new session is connecting, with nothing done yet", () => {
     expect(newSession("s-1", "web-01", saved)).toEqual({
       id: "s-1",
+      kind: "ssh",
       runId: "s-1",
       title: "web-01",
       target: saved,
@@ -32,6 +33,8 @@ describe("session model", () => {
     });
     const quick = { type: "quick", host: "10.5.5.5", port: 22, username: null } as const;
     expect(newSession("s-2", "10.5.5.5", quick).connectionId).toBeNull();
+    // T25: an SFTP tab is the same session, of another kind.
+    expect(newSession("s-3", "web-01", saved, "sftp").kind).toBe("sftp");
   });
 
   test("a step updates its line in place; a new kind of step is appended", () => {

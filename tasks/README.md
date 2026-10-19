@@ -107,7 +107,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
 | T24 | Backend SFTP : session, list, mkdir, rename, remove, chmod (+ ipc et mock) | T23 | moyen | Sonnet 5 · high | livrée |
-| T25 | Onglet SFTP : explorateur (fil d'Ariane, tableau virtualisé, tri, fichiers cachés) | T24 | moyen | Sonnet 5 · medium | prête |
+| T25 | Onglet SFTP : explorateur (fil d'Ariane, tableau virtualisé, tri, fichiers cachés) | T24 | moyen | Sonnet 5 · medium | livrée |
 | T25b | Explorateur SFTP : nouveau dossier, renommer, supprimer (avec le compte), droits, copier le chemin | T25 | moyen | Sonnet 5 · medium | prête |
 | T26 | Transferts : moteur (téléchargement, envoi), annulation, panneau, téléchargement depuis l'explorateur | T25b | **élevé** | Opus 5 · high | prête |
 | T26b | Envoi de fichiers : sélecteur natif et glisser-déposer depuis le bureau | T26, T28b | moyen | Sonnet 5 · medium | prête |

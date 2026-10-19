@@ -28,7 +28,6 @@ import {
 import { useConnections } from "@/features/connections/store";
 import { wakeConnection } from "@/features/connections/wake";
 import { openSession } from "@/features/sessions/open-session";
-import { notifyComingSoon } from "@/features/shell/coming-soon";
 import { useUi } from "@/features/shell/ui-store";
 import { copyText } from "@/lib/clipboard";
 
@@ -83,7 +82,7 @@ export function ConnectionContextMenu({
         </ContextMenuItem>
 
         {connection.settings.protocol === "ssh" && (
-          <ContextMenuItem onClick={notifyComingSoon}>
+          <ContextMenuItem onClick={() => openSession(connection, "sftp")}>
             <FolderTree className="size-3.5" />
             {t("connectionMenu.openSftp")}
           </ContextMenuItem>

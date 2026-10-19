@@ -46,7 +46,7 @@ function Tab({
       )}
     >
       <StatusDot status={status} label={t(`status.${status}`)} />
-      <ProtocolIcon protocol="ssh" className="size-3.5" />
+      <ProtocolIcon protocol={session.kind} className="size-3.5" />
       <span className="truncate">{session.title}</span>
       <button
         type="button"
