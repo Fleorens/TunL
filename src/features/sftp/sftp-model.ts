@@ -111,6 +111,21 @@ function groupChars(bits: number, special: boolean, letter: "s" | "t"): string {
   return `${read ? "r" : "-"}${write ? "w" : "-"}${execChar}`;
 }
 
+/**
+ * A name valid on the server: not empty, not `.` or `..`, no `/`, no `\0`. The same rule as `valid_name` in Rust
+ * (docs/06 S11). A name is only checked against this, never mutated before it goes up.
+ */
+export function isValidName(name: string): boolean {
+  return (
+    name.length > 0 && name !== "." && name !== ".." && !name.includes("/") && !name.includes("\0")
+  );
+}
+
+/** One path from a folder and a name: the root's single `/` is not doubled (`/` + `a` → `/a`). */
+export function joinPath(dir: string, name: string): string {
+  return dir === "/" ? `/${name}` : `${dir}/${name}`;
+}
+
 /** The `drwxr-xr-x` mode: a type char first, then the three permission groups. `null` is an unknown mode. */
 export function formatMode(kind: EntryKind, permissions: number | null): string {
   const typeChar = kind === "dir" ? "d" : kind === "symlink" ? "l" : kind === "file" ? "-" : "?";
