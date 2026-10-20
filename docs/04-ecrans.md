@@ -251,13 +251,17 @@ Déplacer vers le groupe ▸ · Copier `user@host` · — · Supprimer (destruct
 
 ## 10. Onglet Paramètres
 
-Navigation verticale à gauche (200 px) et contenu à droite (max 720 px) :
-- **Apparence** : thème, langue, réduire les animations.
-- **Terminal** : thème, police, taille, interligne, curseur, défilement arrière, copier à la sélection, cloche.
-- **SSH** : délai de connexion, keepalive, gérer les clés d'hôte connues.
-- **RDP** : client détecté (chemin, version) ou « introuvable », chemin forcé, options par défaut.
+Un onglet comme les autres, après les sessions (T31). Navigation verticale à gauche (200 px) et contenu à droite
+(max 720 px) :
+- **Apparence** : thème, langue, réduire les animations, confirmer la fermeture d'un onglet connecté.
+- **Terminal** : thème, police, taille, interligne, curseur, défilement arrière, copier à la sélection. (La cloche
+  attendra qu'un code l'écoute.)
+- **SSH** : délai de connexion et keepalive par défaut, serveurs connus (ceux du `known_hosts` de TunL, avec
+  « Oublier »).
+- **SFTP** : dossier de téléchargement.
+- **RDP** : client détecté (chemin, version) ou « introuvable », programme choisi à la main.
 - **Disponibilité** : activer les sondes, intervalle.
-- **À propos** : version, licence, liens, dossier de configuration (ouvrir).
+- **À propos** : version, licence, code source, dossiers de configuration et des journaux (afficher).
 
 Chaque réglage s'applique **immédiatement**, sans bouton Enregistrer, avec un toast discret en cas d'erreur.
 
