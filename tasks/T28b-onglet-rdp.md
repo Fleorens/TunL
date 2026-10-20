@@ -815,8 +815,8 @@ test("replacing a stored secret keeps a compact Cancel button", async ({ page })
 ## Critères d'acceptation
 
 - [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T28b --check` affiche `OK` partout.
-- [ ] `grep -rn "Opening the shell" src/i18n/locales/en.json` ne trouve qu'une clé (`sessions.steps.open`).
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `grep -rn "Opening the shell" src/i18n/locales/en.json` ne trouve qu'une clé (`sessions.steps.open`).
+- [x] Aucune nouvelle exception `project-rules: allow`.
 - [ ] Visuel : en clair et en sombre, la carte est centrée, le halo de l'icône est doux, la raison d'une fin se lit
       comme un échec sans être criarde, et le journal déplié défile sans élargir la carte.
 

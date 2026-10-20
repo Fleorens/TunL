@@ -7,11 +7,13 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useConnections } from "@/features/connections/store";
 import { HostKeyChangedCard } from "@/features/prompts/HostKeyChangedCard";
+import { RdpCard } from "@/features/rdp/RdpCard";
+import { RdpMissingCard } from "@/features/rdp/RdpMissingCard";
 import { SftpExplorer } from "@/features/sftp/SftpExplorer";
 import { useUi } from "@/features/shell/ui-store";
 import { TerminalView } from "@/features/terminal/TerminalView";
 import { describeError } from "@/lib/errors";
-import type { Session, SessionStepView } from "./session-model";
+import { type Session, type SessionStepView, stepKey } from "./session-model";
 import { getSessionPort } from "./session-ports";
 import { useSessions } from "./store";
 
@@ -31,25 +33,38 @@ export function SessionView({ session, active }: { session: Session; active: boo
       <div className="relative min-h-0 flex-1">
         {session.kind === "ssh" && port ? (
           <TerminalView port={port} active={active} />
-        ) : session.status === "connected" ? (
-          <SftpExplorer key={session.runId} sessionId={session.runId} />
+        ) : session.kind === "sftp" ? (
+          session.status === "connected" ? (
+            <SftpExplorer key={session.runId} sessionId={session.runId} />
+          ) : null
+        ) : session.kind === "rdp" ? (
+          session.status === "connected" || session.status === "closed" ? (
+            <RdpCard key={`rdp-${session.runId}`} session={session} />
+          ) : null
         ) : null}
         <AnimatePresence>
           {session.status === "connecting" && (
             <ConnectingOverlay key="connecting" session={session} onClose={cancel(session.id)} />
           )}
-          {session.status === "error" && (
-            <SessionErrorCard
-              key="error"
-              session={session}
-              onRetry={() => useSessions.getState().reconnect(session.id)}
-              onEdit={editable ? edit(session.connectionId) : null}
-              onClose={() => useSessions.getState().requestClose(session.id)}
-            />
-          )}
+          {session.status === "error" &&
+            (session.error?.kind === "rdpClientMissing" ? (
+              <RdpMissingCard
+                key="missing"
+                onRetry={reconnect(session.id)}
+                onClose={cancel(session.id)}
+              />
+            ) : (
+              <SessionErrorCard
+                key="error"
+                session={session}
+                onRetry={reconnect(session.id)}
+                onEdit={editable ? edit(session.connectionId) : null}
+                onClose={cancel(session.id)}
+              />
+            ))}
         </AnimatePresence>
       </div>
-      {session.status === "closed" && (
+      {session.kind !== "rdp" && session.status === "closed" && (
         <ClosedBanner
           code={session.exitStatus}
           onReconnect={() => useSessions.getState().reconnect(session.id)}
@@ -62,6 +77,11 @@ export function SessionView({ session, active }: { session: Session; active: boo
 /** The Cancel of the connecting card goes through the same close flow as the tab's close button. */
 function cancel(id: string): () => void {
   return () => useSessions.getState().requestClose(id);
+}
+
+/** A new attempt on the same tab, with a fresh backend run. */
+function reconnect(id: string): () => void {
+  return () => useSessions.getState().reconnect(id);
 }
 
 function edit(connectionId: string | null): (() => void) | null {
@@ -113,9 +133,7 @@ function StepLine({ step }: { step: SessionStepView }) {
       <span aria-hidden className="inline-flex size-4 items-center justify-center">
         {icon}
       </span>
-      <span className="min-w-0 truncate">
-        {t(`sessions.steps.${step.step}`, { label: step.label })}
-      </span>
+      <span className="min-w-0 truncate">{t(stepKey(step), { label: step.label })}</span>
     </li>
   );
 }

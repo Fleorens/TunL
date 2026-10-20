@@ -14,6 +14,12 @@ import { type LiveSession, notFound, scheduler, sessions, validation } from "./s
 /** The fixed loopback port the mock tunnel listens on (the backend picks a free one). */
 export const MOCK_TUNNEL_PORT = 40123;
 
+/**
+ * Exit codes a mock client leaves on its own, after its two info logs: the connection's name maps to the
+ * exit status the tab reports as `processExited`.
+ */
+export const MOCK_RDP_EXITS: Readonly<Record<string, number>> = { "win-desktop": 134 };
+
 /** One step, emitted started then done, in one call. */
 async function step(
   event: (e: SessionEvent) => Promise<void>,
@@ -75,6 +81,14 @@ async function runRdp(
   await event({ type: "connected" });
   await event({ type: "log", line: `[INFO][com.freerdp.core] connected to ${connection.host}` });
   await event({ type: "log", line: "[INFO][com.freerdp.client.sdl] desktop 1920x1080, 32 bpp" });
+
+  // A client that leaves on its own writes an error, then closes with its exit status, and is forgotten.
+  const exitStatus = MOCK_RDP_EXITS[connection.name];
+  if (exitStatus !== undefined) {
+    await event({ type: "log", line: "[ERROR][com.freerdp.core] ERRCONNECT_LOGON_FAILURE" });
+    await event({ type: "closed", reason: "processExited", exitStatus });
+    sessions.delete(session.id);
+  }
 }
 
 function open(

@@ -49,7 +49,7 @@ test("the card's padding opens the connection too", async ({ page }) => {
   expect(box).not.toBeNull();
   if (!box) return;
   await page.mouse.click(box.x + 6, box.y + box.height - 6);
-  await expect(page.getByText("Coming soon")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Remote desktop ad-01" })).toBeVisible();
 });
 
 test("toggling import rows with the keyboard keeps the focus", async ({ page }) => {

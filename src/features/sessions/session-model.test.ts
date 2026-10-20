@@ -2,10 +2,12 @@ import { describe, expect, test } from "vitest";
 import type { SessionEvent } from "@/bindings/SessionEvent";
 import {
   applySessionEvent,
+  LOG_LIMIT,
   newSession,
   quickTitle,
   restartSession,
   type Session,
+  stepKey,
   tabStatus,
   uniqueTitle,
 } from "./session-model";
@@ -30,6 +32,7 @@ describe("session model", () => {
       error: null,
       exitStatus: null,
       size: null,
+      log: [],
     });
     const quick = { type: "quick", host: "10.5.5.5", port: 22, username: null } as const;
     expect(newSession("s-2", "10.5.5.5", quick).connectionId).toBeNull();
@@ -77,7 +80,29 @@ describe("session model", () => {
     });
     expect(next).not.toBe(start);
     expect(start.steps).toEqual([]);
-    expect(applySessionEvent(start, { type: "log", line: "ignored" })).toEqual(start);
+    // T28b: a log line is kept, on a new object.
+    const logged = applySessionEvent(start, { type: "log", line: "[INFO] connected" });
+    expect(logged.log).toEqual(["[INFO] connected"]);
+    expect(start.log).toEqual([]);
+  });
+
+  test("the log keeps its last LOG_LIMIT lines, and a new attempt starts it again", () => {
+    const lines = Array.from({ length: LOG_LIMIT + 5 }, (_, i) => `line ${i}`);
+    const full = applyAll(
+      newSession("s-1", "ad-01", saved, "rdp"),
+      lines.map((line) => ({ type: "log", line })),
+    );
+    expect(full.log).toHaveLength(LOG_LIMIT);
+    expect(full.log[0]).toBe("line 5");
+    expect(full.log.at(-1)).toBe(`line ${LOG_LIMIT + 4}`);
+    expect(restartSession(full, "run-2").log).toEqual([]);
+  });
+
+  test("an Open step reads as what it opens", () => {
+    expect(stepKey({ step: "open", label: "shell" })).toBe("sessions.steps.open");
+    expect(stepKey({ step: "open", label: "sftp" })).toBe("sessions.steps.openSftp");
+    expect(stepKey({ step: "open", label: "tunnel" })).toBe("sessions.steps.openTunnel");
+    expect(stepKey({ step: "launch", label: "sdl-freerdp3" })).toBe("sessions.steps.launch");
   });
 
   test("restarting clears the previous attempt but keeps the tab and its size", () => {

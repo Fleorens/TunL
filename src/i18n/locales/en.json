@@ -113,6 +113,8 @@
       "hostKey": "Checking the host key of {{label}}",
       "auth": "Signing in as {{label}}",
       "open": "Opening the shell",
+      "openSftp": "Opening SFTP",
+      "openTunnel": "Opening the tunnel",
       "launch": "Starting the RDP client"
     },
     "cancel": "Cancel",
@@ -504,6 +506,42 @@
       "cancelled": "Cancelled",
       "cancel": "Cancel {{name}}",
       "reveal": "Show {{name}} in its folder"
+    }
+  },
+  "rdp": {
+    "card": {
+      "label": "Remote desktop {{name}}",
+      "open_one": "Session open · {{count}} min",
+      "open_other": "Session open · {{count}} min",
+      "via": "via {{chain}}",
+      "viaTunnel": "via {{chain}} ({{address}})",
+      "disconnect": "Disconnect",
+      "relaunch": "Relaunch",
+      "closeTab": "Close tab",
+      "code": "(code {{code}})",
+      "log": "FreeRDP log (filtered)",
+      "logEmpty": "Nothing logged yet."
+    },
+    "exit": {
+      "ended": "The session ended",
+      "timeout": "The session timed out",
+      "replaced": "Another client replaced this session",
+      "denied": "The connection was refused",
+      "license": "The license could not be verified",
+      "unreachable": "The host is unreachable",
+      "dns": "The host name could not be resolved",
+      "credentials": "The user name or password was refused",
+      "account": "The account is not allowed to log in",
+      "passwordExpired": "The password has expired",
+      "tls": "The server certificate was refused",
+      "cancelled": "The connection was cancelled",
+      "arguments": "The client started with invalid arguments",
+      "unknown": "The session ended for an unknown reason"
+    },
+    "missing": {
+      "title": "No FreeRDP 3 client found",
+      "description": "TunL could not find a FreeRDP 3 client on this computer. Install one of these commands, then retry.",
+      "copy": "Copy the command for {{distro}}"
     }
   }
 }
