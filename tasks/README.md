@@ -131,6 +131,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 |---|---|---|---|---|---|
 | T29 | WoL : paquet magique, bouton, réveil avant connexion + attente du port | T22 | faible | Sonnet 5 · low | validée |
 | T30 | Sondes de disponibilité (TCP, pastilles, latence) | T09 | moyen | Sonnet 5 · medium | validée |
+| T30b | Corrections de la vraie app : une sonde par adresse, sessions fermées au rechargement, focus après un dialogue, opener 2.7 | T30 | moyen | Sonnet 5 · medium | prête |
 
 ### M7 — Finitions
 
