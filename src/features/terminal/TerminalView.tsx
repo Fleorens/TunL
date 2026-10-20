@@ -66,9 +66,11 @@ export function TerminalView({ port, active }: { port: TerminalPort; active: boo
   const theme = terminal ? resolveTerminalTheme(terminal.theme, resolvedTheme === "dark") : null;
 
   return (
+    // `isolate`: xterm's own layers carry z-indexes (the WebGL link layer, the helpers); without a stacking
+    // context of its own they painted over the session cards and took their clicks (lot 5 review, real app only).
     <div
       data-terminal
-      className="relative h-full w-full"
+      className="relative isolate h-full w-full"
       style={{ background: theme?.background, padding: "8px 12px" }}
     >
       <div ref={containerRef} className="h-full w-full" />

@@ -88,3 +88,23 @@ test("the missing-client card is centered, each command on one line", async ({ p
     card.getByRole("button", { name: "Copy the command for Debian, Ubuntu" }),
   ).toBeVisible();
 });
+
+test("a layer of the terminal never covers the session card", async ({ page }) => {
+  await page.keyboard.press("Control+Shift+T");
+  await page.getByRole("dialog").getByRole("combobox").fill("root@unreachable.test");
+  await page.keyboard.press("Enter");
+  const view = page.getByRole("region", { name: "root@unreachable.test", exact: true });
+  const card = view.getByRole("alert");
+  await expect(card).toContainText("Connection failed");
+
+  // The WebGL renderer (off in the mock) adds a link layer with a z-index over the whole terminal: in the real
+  // app it took the clicks of Retry and Edit connection. Add the same layer, then click as a user would.
+  await view.locator(".xterm-screen").evaluate((screen) => {
+    const layer = document.createElement("canvas");
+    layer.className = "xterm-link-layer";
+    layer.style.cssText = "position:absolute;inset:0;width:100%;height:100%;z-index:2";
+    screen.append(layer);
+  });
+  await card.getByRole("button", { name: "Details" }).click({ timeout: 3000 });
+  await expect(card).toContainText("unreachable.test:22");
+});
