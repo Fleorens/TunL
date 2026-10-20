@@ -1,6 +1,6 @@
 // The SFTP tab's top line: up, refresh, the path (breadcrumb or a typed field), new folder, and the hidden-files
 // toggle.
-import { ArrowUp, Eye, EyeOff, FolderPlus, Pencil, RefreshCw } from "lucide-react";
+import { ArrowUp, Eye, EyeOff, FolderPlus, Pencil, RefreshCw, Upload } from "lucide-react";
 import { Fragment, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -24,6 +24,7 @@ interface SftpToolbarProps {
   onNavigate: (target: string) => void;
   onToggleHidden: (showHidden: boolean) => void;
   onNewFolder: () => void;
+  onUpload: () => void;
 }
 
 /** The path as a clickable breadcrumb: one item per segment, the last is the page, separators between the rest. */
@@ -75,6 +76,7 @@ export function SftpToolbar({
   onNavigate,
   onToggleHidden,
   onNewFolder,
+  onUpload,
 }: SftpToolbarProps) {
   const { t } = useTranslation();
   const segments = pathSegments(path);
@@ -120,6 +122,9 @@ export function SftpToolbar({
       </div>
       <Button variant="outline" size="icon-sm" aria-label={t("sftp.editPath")} onClick={startEdit}>
         <Pencil className="size-4" />
+      </Button>
+      <Button variant="outline" size="icon-sm" aria-label={t("sftp.upload")} onClick={onUpload}>
+        <Upload className="size-4" />
       </Button>
       <Button
         variant="outline"

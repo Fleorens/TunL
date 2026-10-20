@@ -451,10 +451,12 @@
     "files": "Files",
     "up": "Parent folder",
     "refresh": "Refresh",
+    "upload": "Upload files",
     "editPath": "Type a path",
     "path": "Path",
     "showHidden": "Show hidden files",
     "empty": "This folder is empty",
+    "dropHere": "Drop to upload to {{path}}",
     "columns": {
       "name": "Name",
       "size": "Size",

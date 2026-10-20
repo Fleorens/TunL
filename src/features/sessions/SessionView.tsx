@@ -35,7 +35,7 @@ export function SessionView({ session, active }: { session: Session; active: boo
           <TerminalView port={port} active={active} />
         ) : session.kind === "sftp" ? (
           session.status === "connected" ? (
-            <SftpExplorer key={session.runId} sessionId={session.runId} />
+            <SftpExplorer key={session.runId} sessionId={session.runId} active={active} />
           ) : null
         ) : session.kind === "rdp" ? (
           session.status === "connected" || session.status === "closed" ? (

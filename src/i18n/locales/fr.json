@@ -453,10 +453,12 @@
     "files": "Fichiers",
     "up": "Dossier parent",
     "refresh": "Actualiser",
+    "upload": "Envoyer des fichiers",
     "editPath": "Saisir un chemin",
     "path": "Chemin",
     "showHidden": "Afficher les fichiers cachés",
     "empty": "Ce dossier est vide",
+    "dropHere": "Déposer pour envoyer vers {{path}}",
     "columns": {
       "name": "Nom",
       "size": "Taille",
