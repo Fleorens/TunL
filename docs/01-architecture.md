@@ -265,8 +265,11 @@ Pas de réponse sous 5 minutes, ou `session_close` pendant l'attente → erreur 
   Le mot de passe n'apparaît donc jamais dans `/proc/<pid>/cmdline` (vérifié avec FreeRDP 3.31).
   stdout et stderr sont lus ligne à ligne, filtrés (jamais de secret), et gardés dans un tampon circulaire de 200 lignes
   pour la carte de session.
-- Via bastion : `establish()` jusqu'au bastion, puis `ssh::forward` ouvre `127.0.0.1:<port libre>` → direct-tcpip vers
-  `host:3389`, et FreeRDP se connecte à `/v:127.0.0.1:<port>`.
+- Via bastion : `establish()` jusqu'au bastion, puis `ssh::forward` ouvre `127.0.0.1:<port>` → direct-tcpip vers
+  `host:3389`, et FreeRDP se connecte à `/v:127.0.0.1:<port>` avec `/server-name:<host>`.
+  Le port est **propre à la connexion** (`tunnel_port`, plage 61000–65535, un port libre s'il est pris) : FreeRDP
+  range le certificat accepté sous `<serveur>_<port>`, et un port neuf à chaque session ferait de chaque session une
+  « première connexion », sans vérification (T28c).
   Le tunnel vit tant que le processus FreeRDP vit.
 
 ## 9. Persistance
