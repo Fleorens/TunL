@@ -52,11 +52,11 @@ test("clicking an SSH card opens a terminal tab", async ({ page }) => {
   await expect(page.getByRole("tab", { selected: true })).toContainText("web-01");
 });
 
-test("clicking an RDP card says it is coming (RDP arrives with T28)", async ({ page }) => {
+test("clicking an RDP card opens its RDP tab (T28b)", async ({ page }) => {
   await closeAllTabs(page);
   await page
     .getByRole("article", { name: "ad-01" })
     .getByRole("button", { name: "ad-01", exact: true })
     .click();
-  await expect(page.getByText("Coming soon")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Remote desktop ad-01" })).toBeVisible();
 });

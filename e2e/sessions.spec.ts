@@ -145,7 +145,9 @@ test("app shortcuts still work while the terminal has the focus", async ({ page 
   await expect(page.getByRole("dialog").getByRole("combobox")).toBeFocused();
 });
 
-test("the sidebar's Connect opens a session; RDP is not there yet", async ({ page }) => {
+test("the sidebar's Connect opens a session, a terminal for SSH, a card for RDP", async ({
+  page,
+}) => {
   await page
     .getByRole("button", { name: /^pi-hole/ })
     .first()
@@ -158,5 +160,5 @@ test("the sidebar's Connect opens a session; RDP is not there yet", async ({ pag
     .first()
     .click({ button: "right" });
   await page.getByRole("menu").getByRole("menuitem", { name: "Connect" }).click();
-  await expect(page.getByText("Coming soon")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Remote desktop ad-01" })).toBeVisible();
 });

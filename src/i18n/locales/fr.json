@@ -114,6 +114,8 @@
       "hostKey": "Vérification de la clé d'hôte de {{label}}",
       "auth": "Connexion en tant que {{label}}",
       "open": "Ouverture du shell",
+      "openSftp": "Ouverture de SFTP",
+      "openTunnel": "Ouverture du tunnel",
       "launch": "Démarrage du client RDP"
     },
     "cancel": "Annuler",
@@ -506,6 +508,42 @@
       "cancelled": "Annulé",
       "cancel": "Annuler {{name}}",
       "reveal": "Afficher dans le dossier de {{name}}"
+    }
+  },
+  "rdp": {
+    "card": {
+      "label": "Bureau à distance {{name}}",
+      "open_one": "Session ouverte · {{count}} min",
+      "open_other": "Session ouvertes · {{count}} min",
+      "via": "via {{chain}}",
+      "viaTunnel": "via {{chain}} ({{address}})",
+      "disconnect": "Déconnecter",
+      "relaunch": "Relancer",
+      "closeTab": "Fermer l'onglet",
+      "code": "(code {{code}})",
+      "log": "Journal FreeRDP (filtré)",
+      "logEmpty": "Aucun journal pour l'instant."
+    },
+    "exit": {
+      "ended": "La session s'est terminée",
+      "timeout": "La session a expiré",
+      "replaced": "Une autre session a remplacé celle-ci",
+      "denied": "La connexion a été refusée",
+      "license": "La licence n'a pas pu être vérifiée",
+      "unreachable": "L'hôte n'est pas joignable",
+      "dns": "Le nom d'hôte n'a pas pu être résolu",
+      "credentials": "L'utilisateur ou le mot de passe a été refusé",
+      "account": "Le compte n'est pas autorisé à se connecter",
+      "passwordExpired": "Le mot de passe a expiré",
+      "tls": "Le certificat du serveur a été refusé",
+      "cancelled": "La connexion a été annulée",
+      "arguments": "Le client a démarré avec des arguments invalides",
+      "unknown": "La session s'est terminée pour une raison inconnue"
+    },
+    "missing": {
+      "title": "Aucun client FreeRDP 3 trouvé",
+      "description": "TunL ne trouve aucun client FreeRDP 3 sur cet ordinateur. Installez l'une de ces commandes, puis réessayez.",
+      "copy": "Copier la commande pour {{distro}}"
     }
   }
 }

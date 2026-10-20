@@ -175,14 +175,26 @@ function start(id: string, runId: string): void {
     }));
   };
 
-  // SFTP reuses the connecting steps of a shell, then works on the remote files by run id.
-  if (session.kind === "sftp") {
-    ipc.sftpOpen(runId, session.target, onEvent).catch(onError);
-  } else {
-    ipc
-      .sshOpen(runId, session.target, session.size ?? DEFAULT_SIZE, { onEvent, onOutput })
-      .catch(onError);
+  openBackend(session, runId, onEvent, onOutput).catch(onError);
+}
+
+/**
+ * Choose the backend call for this tab's kind: RDP against its saved connection, SFTP against its target,
+ * otherwise a shell with its terminal size and callbacks (events and bytes through the two channels).
+ */
+function openBackend(
+  session: Session,
+  runId: string,
+  onEvent: (event: SessionEvent) => void,
+  onOutput: (bytes: Uint8Array) => void,
+): Promise<unknown> {
+  if (session.kind === "rdp") {
+    return ipc.rdpOpen(runId, session.connectionId ?? "", onEvent);
   }
+  if (session.kind === "sftp") {
+    return ipc.sftpOpen(runId, session.target, onEvent);
+  }
+  return ipc.sshOpen(runId, session.target, session.size ?? DEFAULT_SIZE, { onEvent, onOutput });
 }
 
 /** The tab to focus when `removedId` closes (`sessions` still holds it): the one after it, else the one before. */

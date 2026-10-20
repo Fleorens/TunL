@@ -10,8 +10,11 @@ import type { TerminalSize } from "@/lib/ipc";
 
 export type SessionStatus = "connecting" | "connected" | "closed" | "error";
 
-/** What a tab runs: a shell (`ssh`) or a file explorer (`sftp`). RDP comes with T28. */
-export type SessionKind = "ssh" | "sftp";
+/** What a tab runs: a shell (`ssh`), a file explorer (`sftp`), or a desktop (`rdp`). */
+export type SessionKind = "ssh" | "sftp" | "rdp";
+
+/** The most log lines a session keeps, so a long client run cannot grow the tab state without bound. */
+export const LOG_LIMIT = 200;
 
 /** One line of the connecting card: a step, what it is, and whether it started, passed, or failed. */
 export interface SessionStepView {
@@ -24,7 +27,7 @@ export interface SessionStepView {
 export interface Session {
   /** The tab the user sees and closes. */
   id: string;
-  /** What the tab runs: a shell, or a file explorer. */
+  /** What the tab runs: a shell, a file explorer, or a desktop. */
   kind: SessionKind;
   /** The backend session of the current attempt (`sessionId` of `ssh_open`); a reconnect gets a new one. */
   runId: string;
@@ -38,6 +41,8 @@ export interface Session {
   exitStatus: number | null;
   /** The last terminal size, kept across a reconnect so the terminal does not jump. */
   size: TerminalSize | null;
+  /** The client's recent log lines, filtered and shown on the RDP card (T28b). */
+  log: readonly string[];
 }
 
 /**
@@ -62,6 +67,7 @@ export function newSession(
     error: null,
     exitStatus: null,
     size: null,
+    log: [],
   };
 }
 
@@ -70,7 +76,7 @@ export function newSession(
  *
  * - `step` replaces the line of the same kind and label, or is appended when it is new;
  * - `connected`, `closed`, `error` set the status (and the error / exit code);
- * - `log` carries no tab state, so the session is returned unchanged.
+ * - `log` appends the line, keeping its last `LOG_LIMIT` (a new object, never mutating the session).
  */
 export function applySessionEvent(session: Session, event: SessionEvent): Session {
   switch (event.type) {
@@ -91,8 +97,10 @@ export function applySessionEvent(session: Session, event: SessionEvent): Sessio
       return { ...session, status: "closed", exitStatus: event.exitStatus };
     case "error":
       return { ...session, status: "error", error: event.error };
-    case "log":
-      return { ...session };
+    case "log": {
+      const log = [...session.log, event.line].slice(-LOG_LIMIT);
+      return { ...session, log };
+    }
   }
 }
 
@@ -108,6 +116,7 @@ export function restartSession(session: Session, runId: string): Session {
     steps: [],
     error: null,
     exitStatus: null,
+    log: [],
   };
 }
 
@@ -131,6 +140,24 @@ export function quickTitle(target: {
 }): string {
   const host = target.username ? `${target.username}@${target.host}` : target.host;
   return target.port === 22 ? host : `${host}:${target.port}`;
+}
+
+/**
+ * What an `open` step reads as: `sftp` opens SFTP, a bastion `tunnel` opens the tunnel, any other `open`
+ * (a shell) and every other step keep their own key. The return type is the union of those i18n keys.
+ */
+export type StepKey =
+  | "sessions.steps.open"
+  | "sessions.steps.openSftp"
+  | "sessions.steps.openTunnel"
+  | `sessions.steps.${StepKind}`;
+
+export function stepKey(step: { step: StepKind; label: string }): StepKey {
+  if (step.step === "open") {
+    if (step.label === "sftp") return "sessions.steps.openSftp";
+    if (step.label === "tunnel") return "sessions.steps.openTunnel";
+  }
+  return `sessions.steps.${step.step}`;
 }
 
 /** The tab dot follows the status: connecting stays, online/offline/error map from connected/closed/error. */
