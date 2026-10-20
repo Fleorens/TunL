@@ -181,7 +181,7 @@ test("a drag that is not files changes nothing", async ({ page }) => {
 - [x] `grep -rn "plugin-dialog" src` ne trouve que `src/lib/files.ts`.
 - [x] `grep -rn "onDragDropEvent" src` ne trouve que `src/lib/events.ts`.
 - [x] Aucune nouvelle exception `project-rules: allow`.
-- [ ] Visuel : le voile de dépôt couvre la liste sans cacher la barre d'outils, et son texte se lit en clair et en
+- [x] Visuel : le voile de dépôt couvre la liste sans cacher la barre d'outils, et son texte se lit en clair et en
       sombre.
 
 ## À regarder par Florian

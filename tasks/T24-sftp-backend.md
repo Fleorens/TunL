@@ -789,9 +789,9 @@ describe("mock sftp operations", () => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T24 --check` affiche `OK`
+- [x] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T24 --check` affiche `OK`
       partout.
-- [ ] `grep -rn "error_message" src-tauri/src/sftp` ne trouve rien (le texte du serveur n'est jamais recopié, S7).
+- [x] `grep -rn "error_message" src-tauri/src/sftp` ne trouve rien (le texte du serveur n'est jamais recopié, S7).
 - [x] `grep -n "fn metadata\|\.metadata(" src-tauri/src/sftp/ops.rs` ne montre que `entry.metadata()` (les attributs
       de `read_dir`), jamais `sftp.metadata(` (qui suivrait un lien).
 - [x] Aucune nouvelle exception `project-rules: allow`.

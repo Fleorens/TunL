@@ -1264,7 +1264,7 @@ test("each bastion of the chain has its own line, the first dialled first", asyn
 - [x] `grep -rn "not supported yet\|anticipates T22" src src-tauri/src` ne trouve rien.
 - [x] `grep -rn "MAX_JUMP_HOSTS: usize = 4" src-tauri/src` ne trouve qu'une ligne.
 - [x] Aucune nouvelle exception `project-rules: allow`.
-- [ ] Visuel : avec deux bastions, la carte de connexion montre une ligne « Through … » par bastion, alignées, et la
+- [x] Visuel : avec deux bastions, la carte de connexion montre une ligne « Through … » par bastion, alignées, et la
       barre d'état `via a → b` tient sur une ligne.
 
 ## À regarder par Florian

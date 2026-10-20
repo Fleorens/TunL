@@ -105,6 +105,45 @@ pub fn local_target(dir: &Path, remote_name: &str) -> AppResult<PathBuf> {
     Ok(dir.join(name))
 }
 
+/// An unused local name in `dir`, and its `.part` created at once (`create_new`), so two downloads of the
+/// same file started together never pick the same name: the one that loses the race sees the other's
+/// `.part` and tries the next free name (lot 5 review). Returns the final path, the `.part` and its file.
+pub async fn reserve_local(
+    dir: &Path,
+    remote_name: &str,
+) -> AppResult<(PathBuf, String, tokio::fs::File)> {
+    loop {
+        let target = local_target(dir, remote_name)?;
+        let part = format!("{}.part", target.display());
+        match tokio::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&part)
+            .await
+        {
+            Ok(file) => return Ok((target, part, file)),
+            Err(error) if error.kind() == io::ErrorKind::AlreadyExists => continue,
+            Err(error) => return Err(local_io_error("cannot create the local file", &error)),
+        }
+    }
+}
+
+/// The size of the remote file and the file opened for reading (the size follows a link, like the read).
+async fn open_remote(
+    sftp: &SftpSession,
+    remote: &str,
+) -> AppResult<(Option<u64>, russh_sftp::client::fs::File)> {
+    let metadata = sftp
+        .metadata(remote)
+        .await
+        .map_err(|error| crate::sftp::ops::map_sftp_error("metadata", remote, &error))?;
+    let file = sftp
+        .open(remote)
+        .await
+        .map_err(|error| crate::sftp::ops::map_sftp_error("open", remote, &error))?;
+    Ok((metadata.size, file))
+}
+
 /// The base name of a remote path: its last segment (a trailing "/" gives "").
 fn remote_base_name(remote: &str) -> &str {
     remote.rsplit('/').next().unwrap_or("")
@@ -211,46 +250,18 @@ pub async fn download(
     cancel: CancellationToken,
     sink: &dyn TransferSink,
 ) {
-    let target = match local_target(local_dir, remote_base_name(remote)) {
-        Ok(target) => target,
-        Err(error) => {
-            sink.event(TransferEvent::Failed { error });
-            return;
-        }
-    };
-    let part = format!("{}.part", target.display());
-    let size = match sftp
-        .metadata(remote)
-        .await
-        .map_err(|error| crate::sftp::ops::map_sftp_error("metadata", remote, &error))
-    {
-        Ok(metadata) => metadata.size,
+    // The `.part` is created first: its name is reserved before the server is even asked (lot 5 review).
+    let (target, part, mut dst) = match reserve_local(local_dir, remote_base_name(remote)).await {
+        Ok(reserved) => reserved,
         Err(error) => {
             emit_final(sink, Outcome::Failed(error));
             return;
         }
     };
-    let mut src = match sftp
-        .open(remote)
-        .await
-        .map_err(|error| crate::sftp::ops::map_sftp_error("open", remote, &error))
-    {
-        Ok(file) => file,
+    let (size, mut src) = match open_remote(sftp, remote).await {
+        Ok(opened) => opened,
         Err(error) => {
-            emit_final(sink, Outcome::Failed(error));
-            return;
-        }
-    };
-    let mut dst = match tokio::fs::OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .open(&part)
-        .await
-    {
-        Ok(file) => file,
-        Err(error) => {
-            // Not ours to remove: `create_new` fails when another transfer already holds this `.part`.
-            let error = local_io_error("cannot create the local file", &error);
+            let _ = tokio::fs::remove_file(&part).await;
             emit_final(sink, Outcome::Failed(error));
             return;
         }

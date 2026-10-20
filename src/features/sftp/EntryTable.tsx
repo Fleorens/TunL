@@ -62,7 +62,11 @@ function SortHeader({
         type="button"
         aria-label={t(`sftp.columns.${sortKey}`)}
         onClick={() => onSort(sortKey)}
-        className="inline-flex h-6 w-full items-center gap-1 pr-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+        className={cn(
+          "inline-flex h-6 w-full items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground",
+          // Size, Modified and Permissions are right-aligned like their cells (lot 5 review).
+          sortKey === "name" ? "pr-1" : "justify-end",
+        )}
       >
         {t(`sftp.columns.${sortKey}`)}
         {active && (

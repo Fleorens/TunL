@@ -128,7 +128,7 @@ test("the panel folds away and comes back", async ({ page }) => {
 
 - [x] `npm run review` passe, et `node scripts/contract-tests.mjs T26d --check` affiche `OK` partout.
 - [x] Aucune nouvelle exception `project-rules: allow`.
-- [ ] Visuel : en clair et en sombre, une ligne de transfert garde ses colonnes alignées pendant et après le
+- [x] Visuel : en clair et en sombre, une ligne de transfert garde ses colonnes alignées pendant et après le
       transfert, et le panneau ne cache pas la dernière ligne du tableau.
 
 ## À regarder par Florian

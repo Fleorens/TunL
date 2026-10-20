@@ -425,7 +425,7 @@ test("the status bar shows the latency of the active session's host", async ({ p
 - [x] `grep -rn 'status="unknown"' src/features` ne trouve rien.
 - [x] `grep -rn "write_all\|\.write(" src-tauri/src/probe.rs` ne trouve rien (aucune donnée envoyée, S15).
 - [x] Aucune nouvelle exception `project-rules: allow`.
-- [ ] Visuel : les pastilles vertes et grises restent lisibles en clair et en sombre ; la latence de la barre d'état
+- [x] Visuel : les pastilles vertes et grises restent lisibles en clair et en sombre ; la latence de la barre d'état
       ne décale pas les autres éléments.
 
 ## À regarder par Florian

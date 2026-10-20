@@ -20,6 +20,8 @@ pub mod transfer;
 #[cfg(test)]
 mod ops_tests;
 #[cfg(test)]
+mod transfer_reserve_tests;
+#[cfg(test)]
 mod transfer_tests;
 
 /// The kind of a remote entry, from the mode bits of its attributes (docs/05 §8).

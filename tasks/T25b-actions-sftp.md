@@ -280,7 +280,7 @@ test("Copy path puts the full path on the clipboard", async ({ page, context }) 
 - [x] `npm run review` passe, et `node scripts/contract-tests.mjs T25b --check` affiche `OK` partout.
 - [x] `grep -rn "sftpRemove" src/features/sftp` ne montre qu'un appel, précédé d'un `sftpCount` dans le même fichier.
 - [x] Aucune nouvelle exception `project-rules: allow`.
-- [ ] Visuel : le dialogue des droits aligne ses cases sous leurs en-têtes, en clair et en sombre ; « Supprimer… » se
+- [x] Visuel : le dialogue des droits aligne ses cases sous leurs en-têtes, en clair et en sombre ; « Supprimer… » se
       lit comme une action destructive sans être criarde.
 
 ## À regarder par Florian

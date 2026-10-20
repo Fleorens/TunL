@@ -4,12 +4,10 @@
 L'orchestrateur (Claude) écrit les fiches détaillées **par lots** : chaque lot est ajusté après relecture de ce que
 le modèle a réellement livré. Une fiche qui cite des signatures de code pas encore écrit finirait par mentir.
 
-## Où on en est (2026-10-18)
+## Où on en est (2026-10-20)
 
-- Lots 1 à 4 : **validés** (T01 → T21b, revue du lot 4 le 2026-10-18 : deux défauts corrigés et figés dans
-  `e2e/review-lot4.spec.ts`).
-- Lot 5 (T22 → T30, plus T25b, T26b, T26c, T26d, T28b) : tout est écrit et prototypé (contre podman pour le SSH). L'état de
-  chaque fiche est dans le tableau « Jalons et fiches » ci-dessous.
+- Lots 1 à 5 : **validés** (T01 → T30). Revue du lot 5 le 2026-10-20 : quatre défauts corrigés et figés
+  (`e2e/review-lot5.spec.ts`, `src-tauri/src/sftp/transfer_reserve_tests.rs`), voir le commit de revue.
 - À partir de T17b, `npm run review` démarre aussi les conteneurs SSH de test (podman, `npm run test:ssh`).
 - En attente de Florian, dans la vraie app (`npm run tauri dev`) :
   - T10 et T11 : créer, modifier et supprimer une connexion, avec un bastion (voir « À regarder » des deux fiches) ;
@@ -17,6 +15,11 @@ le modèle a réellement livré. Une fiche qui cite des signatures de code pas e
   - T12 et T15b : un mot de passe dans KWallet, l'import de ton vrai `~/.ssh/config` ;
   - T21 et T21b : **la première vraie session SSH** (sans bastion jusqu'à T22), avec un serveur absent de ton
     `~/.ssh/known_hosts` pour voir le dialogue de clé d'hôte.
+  - T22 : une session derrière un vrai bastion (puis deux) ;
+  - T25 → T26b : un onglet SFTP sur un de tes serveurs : parcourir, actions, téléchargement (`nom (1).ext`, aucun
+    `.part` après annulation), envoi par le sélecteur et par glisser-déposer depuis Dolphin ;
+  - T28b (FreeRDP 3 installé) : une session RDP directe, puis via bastion ; T29 : un réveil réel ; T30 : les pastilles
+    sur ton réseau.
 
 ## Comment Florian fait tourner une fiche
 
@@ -99,35 +102,35 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T22 | Chaîne de bastions : résolution, cycles, direct-tcpip + connect_stream, étapes | T21b | **élevé** | Opus 5 · high | livrée |
-| T23 | Lien SSH réutilisable (`establish`) + tunnel local 127.0.0.1:port → cible via la chaîne (moteur pour le RDP) | T22, T29 | **élevé** | Opus 5 · high | livrée |
+| T22 | Chaîne de bastions : résolution, cycles, direct-tcpip + connect_stream, étapes | T21b | **élevé** | Opus 5 · high | validée |
+| T23 | Lien SSH réutilisable (`establish`) + tunnel local 127.0.0.1:port → cible via la chaîne (moteur pour le RDP) | T22, T29 | **élevé** | Opus 5 · high | validée |
 
 ### M4 — SFTP
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T24 | Backend SFTP : session, list, mkdir, rename, remove, chmod (+ ipc et mock) | T23 | moyen | Sonnet 5 · high | livrée |
-| T25 | Onglet SFTP : explorateur (fil d'Ariane, tableau virtualisé, tri, fichiers cachés) | T24 | moyen | Sonnet 5 · medium | livrée |
-| T25b | Explorateur SFTP : nouveau dossier, renommer, supprimer (avec le compte), droits, copier le chemin | T25 | moyen | Sonnet 5 · medium | livrée |
-| T26 | Transferts : moteur Rust (téléchargement, envoi), annulation, commandes, ipc et mock | T25b | **élevé** | Opus 5 · high | livrée |
-| T26c | Transferts : modèle et store (frontend) | T26 | moyen | Sonnet 5 · medium | livrée |
-| T26d | Transferts : panneau, téléchargement depuis l'explorateur (double-clic, menu) | T26c | moyen | Sonnet 5 · medium | livrée |
-| T26b | Envoi de fichiers : sélecteur natif et glisser-déposer depuis le bureau | T26d, T28b | moyen | Sonnet 5 · medium | livrée |
+| T24 | Backend SFTP : session, list, mkdir, rename, remove, chmod (+ ipc et mock) | T23 | moyen | Sonnet 5 · high | validée |
+| T25 | Onglet SFTP : explorateur (fil d'Ariane, tableau virtualisé, tri, fichiers cachés) | T24 | moyen | Sonnet 5 · medium | validée |
+| T25b | Explorateur SFTP : nouveau dossier, renommer, supprimer (avec le compte), droits, copier le chemin | T25 | moyen | Sonnet 5 · medium | validée |
+| T26 | Transferts : moteur Rust (téléchargement, envoi), annulation, commandes, ipc et mock | T25b | **élevé** | Opus 5 · high | validée |
+| T26c | Transferts : modèle et store (frontend) | T26 | moyen | Sonnet 5 · medium | validée |
+| T26d | Transferts : panneau, téléchargement depuis l'explorateur (double-clic, menu) | T26c | moyen | Sonnet 5 · medium | validée |
+| T26b | Envoi de fichiers : sélecteur natif et glisser-déposer depuis le bureau | T26d, T28b | moyen | Sonnet 5 · medium | validée |
 
 ### M5 — RDP
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T27 | Détection FreeRDP + constructeur d'arguments pur + tests exhaustifs | T08 | moyen | Sonnet 5 · medium | livrée |
-| T28 | RDP : lancement par `/args-from:stdin`, suivi, journal filtré, tunnel via bastion (+ ipc et mock) | T23, T27 | **élevé** | Opus 5 · high | livrée |
-| T28b | Onglet RDP : carte de session, journal, fin traduite, client introuvable | T28, T26d | moyen | Sonnet 5 · medium | livrée |
+| T27 | Détection FreeRDP + constructeur d'arguments pur + tests exhaustifs | T08 | moyen | Sonnet 5 · medium | validée |
+| T28 | RDP : lancement par `/args-from:stdin`, suivi, journal filtré, tunnel via bastion (+ ipc et mock) | T23, T27 | **élevé** | Opus 5 · high | validée |
+| T28b | Onglet RDP : carte de session, journal, fin traduite, client introuvable | T28, T26d | moyen | Sonnet 5 · medium | validée |
 
 ### M6 — Wake-on-LAN et disponibilité
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T29 | WoL : paquet magique, bouton, réveil avant connexion + attente du port | T22 | faible | Sonnet 5 · low | livrée |
-| T30 | Sondes de disponibilité (TCP, pastilles, latence) | T09 | moyen | Sonnet 5 · medium | livrée |
+| T29 | WoL : paquet magique, bouton, réveil avant connexion + attente du port | T22 | faible | Sonnet 5 · low | validée |
+| T30 | Sondes de disponibilité (TCP, pastilles, latence) | T09 | moyen | Sonnet 5 · medium | validée |
 
 ### M7 — Finitions
 
@@ -154,7 +157,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 ```
 T01 → … → T12 ─┬─ T17 → … → T21b → T22 → T29 → T23 ─┬─ T24 → T25 → T25b → T26 → T26b
 T05b → T16 ─────┤                                     └─ T28 (avec T27) → T28b
-                └─ T15 → T15b → T13 → T14        (validé jusqu'à T21b)
+                └─ T15 → T15b → T13 → T14        (validé jusqu’à T30)
 T27, T32 : parallélisables après T08 · T30 : après T09
 ```
 
@@ -169,5 +172,5 @@ local qui écrit le code (voir `AGENTS.md`).
 | 2 | T06 → T11 | **validé** à la revue du 2026-09-27 (format contrat) |
 | 3 | T12, T15, T15b, T13, T14, T16 | **validé** à la revue du 2026-09-28 |
 | 4 | T17 → T21b | **validé** à la revue du 2026-10-18 (T19b ajoutée le 2026-10-11 après une revue de T17 → T19) |
-| 5 | T22 → T30 (+ T25b, T26b, T28b) | **prêt**, écrit les 18 et 19/10 après la revue du lot 4 ; chaque fiche prototypée (SSH, SFTP, tunnel et RDP contre podman, RDP avec un faux FreeRDP) |
+| 5 | T22 → T30 (+ T25b, T26b, T26c, T26d, T28b) | **validé** à la revue du 2026-10-20 |
 | 6 | T31 → T40 | fin du lot 5 |

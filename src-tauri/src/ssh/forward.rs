@@ -44,12 +44,14 @@ pub async fn forward(
                     continue;
                 };
                 // Open the channel before copying: each local connection has its own, and a refusal
-                // closes only that one (docs/01 §8).
-                let client_port = u32::from(local.local_addr().map(|addr| addr.port()).unwrap_or(0));
-                let via_stream = match via
-                    .channel_open_direct_tcpip(host, u32::from(port), "127.0.0.1", client_port)
-                    .await
-                {
+                // closes only that one (docs/01 §8). The open races `cancel`: a far end that never answers
+                // must not keep the tunnel alive after its tab closed (lot 5 review).
+                let client_port = u32::from(local.peer_addr().map(|addr| addr.port()).unwrap_or(0));
+                let opened = tokio::select! {
+                    _ = cancel.cancelled() => break,
+                    opened = via.channel_open_direct_tcpip(host, u32::from(port), "127.0.0.1", client_port) => opened,
+                };
+                let via_stream = match opened {
                     Ok(channel) => channel.into_stream(),
                     Err(error) => {
                         log::warn!("cannot open a tunnel to {host}:{port}: {error}");
