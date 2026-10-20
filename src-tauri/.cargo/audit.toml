@@ -1,0 +1,8 @@
+# cargo audit (T37, docs/06-securite.md S16). Every ignored advisory says why, and is re-read at each release (T40).
+[advisories]
+ignore = [
+  # rsa (through russh): the Marvin attack recovers a key from the timing of many RSA *decryptions* chosen by the
+  # attacker. TunL never decrypts with RSA: it only signs, once per sign-in, with the user's own RSA key. No fixed
+  # release exists yet; drop this line as soon as russh depends on one.
+  "RUSTSEC-2023-0071",
+]

@@ -150,7 +150,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
 | T36 | Icône d'app (SVG fourni dans `branding/`), paquet `tunl`, `.desktop`, metainfo AppStream, captures | T34 | faible | Sonnet 5 · low | prête |
-| T37 | Paquets deb / rpm / AppImage + CI GitHub Actions (lint, tests, audit, release) | T36 | moyen | Sonnet 5 · high | à écrire |
+| T37 | Paquets deb / rpm / AppImage + CI GitHub Actions (recette, audits, publication brouillon) | T36 | moyen | Sonnet 5 · high | prête |
 | T38 | Flatpak (manifeste, FreeRDP embarqué, sources hors ligne) → Flathub | T37 | **élevé** | Opus 5 · high | à écrire |
 | T39 | README public, CONTRIBUTING, LICENSE, CHANGELOG | T37 | faible | Haiku 4.5 · low | à écrire |
 | T40 | Revue sécurité finale + checklist de release (**faite par Claude**) | T38, T39 | — | Opus 5 · xhigh | à écrire |

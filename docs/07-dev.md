@@ -100,3 +100,20 @@ npm run test-env:rdp       # construit l'image xrdp (une fois), recrée les 2 co
 - Utilisateur `tunl` / `tunl-password`, bureau IceWM avec un xterm qui affiche le nom du serveur. Certificat
   auto-signé : FreeRDP demande de l'accepter à la première connexion.
 - `npm run test-env:down` les arrête aussi (`--purge` supprime aussi leur image).
+
+## 6. CI et publication (à partir de T37)
+
+- **`.github/workflows/ci.yml`**, à chaque push sur `main` et chaque pull request, trois jobs :
+  `npm run review` (Ubuntu 24.04 : bibliothèques Tauri, Chromium de Playwright, podman du runner) ;
+  les audits de S16 (`npm audit --omit=dev --audit-level=high` bloquant, `npm audit` complet en avertissement,
+  `cargo audit` dans `src-tauri`) ; `scripts/check-packaging.sh` (entrée de bureau et metainfo, T36).
+- **`.github/workflows/release.yml`**, sur un tag `vX.Y.Z` : vérifie que le tag est la version de l'app
+  (`node scripts/check-version.mjs vX.Y.Z` : `package.json`, `tauri.conf.json`, `Cargo.toml`, metainfo), construit le
+  `.deb`, le `.rpm` et l'AppImage sur Ubuntu 22.04, et les joint avec `SHA256SUMS` à une publication GitHub
+  **brouillon**. La publier est une décision humaine (liste de T40).
+- Les actions sont **épinglées par commit**, leur version en commentaire. Pour en monter une :
+  `git ls-remote https://github.com/<action> 'refs/tags/<tag>^{}'`, puis remplacer le SHA et le commentaire.
+- `cargo audit` lit `src-tauri/.cargo/audit.toml` : chaque avis ignoré y dit pourquoi, et se relit à chaque
+  publication (T40). Aujourd'hui : RUSTSEC-2023-0071 (`rsa`, attaque Marvin sur le déchiffrement ; TunL ne fait que
+  signer).
+- En local : `cargo install cargo-audit --locked` une fois, puis `cd src-tauri && cargo audit`.
