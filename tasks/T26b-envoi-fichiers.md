@@ -177,10 +177,10 @@ test("a drag that is not files changes nothing", async ({ page }) => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T26b --check` affiche `OK` partout.
-- [ ] `grep -rn "plugin-dialog" src` ne trouve que `src/lib/files.ts`.
-- [ ] `grep -rn "onDragDropEvent" src` ne trouve que `src/lib/events.ts`.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T26b --check` affiche `OK` partout.
+- [x] `grep -rn "plugin-dialog" src` ne trouve que `src/lib/files.ts`.
+- [x] `grep -rn "onDragDropEvent" src` ne trouve que `src/lib/events.ts`.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 - [ ] Visuel : le voile de dépôt couvre la liste sans cacher la barre d'outils, et son texte se lit en clair et en
       sombre.
 
