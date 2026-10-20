@@ -1,0 +1,14 @@
+# TunL RDP test server: xrdp + xorgxrdp, a light desktop (IceWM + xterm), user tunl / tunl-password.
+FROM docker.io/library/debian:13
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends xrdp xorgxrdp icewm xterm dbus-x11 ssl-cert \
+ && rm -rf /var/lib/apt/lists/* \
+ && useradd --create-home --shell /bin/bash tunl \
+ && echo 'tunl:tunl-password' | chpasswd \
+ && adduser xrdp ssl-cert
+COPY startwm.sh /etc/xrdp/startwm.sh
+COPY entrypoint.sh /usr/local/bin/tunl-rdp
+RUN chmod 0755 /etc/xrdp/startwm.sh /usr/local/bin/tunl-rdp
+EXPOSE 3389
+CMD ["/usr/local/bin/tunl-rdp"]

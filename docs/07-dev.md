@@ -86,3 +86,17 @@ npm run test-env:down      # arrête conteneurs et réseaux (garde l'image et .s
 - Changer une clé d'hôte pour tester le refus (S6) : `scripts/test-env/rotate-host-key.sh <target|bastion|hidden>`.
 - Tout effacer (conteneurs, réseaux, image, `.state/`) : `npm run test-env:down -- --purge`.
 - `scripts/test-env/.state/env.json` (chemins absolus, empreintes des clés d'hôte) est lu par les tests Rust du lot 4.
+
+### Serveurs RDP de test (à la main, hors `npm run review`)
+
+```bash
+npm run test-env:up        # d'abord : le RDP réutilise les réseaux et le bastion de l'environnement SSH
+npm run test-env:rdp       # construit l'image xrdp (une fois), recrée les 2 conteneurs
+```
+
+- `rdp` : `127.0.0.1:3389` en direct (`TUNL_RDP_PORT=… npm run test-env:rdp` si le port est pris).
+- `rdp-hidden` : hôte `rdp-hidden`, port 3389, joignable seulement via le bastion (dans TunL : jump host = le bastion
+  `127.0.0.1:2223`).
+- Utilisateur `tunl` / `tunl-password`, bureau IceWM avec un xterm qui affiche le nom du serveur. Certificat
+  auto-signé : FreeRDP demande de l'accepter à la première connexion.
+- `npm run test-env:down` les arrête aussi (`--purge` supprime aussi leur image).
