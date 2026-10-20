@@ -514,7 +514,7 @@
     "card": {
       "label": "Bureau à distance {{name}}",
       "open_one": "Session ouverte · {{count}} min",
-      "open_other": "Session ouvertes · {{count}} min",
+      "open_other": "Session ouverte · {{count}} min",
       "via": "via {{chain}}",
       "viaTunnel": "via {{chain}} ({{address}})",
       "disconnect": "Déconnecter",

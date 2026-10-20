@@ -13,13 +13,7 @@ export const INSTALL_COMMANDS = [
 ] as const;
 
 /** The RDP card when no FreeRDP 3 client is found: install one, then retry or close the tab. */
-export function RdpMissingCard({
-  onRetry,
-  onClose,
-}: {
-  onRetry: () => void;
-  onClose: () => void;
-}) {
+export function RdpMissingCard({ onRetry, onClose }: { onRetry: () => void; onClose: () => void }) {
   const { t } = useTranslation();
   return (
     <div

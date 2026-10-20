@@ -13,7 +13,7 @@ import { SftpExplorer } from "@/features/sftp/SftpExplorer";
 import { useUi } from "@/features/shell/ui-store";
 import { TerminalView } from "@/features/terminal/TerminalView";
 import { describeError } from "@/lib/errors";
-import { stepKey, type Session, type SessionStepView } from "./session-model";
+import { type Session, type SessionStepView, stepKey } from "./session-model";
 import { getSessionPort } from "./session-ports";
 import { useSessions } from "./store";
 
@@ -38,7 +38,7 @@ export function SessionView({ session, active }: { session: Session; active: boo
             <SftpExplorer key={session.runId} sessionId={session.runId} />
           ) : null
         ) : session.kind === "rdp" ? (
-          session.status !== "connecting" ? (
+          session.status === "connected" || session.status === "closed" ? (
             <RdpCard key={`rdp-${session.runId}`} session={session} />
           ) : null
         ) : null}
@@ -133,9 +133,7 @@ function StepLine({ step }: { step: SessionStepView }) {
       <span aria-hidden className="inline-flex size-4 items-center justify-center">
         {icon}
       </span>
-      <span className="min-w-0 truncate">
-        {t(stepKey(step), { label: step.label })}
-      </span>
+      <span className="min-w-0 truncate">{t(stepKey(step), { label: step.label })}</span>
     </li>
   );
 }

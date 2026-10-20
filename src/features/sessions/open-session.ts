@@ -1,5 +1,5 @@
 // The single entry point to open a session from anywhere (sidebar double-click, home card, palette).
-// SFTP opens a real explorer tab; RDP is a placeholder until T28; everything else opens a real SSH tab.
+// SFTP opens a real explorer tab; a saved RDP connection opens an RDP tab (T28b); everything else opens a real SSH tab.
 import type { Connection } from "@/bindings/Connection";
 import type { QuickTarget } from "@/features/palette/quick-connect";
 import { notifyComingSoon } from "@/features/shell/coming-soon";

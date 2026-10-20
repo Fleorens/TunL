@@ -78,10 +78,11 @@ export function exitKey(code: number | null): ExitKey {
 
 /** The bastion tunnel's local address, from the backend's log line (`tunnel 127.0.0.1:<port> …`), or null. */
 export function tunnelAddress(log: readonly string[]): string | null {
-  const line = log.find((entry) => entry.startsWith("tunnel 127.0.0.1:"));
-  if (!line) return null;
-  const match = line.match(/^tunnel (127\.0\.0\.1):(\d+)/);
-  return match ? `${match[1]}:${match[2]}` : null;
+  for (const entry of log) {
+    const match = entry.match(/^tunnel (127\.0\.0\.1:\d+) /);
+    if (match) return match[1];
+  }
+  return null;
 }
 
 /** Whole minutes since `since` (ms), never negative (a clock that runs back does not show a negative duration). */

@@ -189,7 +189,10 @@ function openBackend(
   onOutput: (bytes: Uint8Array) => void,
 ): Promise<unknown> {
   if (session.kind === "rdp") {
-    return ipc.rdpOpen(runId, session.connectionId ?? "", onEvent);
+    if (!session.connectionId) {
+      return Promise.reject(new Error("an RDP tab needs a saved connection"));
+    }
+    return ipc.rdpOpen(runId, session.connectionId, onEvent);
   }
   if (session.kind === "sftp") {
     return ipc.sftpOpen(runId, session.target, onEvent);

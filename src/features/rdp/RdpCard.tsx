@@ -4,9 +4,8 @@ import { Monitor } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StatusDot } from "@/components/StatusDot";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import type { Connection } from "@/bindings/Connection";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { jumpChainNames } from "@/features/connections/jump-hosts";
 import { useConnections } from "@/features/connections/store";
 import type { Session } from "@/features/sessions/session-model";
@@ -37,61 +36,65 @@ export function RdpCard({ session }: { session: Session }) {
   const tunnel = tunnelAddress(session.log);
 
   return (
-    <section
-      aria-label={t("rdp.card.label", { name: session.title })}
-      className="mx-auto flex w-110 max-w-full flex-col rounded-xl border bg-card shadow-elevated p-6"
-    >
-      <div className="flex items-center gap-4">
-        <span className="flex size-14 items-center justify-center rounded-2xl bg-brand-soft">
-          <Monitor className="size-7 text-protocol-rdp" aria-hidden />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-medium">{session.title}</p>
-          {address && (
-            <p className="truncate font-mono text-sm text-muted-foreground">{address}</p>
-          )}
+    <div className="flex h-full items-center justify-center overflow-auto p-4">
+      <section
+        aria-label={t("rdp.card.label", { name: session.title })}
+        className="flex w-110 max-w-full flex-col rounded-xl border bg-card shadow-elevated p-6"
+      >
+        <div className="flex items-center gap-4">
+          <span className="flex items-center justify-center rounded-2xl bg-brand-soft p-4">
+            <Monitor className="size-7 text-protocol-rdp" aria-hidden />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-medium">{session.title}</p>
+            {address && (
+              <p className="truncate font-mono text-sm text-muted-foreground">{address}</p>
+            )}
+          </div>
         </div>
-      </div>
 
-      {session.status === "connected" ? (
-        <OpenFor minutes={minutes} />
-      ) : (
-        <EndedBecause exitStatus={session.exitStatus} />
-      )}
-
-      {bastion && (
-        <p className="mt-2 text-sm text-muted-foreground">
-          {tunnel ? (
-            t("rdp.card.viaTunnel", { chain: bastion, address: tunnel })
-          ) : (
-            t("rdp.card.via", { chain: bastion })
-          )}
-        </p>
-      )}
-
-      <div className="mt-4 flex gap-2">
         {session.status === "connected" ? (
-          <Button variant="outline" size="sm" onClick={() => useSessions.getState().requestClose(session.id)}>
-            {t("rdp.card.disconnect")}
-          </Button>
+          <OpenFor minutes={minutes} />
         ) : (
-          <>
+          <EndedBecause exitStatus={session.exitStatus} />
+        )}
+
+        {bastion && (
+          <p className="mt-2 text-sm text-muted-foreground">
+            {tunnel
+              ? t("rdp.card.viaTunnel", { chain: bastion, address: tunnel })
+              : t("rdp.card.via", { chain: bastion })}
+          </p>
+        )}
+
+        <div className="mt-4 flex gap-2">
+          {session.status === "connected" ? (
             <Button
               variant="outline"
               size="sm"
-              onClick={() => useSessions.getState().close(session.id)}
+              onClick={() => useSessions.getState().requestClose(session.id)}
             >
-              {t("rdp.card.closeTab")}
+              {t("rdp.card.disconnect")}
             </Button>
-            <Button size="sm" onClick={() => useSessions.getState().reconnect(session.id)}>
-              {t("rdp.card.relaunch")}
-            </Button>
-          </>
-        )}
-      </div>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => useSessions.getState().close(session.id)}
+              >
+                {t("rdp.card.closeTab")}
+              </Button>
+              <Button size="sm" onClick={() => useSessions.getState().reconnect(session.id)}>
+                {t("rdp.card.relaunch")}
+              </Button>
+            </>
+          )}
+        </div>
 
-      <LogPanel log={session.log} />
-    </section>
+        <LogPanel log={session.log} />
+      </section>
+    </div>
   );
 }
 
@@ -112,10 +115,8 @@ function EndedBecause({ exitStatus }: { exitStatus: number | null }) {
   const ended = exitKey(exitStatus) === "ended";
   return (
     <p className={ended ? "mt-4 text-sm text-muted-foreground" : "mt-4 text-sm text-destructive"}>
-      {t(`exit.${exitKey(exitStatus)}`)}
-      {!ended && exitStatus !== null && (
-        <span aria-hidden> {t("rdp.card.code", { code: exitStatus })}</span>
-      )}
+      {t(`rdp.exit.${exitKey(exitStatus)}`)}
+      {!ended && exitStatus !== null && <span> {t("rdp.card.code", { code: exitStatus })}</span>}
     </p>
   );
 }
