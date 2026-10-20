@@ -7,6 +7,7 @@ import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { Empty, EmptyTitle } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
 import { notifyError } from "@/lib/errors";
+import { pickFiles } from "@/lib/files";
 import { ipc } from "@/lib/ipc";
 import { DeleteEntryDialog } from "./DeleteEntryDialog";
 import { EntryMenu } from "./EntryMenu";
@@ -16,10 +17,13 @@ import { PermissionsDialog } from "./PermissionsDialog";
 import { SftpToolbar } from "./SftpToolbar";
 import { DEFAULT_SORT, nextSort, parentPath, visibleEntries } from "./sftp-model";
 import { TransfersPanel } from "./TransfersPanel";
+import { useTransfers } from "./transfers-store";
 import { type EntryActions, useEntryActions } from "./use-entry-actions";
+import { useFileDrop } from "./use-file-drop";
 
 interface SftpExplorerProps {
   sessionId: string;
+  active: boolean;
 }
 
 /** The dialog open over the explorer, if any: a function, not a component, so it never remounts on a render. */
@@ -54,7 +58,7 @@ function dialogFor(actions: EntryActions) {
   }
 }
 
-export function SftpExplorer({ sessionId }: SftpExplorerProps) {
+export function SftpExplorer({ sessionId, active }: SftpExplorerProps) {
   const { t } = useTranslation();
   const [path, setPath] = useState("/");
   const [entries, setEntries] = useState<RemoteEntry[]>([]);
@@ -95,6 +99,23 @@ export function SftpExplorer({ sessionId }: SftpExplorerProps) {
     navigate(".");
   }, [navigate]);
 
+  // Upload each chosen file to the folder shown, then re-read it when one finishes (the last re-read wins).
+  const uploadAll = (paths: string[]): void => {
+    for (const localPath of paths) {
+      useTransfers.getState().upload(sessionId, localPath, path, () => navigate(path));
+    }
+  };
+
+  // The files dragged onto the tab: the window handler for Tauri, the HTML5 handlers for the mock.
+  const { dragging, dropProps } = useFileDrop(active, uploadAll);
+
+  // The toolbar's "Upload files": choose, then upload what was chosen, surfacing a failure as a toast.
+  const onUpload = (): void => {
+    pickFiles()
+      .then((paths) => uploadAll(paths))
+      .catch(notifyError);
+  };
+
   // A folder or a link goes in (the server follows the link); a file (or an unknown entry) downloads on double-click.
   const actions = useEntryActions(sessionId, path, (select) => navigate(path, select));
   const onOpen = (entry: RemoteEntry): void => {
@@ -115,7 +136,7 @@ export function SftpExplorer({ sessionId }: SftpExplorerProps) {
   };
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="relative flex h-full flex-col">
       <SftpToolbar
         path={path}
         showHidden={showHidden}
@@ -124,9 +145,10 @@ export function SftpExplorer({ sessionId }: SftpExplorerProps) {
         onNavigate={navigate}
         onToggleHidden={setShowHidden}
         onNewFolder={actions.newFolder}
+        onUpload={onUpload}
       />
       <ContextMenu modal={false}>
-        <ContextMenuTrigger asChild onContextMenu={onContextMenu}>
+        <ContextMenuTrigger asChild onContextMenu={onContextMenu} {...dropProps}>
           <div className="min-h-0 flex-1">
             {loading && entries.length === 0 ? (
               <div className="flex h-full w-full items-center justify-center">
@@ -155,6 +177,17 @@ export function SftpExplorer({ sessionId }: SftpExplorerProps) {
         </ContextMenuTrigger>
         <EntryMenu entry={selectedEntry} actions={actions} />
       </ContextMenu>
+      {dragging && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="pointer-events-none absolute inset-2 top-13 z-20 flex items-center justify-center border-2 border-dashed border-primary bg-primary/5"
+        >
+          <div className="rounded-lg bg-background shadow-elevated px-6 py-3 text-sm font-medium">
+            {t("sftp.dropHere", { path })}
+          </div>
+        </div>
+      )}
       <TransfersPanel sessionId={sessionId} />
       {dialogFor(actions)}
     </div>
