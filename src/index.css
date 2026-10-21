@@ -191,6 +191,19 @@
   background-color: var(--glass);
   backdrop-filter: blur(20px) saturate(1.4);
 }
+@utility draw-in {
+  path,
+  polyline {
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    animation: tunl-draw 150ms var(--ease-out-soft) forwards;
+  }
+}
+@keyframes tunl-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
 
 /* Set for one frame by lib/theme.ts while the palette switches. Unlayered on purpose:
    it then beats Tailwind utilities such as `transition-all` without needing !important. */
@@ -199,6 +212,20 @@
 .theme-switching *::before,
 .theme-switching *::after {
   transition: none;
+}
+
+/* Set by useApplySettings when motion is reduced (setting or system). Unlayered on purpose,
+   like `.theme-switching`: it beats Tailwind utilities, no flag needed. */
+.reduce-motion,
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0s;
+  animation-delay: 0s;
+  animation-iteration-count: 1;
+  transition-duration: 0s;
+  transition-delay: 0s;
+  scroll-behavior: auto;
 }
 
 @layer base {
