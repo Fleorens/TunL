@@ -11,7 +11,7 @@ use std::path::{Path, PathBuf};
 
 use russh::keys::{Algorithm, HashAlg, PublicKey};
 
-use super::known_hosts_file::{HostLine, host_lines};
+use super::known_hosts_file::{HostLine, KnownHostEntry, host_lines, own_entries};
 use crate::error::{AppError, AppResult, ErrorKind};
 
 /// File name of TunL's own known_hosts, in its data directory.
@@ -108,6 +108,11 @@ impl KnownHosts {
             }
         }
         out
+    }
+
+    /// TunL's own known_hosts, as the Settings tab lists them (T31b): never the user's file.
+    pub fn list_own(&self) -> Vec<KnownHostEntry> {
+        own_entries(&self.own)
     }
 
     /// Record `key` for `(host, port)` in TunL's own file, appending an OpenSSH line (T19b).

@@ -1,7 +1,9 @@
-// Pick files from the system file chooser (T26b). This is the ONLY file that imports the dialog plugin.
+// Pick a file or a folder from the system file chooser (T26b, T31b). This is the ONLY file that imports the
+// dialog plugin.
 //
-// In Tauri, `open` opens the system chooser and returns the chosen paths. In the mock and tests, it returns a
-// copy of the preset list, so the upload gesture works without a real dialog (docs/04 §6).
+// In Tauri, `open` opens the system chooser and returns the chosen path (or `null` when the user cancels). In
+// the mock and tests, `pickFile` and `pickFolder` return a preset path, so the gestures work without a real
+// dialog (docs/04 §6).
 import { isTauri } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 
@@ -13,6 +15,39 @@ export const MOCK_PICKED_FILES: readonly string[] = [
 
 /** The folder the mock "drags" files from, when one is dropped on the list. */
 export const MOCK_DROP_DIR = "/home/user/Desktop";
+
+/** The program the mock "chooses" for the FreeRDP client (T31b). */
+export const MOCK_PICKED_PROGRAM = "/opt/freerdp/bin/sdl-freerdp3";
+
+/** The folder the mock "chooses" for the download directory (T31b). */
+export const MOCK_PICKED_FOLDER = "/home/user/Transfers";
+
+/**
+ * A file chosen in the system chooser, or `null` when the user cancels.
+ *
+ * In Tauri, `open` opens the chooser and `null` means the user cancelled. In the mock, `MOCK_PICKED_PROGRAM`.
+ */
+export async function pickFile(): Promise<string | null> {
+  if (isTauri()) {
+    const path = await open({ multiple: false, directory: false });
+    return path == null ? null : path;
+  }
+  return MOCK_PICKED_PROGRAM;
+}
+
+/**
+ * A folder chosen in the system chooser, or `null` when the user cancels (T31b).
+ *
+ * In Tauri, `open` opens the chooser with `directory` and `null` means the user cancelled. In the mock,
+ * `MOCK_PICKED_FOLDER`.
+ */
+export async function pickFolder(): Promise<string | null> {
+  if (isTauri()) {
+    const path = await open({ multiple: false, directory: true });
+    return path == null ? null : path;
+  }
+  return MOCK_PICKED_FOLDER;
+}
 
 /**
  * The files chosen in the system chooser (several), or none when the user cancels.

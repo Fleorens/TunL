@@ -11,7 +11,10 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
-/** The label and its help on the left, the control on the right. */
+/**
+ * The label and its help on the left, the control on the right. Without a control, the label is a `<p>` (there is
+ * nothing to associate it to) and the right column is not rendered.
+ */
 function SettingRow({
   id,
   label,
@@ -21,19 +24,25 @@ function SettingRow({
   id?: string;
   label: string;
   description?: string;
-  children: ReactNode;
+  children?: ReactNode;
 }) {
   return (
     <div className="flex items-center justify-between gap-6 py-3">
-      <div className="grid gap-1">
-        {id ? (
+      <div className="grid min-w-0 gap-1">
+        {id && children ? (
           <Label htmlFor={id} className="text-sm font-medium">
             {label}
           </Label>
+        ) : id ? (
+          <p id={id} className="text-sm font-medium">
+            {label}
+          </p>
         ) : (
           <span className="text-sm font-medium">{label}</span>
         )}
-        {description && <span className="text-xs text-muted-foreground">{description}</span>}
+        {description && (
+          <span className="text-xs wrap-anywhere text-muted-foreground">{description}</span>
+        )}
       </div>
       {children}
     </div>
@@ -105,10 +114,23 @@ function SettingSwitch({
 }
 
 /** A card that groups the rows of one section. */
-function SettingGroup({ title, children }: { title?: string; children: ReactNode }) {
+function SettingGroup({
+  title,
+  description,
+  children,
+}: {
+  title?: string;
+  description?: string;
+  children: ReactNode;
+}) {
   return (
     <div className="divide-y divide-border rounded-xl border bg-card px-4">
-      {title && <p className="py-3 text-sm font-medium">{title}</p>}
+      {title && (
+        <div className="grid gap-1 py-3">
+          <p className="text-sm font-medium">{title}</p>
+          {description && <p className="text-xs text-muted-foreground">{description}</p>}
+        </div>
+      )}
       {children}
     </div>
   );

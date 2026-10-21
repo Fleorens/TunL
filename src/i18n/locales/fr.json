@@ -5,6 +5,9 @@
     "sections": {
       "appearance": "Apparence",
       "terminal": "Terminal",
+      "ssh": "SSH",
+      "sftp": "SFTP",
+      "rdp": "RDP",
       "availability": "Disponibilité",
       "about": "À propos"
     },
@@ -46,6 +49,38 @@
       "lines_one": "{{count}} ligne",
       "lines_other": "{{count}} lignes",
       "copyOnSelect": "Copier à la sélection"
+    },
+    "ssh": {
+      "defaults": "Valeurs par défaut",
+      "defaultsHelp": "Pour les connexions qui n'en fixent pas.",
+      "connectTimeout": "Délai de connexion",
+      "keepalive": "Maintien de connexion",
+      "keepaliveHelp": "Garde les sessions inactives ouvertes à travers les pare-feu.",
+      "off": "Désactivé",
+      "seconds_one": "{{count}} seconde",
+      "seconds_other": "{{count}} secondes",
+      "knownHosts": "Serveurs connus",
+      "knownHostsHelp": "Les serveurs dont TunL fait confiance à la clé. Ceux de ~/.ssh/known_hosts ne sont pas listés : TunL ne modifie jamais ce fichier.",
+      "noKnownHosts": "Aucun serveur pour l'instant. TunL demande de vérifier la clé d'un serveur à la première connexion.",
+      "forget": "Oublier {{host}}",
+      "forgetTitle": "Oublier la clé de {{host}} ?",
+      "forgetDescription": "La prochaine connexion à ce serveur affichera de nouveau son empreinte, pour que vous la vérifiiez.",
+      "forgetConfirm": "Oublier"
+    },
+    "sftp": {
+      "downloadDir": "Dossier de téléchargement",
+      "systemDownloads": "Le dossier Téléchargements du système",
+      "useSystem": "Utiliser celui du système",
+      "choose": "Choisir…"
+    },
+    "rdp": {
+      "client": "Client FreeRDP",
+      "found": "{{path}} (version {{version}})",
+      "missing": "Introuvable. Installez FreeRDP 3, ou choisissez le programme ci-dessous.",
+      "path": "Programme",
+      "pathAuto": "Trouvé automatiquement",
+      "useFound": "Trouver automatiquement",
+      "choose": "Choisir…"
     },
     "availability": {
       "enabled": "Vérifier quelles machines répondent",

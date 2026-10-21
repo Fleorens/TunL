@@ -9,9 +9,22 @@ use std::path::Path;
 use hmac::{Hmac, KeyInit, Mac};
 use russh::keys::PublicKey;
 use russh::keys::ssh_key::known_hosts::{Entry, HostPatterns, Marker};
+use serde::Serialize;
 use sha1::Sha1;
+use ts_rs::TS;
 
-use super::known_hosts::host_pattern;
+use super::known_hosts::{fingerprint, host_pattern};
+
+/// One host of TunL's own known_hosts, as the Settings tab lists it (T31b).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct KnownHostEntry {
+    pub host: String,
+    pub port: u16,
+    pub key_type: String,
+    pub fingerprint: String,
+}
 
 /// One line of a file that names `(host, port)`.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -130,4 +143,75 @@ fn glob_match(pattern: &str, text: &str) -> bool {
         pi += 1;
     }
     pi == pattern.len()
+}
+
+/// Every host of TunL's own known_hosts file, as the Settings tab lists them (T31b): one entry per host
+/// of each line, sorted by host then port, skipping the blank, commented, unreadable, hashed, wildcard,
+/// negated and marked lines. A missing or unreadable file gives nothing.
+pub fn own_entries(path: &Path) -> Vec<KnownHostEntry> {
+    let Ok(text) = std::fs::read_to_string(path) else {
+        return Vec::new();
+    };
+    let mut entries: Vec<KnownHostEntry> = text.lines().filter_map(own_line).flatten().collect();
+    entries.sort_by(|a, b| a.host.cmp(&b.host).then_with(|| a.port.cmp(&b.port)));
+    entries
+}
+
+/// The hosts of one raw line, or none for a blank, commented, unreadable, hashed or marked line.
+fn own_line(raw: &str) -> Option<Vec<KnownHostEntry>> {
+    let trimmed = raw.trim();
+    // A blank line or a comment carries no host.
+    if trimmed.is_empty() || trimmed.starts_with('#') {
+        return None;
+    }
+    // `Entry::from_str` cuts on one space: a tab or repeated spaces would make the line unreadable.
+    let normalized = trimmed.split_whitespace().collect::<Vec<_>>().join(" ");
+    let Ok(entry): Result<Entry, _> = normalized.parse() else {
+        return None;
+    };
+    // A `@revoked` or `@cert-authority` marker is skipped.
+    if matches!(
+        entry.marker(),
+        Some(Marker::Revoked) | Some(Marker::CertAuthority)
+    ) {
+        return None;
+    }
+    let key = entry.public_key().clone();
+    let key_type = key.algorithm().to_string();
+    let fingerprint = fingerprint(&key);
+    match entry.host_patterns() {
+        // A hashed name is not a host we can list.
+        HostPatterns::HashedName { .. } => None,
+        // One entry per host of the line; a pattern with `*`, `?` or `!` is skipped, the others kept.
+        // « Forget » (`KnownHosts::remove`) drops the whole line: on a line `a.lan,[a.lan]:2200`, forgetting
+        // one host forgets the other too. TunL writes one host per line, so only a hand-edited file shows it.
+        HostPatterns::Patterns(list) => {
+            let mut entries = Vec::new();
+            for pattern in list {
+                if pattern.contains('*') || pattern.contains('?') || pattern.contains('!') {
+                    continue;
+                }
+                if let Some((host, port)) = parse_pattern(pattern) {
+                    entries.push(KnownHostEntry {
+                        host,
+                        port,
+                        key_type: key_type.clone(),
+                        fingerprint: fingerprint.clone(),
+                    });
+                }
+            }
+            Some(entries)
+        }
+    }
+}
+
+/// The (host, port) of one host pattern: the bare host on the default port, `[host]:port` otherwise.
+/// The port is unreadable → none.
+fn parse_pattern(pattern: &str) -> Option<(String, u16)> {
+    if let Some(rest) = pattern.strip_prefix('[') {
+        let (host, port) = rest.split_once(']')?;
+        let port = port.strip_prefix(':')?.parse().ok()?;
+        return Some((host.to_string(), port));
+    }
+    Some((pattern.to_string(), 22))
 }
