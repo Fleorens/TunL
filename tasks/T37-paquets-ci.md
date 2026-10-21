@@ -353,10 +353,10 @@ if (wrong.length > 0) {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T37 --check` affiche `OK` partout.
-- [ ] `npm audit --omit=dev --audit-level=high` : `found 0 vulnerabilities`.
-- [ ] `node scripts/check-version.mjs v0.1.0` réussit, `node scripts/check-version.mjs v9.9.9` échoue.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T37 --check` affiche `OK` partout.
+- [x] `npm audit --omit=dev --audit-level=high` : `found 0 vulnerabilities`.
+- [x] `node scripts/check-version.mjs v0.1.0` réussit, `node scripts/check-version.mjs v9.9.9` échoue.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 

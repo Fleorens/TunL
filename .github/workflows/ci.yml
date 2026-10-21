@@ -1,0 +1,83 @@
+# T37: every push to main and every pull request runs the whole recipe, the audits and the packaging checks.
+# Actions are pinned by commit (the tag in the comment): a moved tag cannot change what runs here (S16).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  review:
+    name: npm run review
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Tauri system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev libssl-dev build-essential libxdo-dev \
+            libayatana-appindicator3-dev librsvg2-dev
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - name: Chromium for the end-to-end tests
+        run: npx playwright install --with-deps chromium
+      # Types, Biome, project rules, contract tests, Vitest, cargo fmt/clippy/test, the SSH tests against
+      # podman (preinstalled on the runner), then the Playwright scenarios.
+      - run: npm run review
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+      # What ships in the app: no known high or critical vulnerability.
+      - name: npm audit (shipped packages)
+        run: npm audit --omit=dev --audit-level=high
+      # The build tools too, for information: a dev-only advisory without a fix must not block every change.
+      - name: npm audit (build tools, informative)
+        run: npm audit --audit-level=high || echo "::warning::npm audit reports advisories in the build tools"
+      - uses: taiki-e/install-action@1168f6810a3cb30a3514bf5756a3b7f0422c6df8 # v2.87.28
+        with:
+          tool: cargo-audit
+      - name: cargo audit
+        working-directory: src-tauri
+        run: cargo audit
+
+  packaging:
+    name: Desktop entry and AppStream metadata
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: freedesktop validators
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends appstream desktop-file-utils
+      - run: scripts/check-packaging.sh
