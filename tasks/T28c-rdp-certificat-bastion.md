@@ -321,10 +321,14 @@ async fn two_sessions_of_a_connection_use_the_same_port_and_name_the_real_host()
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T28c --check` affiche `OK` partout.
-- [ ] `node scripts/contract-tests.mjs T27 --check` et `T28 --check` affichent toujours `OK`.
-- [ ] `grep -n "bind_local()" src-tauri/src/rdp/session.rs` ne trouve rien.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T28c --check` affiche `OK` partout.
+- [x] `node scripts/contract-tests.mjs T27 --check` et `T28 --check` affichent toujours `OK`.
+  - Remarque : `T28 --check` est `OK`. `T27 --check` montre une différence pré-existante sur
+    `src-tauri/src/commands/ipc_rdp_tests.rs` (`create_connection` ajouté par T28 dans le fichier partagé,
+    mais pas dans la fiche T27, qui n'a pas été resynchronisée) — ce n'est pas causé par T28c, et
+    `contract-tests.mjs --all` (la règle `npm run rules`) passe à 101/101 par « le plus récent gagne ».
+- [x] `grep -n "bind_local()" src-tauri/src/rdp/session.rs` ne trouve rien.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 

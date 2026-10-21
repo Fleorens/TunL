@@ -1,9 +1,12 @@
 //! A local port forwarded through an authenticated SSH link (T23).
 //!
 //! `bind_local` opens a free port on the loopback interface only — nothing off this machine can reach it
-//! (docs/06, S15). `forward` carries each connection accepted there over a `direct-tcpip` channel of `via`
-//! to `host:port`, until `cancel` (docs/01 §8). FreeRDP connects to the local port in T28.
+//! (docs/06, S15). `bind_tunnel` prefers the connection's own port (T28c) and falls back to `bind_local`
+//! when it is taken. `forward` carries each connection accepted there over a `direct-tcpip` channel of
+//! `via` to `host:port`, until `cancel` (docs/01 §8). FreeRDP connects to the local port in T28.
 use std::net::Ipv4Addr;
+
+use uuid::Uuid;
 
 use russh::client::Handle;
 use tokio::io::copy_bidirectional;
@@ -21,6 +24,40 @@ pub async fn bind_local() -> AppResult<TcpListener> {
             log::warn!("cannot open a local port for the tunnel: {error}");
             AppError::new(ErrorKind::Io, "cannot open a local port for the tunnel")
         })
+}
+
+/// First port of the tunnel range: above Linux's ephemeral ports (32768–60999).
+pub const TUNNEL_PORT_FIRST: u16 = 61000;
+/// Size of the range (61000–65535).
+pub const TUNNEL_PORT_COUNT: u16 = 4536;
+
+/// The loopback port the tunnel of a connection prefers: always the same for it.
+pub fn tunnel_port(connection_id: Uuid) -> u16 {
+    // The remainder is always below `TUNNEL_PORT_COUNT`, so it fits in a u16: no `as` truncation,
+    // no panic (T28c).
+    let remainder = connection_id.as_u128() % u128::from(TUNNEL_PORT_COUNT);
+    let offset = match u16::try_from(remainder) {
+        Ok(offset) => offset,
+        Err(error) => {
+            log::warn!("tunnel port out of range: {error}");
+            0
+        }
+    };
+    TUNNEL_PORT_FIRST + offset
+}
+
+/// The connection's own port if free, otherwise any free loopback port (`bind_local`).
+pub async fn bind_tunnel(connection_id: Uuid) -> AppResult<TcpListener> {
+    match TcpListener::bind((Ipv4Addr::LOCALHOST, tunnel_port(connection_id))).await {
+        Ok(listener) => Ok(listener),
+        Err(error) => {
+            log::info!(
+                "tunnel port {} is taken, any free loopback port ({error})",
+                tunnel_port(connection_id)
+            );
+            bind_local().await
+        }
+    }
 }
 
 /// Carries each connection accepted on `listener` over `via` to `host:port`, until `cancel`.
