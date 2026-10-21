@@ -54,9 +54,7 @@ export function SshSection() {
           }
         />
       </SettingGroup>
-      <SettingGroup>
-        <KnownHostsList />
-      </SettingGroup>
+      <KnownHostsList />
     </div>
   );
 }

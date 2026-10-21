@@ -183,6 +183,8 @@ fn own_line(raw: &str) -> Option<Vec<KnownHostEntry>> {
         // A hashed name is not a host we can list.
         HostPatterns::HashedName { .. } => None,
         // One entry per host of the line; a pattern with `*`, `?` or `!` is skipped, the others kept.
+        // « Forget » (`KnownHosts::remove`) drops the whole line: on a line `a.lan,[a.lan]:2200`, forgetting
+        // one host forgets the other too. TunL writes one host per line, so only a hand-edited file shows it.
         HostPatterns::Patterns(list) => {
             let mut entries = Vec::new();
             for pattern in list {

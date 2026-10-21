@@ -41,9 +41,7 @@ function SettingRow({
           <span className="text-sm font-medium">{label}</span>
         )}
         {description && (
-          <span className="truncate text-xs text-muted-foreground" title={description}>
-            {description}
-          </span>
+          <span className="text-xs wrap-anywhere text-muted-foreground">{description}</span>
         )}
       </div>
       {children}

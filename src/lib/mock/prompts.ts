@@ -132,6 +132,8 @@ export const promptHandlers: Record<string, Handler<Record<string, unknown>>> = 
     // The first removal of a given host drops one line (1); a later one removes nothing (0).
     if (removedHostKeys.has(`${host}:${port}`)) return { state, result: 0 };
     removedHostKeys.add(`${host}:${port}`);
+    // Forgotten: the next connection asks for the fingerprint again, as in the real app.
+    learnedHostKeys.delete(`${host}:${port}`);
     return { state, result: 1 };
   },
 

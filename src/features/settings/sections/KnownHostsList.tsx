@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { SettingGroup } from "@/features/settings/SettingRow";
 import { hostLabel } from "@/features/settings/settings-options";
 import { notifyError } from "@/lib/errors";
 import { ipc } from "@/lib/ipc";
@@ -116,17 +117,16 @@ function KnownHostRow({ entry, onForget }: { entry: KnownHostEntry; onForget: ()
   );
 }
 
-/** The known hosts of the SSH section: the title, the help, and the list (or the empty state). */
+/** The known hosts card of the SSH section: the title, the help, and the list (or the empty state). */
 export function KnownHostsList() {
   const { t } = useTranslation();
   const { entries, forget } = useKnownHosts();
   return (
-    <div>
-      <p className="py-3 text-sm font-medium">{t("settings.ssh.knownHosts")}</p>
-      <p className="py-1 text-xs text-muted-foreground">{t("settings.ssh.knownHostsHelp")}</p>
-      {entries === null ? (
-        <p className="py-3 text-xs text-muted-foreground">…</p>
-      ) : entries.length === 0 ? (
+    <SettingGroup
+      title={t("settings.ssh.knownHosts")}
+      description={t("settings.ssh.knownHostsHelp")}
+    >
+      {entries === null ? null : entries.length === 0 ? (
         <p className="py-3 text-xs text-muted-foreground">{t("settings.ssh.noKnownHosts")}</p>
       ) : (
         <ul aria-label={t("settings.ssh.knownHosts")}>
@@ -139,6 +139,6 @@ export function KnownHostsList() {
           ))}
         </ul>
       )}
-    </div>
+    </SettingGroup>
   );
 }
