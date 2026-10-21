@@ -2,7 +2,15 @@
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": {
-    "includes": ["**", "!!**/dist", "!!src-tauri", "!!src/bindings", "!!src/components/ui"]
+    "includes": [
+      "**",
+      "!!**/dist",
+      "!!src-tauri",
+      "!!src/bindings",
+      "!!src/components/ui",
+      "!!packaging/flatpak/cargo-sources.json",
+      "!!packaging/flatpak/node-sources.json"
+    ]
   },
   "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2, "lineWidth": 100 },
   "linter": {

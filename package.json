@@ -13,6 +13,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "check:packaging": "scripts/check-packaging.sh",
+    "flatpak:sources": "scripts/flatpak-sources.sh",
     "screenshots": "playwright test --config scripts/screenshots/playwright.config.ts",
     "tauri": "tauri",
     "test-env:up": "scripts/test-env/up.sh",

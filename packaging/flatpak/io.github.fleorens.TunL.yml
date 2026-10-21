@@ -1,0 +1,108 @@
+# Flatpak of TunL (T38). Built offline: every crate and npm package comes from cargo-sources.json and
+# node-sources.json (regenerate them with scripts/flatpak-sources.sh after a lockfile changes).
+# FreeRDP 3 (its SDL client) is built in the sandbox: TunL never runs a program of the host (S4, D04).
+app-id: io.github.fleorens.TunL
+runtime: org.gnome.Platform
+runtime-version: "51"
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+  - org.freedesktop.Sdk.Extension.node22
+command: tunl
+finish-args:
+  # The window: Wayland first, X11 when there is no Wayland; the GPU for WebKit.
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  - --device=dri
+  # SSH, SFTP, RDP, Wake-on-LAN and the reachability probes.
+  - --share=network
+  # The user's SSH agent (agent authentication, T18).
+  - --socket=ssh-auth
+  # Read only: ~/.ssh/known_hosts (D10), ~/.ssh/config (import, T15), private keys chosen in the editor.
+  - --filesystem=~/.ssh:ro
+  # Where downloads go by default (Settings › SFTP can choose another folder through the portal).
+  - --filesystem=xdg-download
+  # RDP sound, played by FreeRDP.
+  - --socket=pulseaudio
+modules:
+  - name: freerdp
+    buildsystem: cmake-ninja
+    builddir: true
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DWITH_CLIENT_SDL=ON
+      - -DWITH_CLIENT_SDL2=OFF
+      - -DWITH_CLIENT_SDL3=ON
+      - -DWITH_X11=OFF
+      - -DWITH_WAYLAND=OFF
+      - -DWITH_SERVER=OFF
+      - -DWITH_SAMPLE=OFF
+      - -DWITH_PROXY=OFF
+      - -DWITH_SHADOW=OFF
+      - -DWITH_PLATFORM_SERVER=OFF
+      - -DWITH_MANPAGES=OFF
+      - -DWITH_CUPS=OFF
+      - -DWITH_PCSC=OFF
+      - -DWITH_FUSE=OFF
+      - -DWITH_FFMPEG=OFF
+      - -DWITH_SWSCALE=OFF
+      - -DWITH_DSP_FFMPEG=OFF
+      - -DWITH_ALSA=OFF
+      - -DWITH_OSS=OFF
+      - -DWITH_PULSE=ON
+      - -DWITH_AAD=OFF
+      - -DWITH_WEBVIEW=OFF
+      - -DWITH_SDL_IMAGE_DIALOGS=OFF
+      - -DCHANNEL_URBDRC=OFF
+      - -DWITH_KRB5=OFF
+    cleanup:
+      - /include
+      - /lib/cmake
+      - /lib/pkgconfig
+      - /bin/winpr-*
+    sources:
+      - type: archive
+        url: https://github.com/FreeRDP/FreeRDP/releases/download/3.32.1/freerdp-3.32.1.tar.gz
+        sha256: 3021cf8848efbd0064664e187cb61e6101e4e74a4d8ffb495d9f7715e22d67de
+
+  - name: tunl
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/node22/bin
+      env:
+        CARGO_HOME: /run/build/tunl/cargo
+        CARGO_NET_OFFLINE: "true"
+        npm_config_offline: "true"
+        npm_config_cache: /run/build/tunl/flatpak-node/npm-cache
+        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+    build-commands:
+      - npm ci --offline --ignore-scripts
+      # The interface (tsc + Vite), then the Rust binary with the interface embedded (no packages: Flatpak is one).
+      - npx tauri build --no-bundle -- --offline
+      - install -Dm755 src-tauri/target/release/tunl /app/bin/tunl
+      # The desktop entry and the metainfo of T36, under the app id, as Flathub wants them.
+      - >-
+        sed -e 's/{{exec}}/tunl/' -e 's/{{icon}}/io.github.fleorens.TunL/'
+        -e 's/{{comment}}/SSH, SFTP and RDP connections, with jump hosts and Wake-on-LAN/'
+        packaging/linux/tunl.desktop.hbs > io.github.fleorens.TunL.desktop
+      - install -Dm644 io.github.fleorens.TunL.desktop /app/share/applications/io.github.fleorens.TunL.desktop
+      - >-
+        sed 's#<launchable type="desktop-id">tunl.desktop</launchable>#<launchable type="desktop-id">io.github.fleorens.TunL.desktop</launchable>#'
+        packaging/linux/io.github.fleorens.TunL.metainfo.xml > io.github.fleorens.TunL.metainfo.xml
+      - install -Dm644 io.github.fleorens.TunL.metainfo.xml /app/share/metainfo/io.github.fleorens.TunL.metainfo.xml
+      - install -Dm644 branding/app-icon.svg /app/share/icons/hicolor/scalable/apps/io.github.fleorens.TunL.svg
+      - install -Dm644 src-tauri/icons/128x128.png /app/share/icons/hicolor/128x128/apps/io.github.fleorens.TunL.png
+      - install -Dm644 src-tauri/icons/128x128@2x.png /app/share/icons/hicolor/256x256/apps/io.github.fleorens.TunL.png
+    sources:
+      - type: dir
+        path: ../..
+        skip:
+          - node_modules
+          - dist
+          - src-tauri/target
+          - test-results
+          - .flatpak-builder
+          - flatpak-build
+      - cargo-sources.json
+      - node-sources.json
