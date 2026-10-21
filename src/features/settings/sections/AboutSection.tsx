@@ -23,7 +23,12 @@ function FolderRow({ name, path, showLabel }: { name: string; path: string; show
         {name}
       </Label>
       <span className="truncate text-xs text-muted-foreground">{path}</span>
-      <Button id={id} variant="ghost" size="sm" onClick={() => revealInFolder(path)}>
+      <Button
+        id={id}
+        variant="ghost"
+        size="sm"
+        onClick={() => void revealInFolder(path).catch(notifyError)}
+      >
         {showLabel}
       </Button>
     </div>
@@ -50,7 +55,11 @@ export function AboutSection() {
         </div>
       </div>
       <p className="py-3 text-xs text-muted-foreground">{t("settings.about.licence")}</p>
-      <Button variant="ghost" size="sm" onClick={() => openExternal(REPOSITORY_URL)}>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => void openExternal(REPOSITORY_URL).catch(notifyError)}
+      >
         {t("settings.about.repository")}
       </Button>
       {info && (

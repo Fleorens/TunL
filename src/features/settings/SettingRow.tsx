@@ -65,7 +65,7 @@ function SettingSelect<T extends string>({
         value={value}
         onValueChange={(next) => {
           const chosen = options.find((option) => option.value === next);
-          onChange(chosen ? chosen.value : value);
+          if (chosen) onChange(chosen.value);
         }}
       >
         <SelectTrigger id={id} aria-label={label} className="w-48">

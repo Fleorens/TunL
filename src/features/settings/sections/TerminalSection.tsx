@@ -23,6 +23,55 @@ import { useSettings } from "@/features/settings/store";
 const THEMES = ["auto", "tunlNight", "tunlDay"] as const;
 const CURSTYLES = ["bar", "block", "underline"] as const;
 
+/**
+ * The font name, edited in place and saved on enter or blur; an invalid draft is shown, not saved. The
+ * draft lives here so that `key={fontFamily}` on the row restarts it from the saved value.
+ */
+function FontFamilyRow({ fontFamily }: { fontFamily: string | undefined }) {
+  const { t } = useTranslation();
+  const [draft, setDraft] = useState<string>(fontFamily ?? "");
+  const cleaned = cleanFontFamily(draft);
+  const commit = () => {
+    if (cleaned === null) return;
+    if (cleaned === fontFamily) {
+      setDraft(cleaned);
+      return;
+    }
+    // Saved: the new key remounts the row. Refused: back to the saved value.
+    void saveSettings((s) => ({ ...s, terminal: { ...s.terminal, fontFamily: cleaned } })).then(
+      (saved) => {
+        if (!saved) setDraft(fontFamily ?? "");
+      },
+    );
+  };
+
+  return (
+    <SettingRow
+      id="fontFamily"
+      label={t("settings.terminal.fontFamily")}
+      description={
+        cleaned === null
+          ? t("settings.terminal.fontFamilyInvalid", { max: FONT_FAMILY_MAX })
+          : t("settings.terminal.fontFamilyHelp")
+      }
+    >
+      <Input
+        type="text"
+        id="fontFamily"
+        className="w-48 font-mono"
+        value={draft}
+        aria-invalid={cleaned === null}
+        placeholder={fontFamily}
+        onChange={(event: ChangeEvent<HTMLInputElement>) => setDraft(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") commit();
+        }}
+        onBlur={commit}
+      />
+    </SettingRow>
+  );
+}
+
 export function TerminalSection() {
   const { t } = useTranslation();
   const terminal = useSettings((s) => s.settings?.terminal);
@@ -34,16 +83,6 @@ export function TerminalSection() {
   const cursorBlink = terminal?.cursorBlink;
   const scrollback = terminal?.scrollback ?? 10_000;
   const copyOnSelect = terminal?.copyOnSelect;
-
-  // The font name, edited in place and saved on enter or blur; an invalid draft is shown, not saved.
-  const [draft, setDraft] = useState<string>(fontFamily ?? "");
-  const cleaned = cleanFontFamily(draft);
-  const commit = () => {
-    if (cleaned === null) return;
-    if (cleaned !== fontFamily)
-      saveSettings((s) => ({ ...s, terminal: { ...s.terminal, fontFamily: cleaned } }));
-    setDraft(cleaned);
-  };
 
   const themeOptions = THEMES.map((value) => ({
     value,
@@ -77,30 +116,7 @@ export function TerminalSection() {
         }
       />
 
-      <SettingRow
-        id="fontFamily"
-        key={fontFamily}
-        label={t("settings.terminal.fontFamily")}
-        description={
-          cleaned === null
-            ? t("settings.terminal.fontFamilyInvalid", { max: FONT_FAMILY_MAX })
-            : t("settings.terminal.fontFamilyHelp")
-        }
-      >
-        <Input
-          type="text"
-          id="fontFamily"
-          className="w-48 font-mono"
-          value={draft}
-          aria-invalid={cleaned === null}
-          placeholder={fontFamily}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => setDraft(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") commit();
-          }}
-          onBlur={commit}
-        />
-      </SettingRow>
+      <FontFamilyRow key={fontFamily} fontFamily={fontFamily} />
 
       <SettingSelect
         label={t("settings.terminal.fontSize")}
