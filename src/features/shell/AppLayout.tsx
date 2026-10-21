@@ -11,7 +11,8 @@ import { useReachabilityPolling } from "@/features/reachability/use-reachability
 import { CloseSessionDialog } from "@/features/sessions/CloseSessionDialog";
 import { SessionView } from "@/features/sessions/SessionView";
 import { useSessions } from "@/features/sessions/store";
-import { notifyComingSoon } from "@/features/shell/coming-soon";
+import { SETTINGS_TAB } from "@/features/sessions/tabs";
+import { SettingsView } from "@/features/settings/SettingsView";
 import { StatusBar } from "@/features/shell/StatusBar";
 import { Sidebar } from "@/features/shell/sidebar/Sidebar";
 import { TabBar } from "@/features/shell/TabBar";
@@ -26,6 +27,7 @@ export function AppLayout() {
   const toggleSidebar = useUi((state) => state.toggleSidebar);
   const sessions = useSessions((state) => state.sessions);
   const activeId = useSessions((state) => state.activeId);
+  const settingsOpen = useSessions((state) => state.settingsOpen);
 
   // The store is the source of truth; the panel follows it.
   useEffect(() => {
@@ -41,7 +43,7 @@ export function AppLayout() {
     "palette.open": () => useUi.getState().openPalette("all"),
     "palette.quickConnect": () => useUi.getState().openPalette("quickConnect"),
     "help.shortcuts": () => useUi.getState().openShortcuts(),
-    "settings.open": () => notifyComingSoon(),
+    "settings.open": () => useSessions.getState().openSettings(),
     "sidebar.filter": () => {
       if (collapsed) setSidebarCollapsed(false);
       document.getElementById("sidebar-filter")?.focus();
@@ -87,12 +89,19 @@ export function AppLayout() {
         <ResizablePanel className="flex h-full min-w-0 flex-col">
           <TabBar />
           <div className="relative min-h-0 flex-1">
-            {sessions.length === 0 ? (
+            {sessions.length === 0 && !settingsOpen ? (
               <HomeView />
             ) : (
-              sessions.map((session) => (
-                <SessionView key={session.id} session={session} active={session.id === activeId} />
-              ))
+              <>
+                {sessions.map((session) => (
+                  <SessionView
+                    key={session.id}
+                    session={session}
+                    active={session.id === activeId}
+                  />
+                ))}
+                {settingsOpen && <SettingsView active={activeId === SETTINGS_TAB} />}
+              </>
             )}
           </div>
         </ResizablePanel>

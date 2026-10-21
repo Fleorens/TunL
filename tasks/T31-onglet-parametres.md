@@ -443,9 +443,9 @@ test("outside Tauri, the status bar flags the mock backend", async ({ page }) =>
 ## Critères d'acceptation
 
 - [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T31 --check` affiche `OK` partout.
-- [ ] `grep -rn "notifyComingSoon" src` ne trouve plus que `coming-soon.ts` et `open-session.ts`.
-- [ ] `grep -rn " as \(ThemeMode\|Language\|ReduceMotion\|CursorStyle\|TerminalTheme\)" src/features/settings` ne trouve rien.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `grep -rn "notifyComingSoon" src` ne trouve plus que `coming-soon.ts` et `open-session.ts`.
+- [x] `grep -rn " as \(ThemeMode\|Language\|ReduceMotion\|CursorStyle\|TerminalTheme\)" src/features/settings` ne trouve rien.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 - [ ] Visuel : la liste des sections et le contenu sont alignés, les rangées respirent (pas de contrôle collé au
       bord de la carte), l'onglet Paramètres a le même aspect que les onglets de session, en clair et en sombre.
 

@@ -22,6 +22,7 @@ import {
   removeSessionPort,
   sendSessionSize,
 } from "./session-ports";
+import { neighbourTab, relativeTab, SETTINGS_TAB, tabIds } from "./tabs";
 
 const DEFAULT_SIZE: TerminalSize = { cols: 80, rows: 24 };
 
@@ -30,12 +31,18 @@ interface SessionsState {
   activeId: string | null;
   /** The tab waiting for the close confirmation, or null. */
   closing: string | null;
+  /** The Settings tab is open (a virtual tab, never a session id). */
+  settingsOpen: boolean;
   /** Open a tab on a target, make it active, and start the attempt. Returns the tab id. */
   open: (target: SessionTarget, name: string, kind?: SessionKind) => string;
   activate: (id: string) => void;
   /** Alt+1…8, Alt+9 = last. */
   activateIndex: (index: number) => void;
   activateRelative: (delta: 1 | -1) => void;
+  /** Open the Settings tab and make it active (a second open goes to the same tab). */
+  openSettings: () => void;
+  /** Close the Settings tab; focus the tab that was next to it. */
+  closeSettings: () => void;
   /** Queue the close of a connected session behind the confirmation dialog. */
   requestClose: (id: string) => void;
   confirmClose: () => void;
@@ -49,6 +56,7 @@ export const useSessions = create<SessionsState>()((set, get) => ({
   sessions: [],
   activeId: null,
   closing: null,
+  settingsOpen: false,
 
   open(target, name, kind = "ssh") {
     const id = crypto.randomUUID();
@@ -72,24 +80,39 @@ export const useSessions = create<SessionsState>()((set, get) => ({
 
   activateIndex(index) {
     set((state) => {
-      const { sessions } = state;
-      if (sessions.length === 0) return {};
-      const target = sessions[Math.min(index, sessions.length - 1)];
-      return target ? { activeId: target.id } : {};
+      const ids = tabIds(state.sessions, state.settingsOpen);
+      if (ids.length === 0) return {};
+      const target = ids[Math.min(index, ids.length - 1)];
+      return target ? { activeId: target } : {};
     });
   },
 
   activateRelative(delta) {
     set((state) => {
-      const { sessions } = state;
-      if (sessions.length === 0) return {};
-      const current = sessions.findIndex((session) => session.id === state.activeId);
-      const next = (current + delta + sessions.length) % sessions.length;
-      return { activeId: sessions[next].id };
+      const next = relativeTab(tabIds(state.sessions, state.settingsOpen), state.activeId, delta);
+      return next ? { activeId: next } : {};
     });
   },
 
+  openSettings() {
+    set({ settingsOpen: true, activeId: SETTINGS_TAB });
+  },
+
+  closeSettings() {
+    set((state) => ({
+      settingsOpen: false,
+      activeId:
+        state.activeId === SETTINGS_TAB
+          ? (neighbourTab(tabIds(state.sessions, state.settingsOpen), SETTINGS_TAB) ?? null)
+          : state.activeId,
+    }));
+  },
+
   requestClose(id) {
+    if (id === SETTINGS_TAB) {
+      get().closeSettings();
+      return;
+    }
     const session = get().sessions.find((s) => s.id === id);
     const confirm = useSettings.getState().settings?.ui.confirmCloseActiveSession === true;
     if (session?.status === "connected" && confirm) {
@@ -120,7 +143,10 @@ export const useSessions = create<SessionsState>()((set, get) => ({
     set((state) => {
       const remaining = state.sessions.filter((s) => s.id !== id);
       if (state.activeId !== id) return { sessions: remaining };
-      return { sessions: remaining, activeId: neighbour(state.sessions, id)?.id ?? null };
+      return {
+        sessions: remaining,
+        activeId: neighbourTab(tabIds(state.sessions, state.settingsOpen), id) ?? null,
+      };
     });
   },
 
@@ -198,10 +224,4 @@ function openBackend(
     return ipc.sftpOpen(runId, session.target, onEvent);
   }
   return ipc.sshOpen(runId, session.target, session.size ?? DEFAULT_SIZE, { onEvent, onOutput });
-}
-
-/** The tab to focus when `removedId` closes (`sessions` still holds it): the one after it, else the one before. */
-function neighbour(sessions: readonly Session[], removedId: string): Session | null {
-  const index = sessions.findIndex((s) => s.id === removedId);
-  return sessions[index + 1] ?? sessions[index - 1] ?? null;
 }

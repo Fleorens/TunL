@@ -1,4 +1,74 @@
 {
+  "settings": {
+    "title": "Paramètres",
+    "sectionsLabel": "Sections des paramètres",
+    "sections": {
+      "appearance": "Apparence",
+      "terminal": "Terminal",
+      "availability": "Disponibilité",
+      "about": "À propos"
+    },
+    "appearance": {
+      "theme": "Thème",
+      "language": "Langue",
+      "reduceMotion": "Réduire les animations",
+      "reduceMotionHelp": "« Système » suit le réglage d'accessibilité du bureau.",
+      "motion": {
+        "system": "Système",
+        "on": "Activé",
+        "off": "Désactivé"
+      },
+      "confirmClose": "Confirmer avant de fermer un onglet connecté",
+      "confirmCloseHelp": "Fermer un onglet met fin à sa session."
+    },
+    "terminal": {
+      "theme": "Thème",
+      "themes": {
+        "auto": "Suivre l'application",
+        "tunlNight": "TunL Nuit",
+        "tunlDay": "TunL Jour"
+      },
+      "fontFamily": "Police",
+      "fontFamilyHelp": "Une police à chasse fixe installée sur cet ordinateur.",
+      "fontFamilyInvalid": "Entre 1 et {{max}} caractères.",
+      "fontSize": "Taille de police",
+      "pixels_one": "{{count}} px",
+      "pixels_other": "{{count}} px",
+      "lineHeight": "Interligne",
+      "cursorStyle": "Curseur",
+      "cursors": {
+        "bar": "Barre",
+        "block": "Bloc",
+        "underline": "Soulignement"
+      },
+      "cursorBlink": "Curseur clignotant",
+      "scrollback": "Historique de défilement",
+      "lines_one": "{{count}} ligne",
+      "lines_other": "{{count}} lignes",
+      "copyOnSelect": "Copier à la sélection"
+    },
+    "availability": {
+      "enabled": "Vérifier quelles machines répondent",
+      "enabledHelp": "TunL ouvre une connexion TCP vers le port de chaque machine, n'envoie rien et la referme. Jamais pour une machine derrière un bastion.",
+      "interval": "Intervalle",
+      "every": {
+        "seconds_one": "{{count}} seconde",
+        "seconds_other": "{{count}} secondes",
+        "minutes_one": "{{count}} minute",
+        "minutes_other": "{{count}} minutes",
+        "hours_one": "{{count}} heure",
+        "hours_other": "{{count}} heures"
+      }
+    },
+    "about": {
+      "version": "Version {{version}}",
+      "licence": "Logiciel libre, GPL-3.0-or-later",
+      "repository": "Code source",
+      "configDir": "Dossier de configuration",
+      "logDir": "Dossier des journaux",
+      "showFolder": "Afficher"
+    }
+  },
   "app": {
     "name": "TunL",
     "tagline": "Gestionnaire de connexions SSH, SFTP et RDP"
@@ -103,7 +173,8 @@
   "tabs": {
     "label": "Sessions ouvertes",
     "new": "Nouvelle session",
-    "close": "Fermer {{name}}"
+    "close": "Fermer {{name}}",
+    "closeSettings": "Fermer les paramètres"
   },
   "sessions": {
     "connecting": "Connexion à {{name}}…",
