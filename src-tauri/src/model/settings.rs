@@ -143,6 +143,16 @@ impl Default for ReachabilitySettings {
     }
 }
 
+/// Which title bar to draw: the system one, or TunL's own (which makes the top bar the title bar).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "lowercase")]
+#[ts(export)]
+pub enum TitleBarMode {
+    #[default]
+    Native,
+    Custom,
+}
+
 /// UI layout settings.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -155,6 +165,8 @@ pub struct UiSettings {
     pub confirm_close_active_session: bool,
     /// Local download folder. `None` is the system Downloads folder.
     pub download_dir: Option<String>,
+    /// Which title bar to draw (T35). A `settings.json` written before T35 falls back to the system bar.
+    pub title_bar: TitleBarMode,
 }
 
 impl Default for UiSettings {
@@ -164,6 +176,7 @@ impl Default for UiSettings {
             sidebar_collapsed: false,
             confirm_close_active_session: true,
             download_dir: None,
+            title_bar: TitleBarMode::default(),
         }
     }
 }

@@ -116,6 +116,8 @@ fn every_command_accepts_the_arguments_sent_by_ipc_ts() {
     let settings = ok(&webview, "settings_get", json!({}));
     ok(&webview, "settings_update", json!({ "settings": settings }));
 
+    ok(&webview, "window_apply_title_bar", json!({ "mode": "custom" }));
+
     ok(
         &webview,
         "secret_set",
