@@ -149,7 +149,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T36 | Icône d'app (SVG fourni dans `branding/`), paquet `tunl`, `.desktop`, metainfo AppStream, captures | T34 | faible | Sonnet 5 · low | prête |
+| T36 | Icône d'app (SVG fourni dans `branding/`), paquet `tunl`, `.desktop`, metainfo AppStream, captures | T34 | faible | Sonnet 5 · low | livrée |
 | T37 | Paquets deb / rpm / AppImage + CI GitHub Actions (recette, audits, publication brouillon) | T36 | moyen | Sonnet 5 · high | prête |
 | T38 | Flatpak (manifeste, FreeRDP embarqué, sources hors ligne) → Flathub | T37 | **élevé** | Opus 5 · high | prête |
 | T39 | README public, CONTRIBUTING, LICENSE, CHANGELOG | T37 | faible | Haiku 4.5 · low | prête |
@@ -177,3 +177,10 @@ local qui écrit le code (voir `AGENTS.md`).
 | 4 | T17 → T21b | **validé** à la revue du 2026-10-18 (T19b ajoutée le 2026-10-11 après une revue de T17 → T19) |
 | 5 | T22 → T30 (+ T25b, T26b, T26c, T26d, T28b) | **validé** à la revue du 2026-10-20 |
 | 6 | T31 → T40 | fin du lot 5 |
+
+## Where it stands
+
+### Works today
+
+- App distribuable sur Linux : icône de marque, paquet `tunl`, entrée de bureau et metainfo AppStream, captures
+  publiques (`T36`).

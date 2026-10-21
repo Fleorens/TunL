@@ -508,11 +508,11 @@ printf 'packaging: desktop entry and metainfo are valid\n'
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T36 --check` affiche `OK` partout.
-- [ ] `npm run check:packaging` affiche `packaging: desktop entry and metainfo are valid`.
-- [ ] `ls src-tauri/icons` ne montre que `32x32.png`, `64x64.png`, `128x128.png`, `128x128@2x.png`, `icon.png`.
-- [ ] `git diff main -- branding/app-icon.svg` est vide.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T36 --check` affiche `OK` partout.
+- [x] `npm run check:packaging` affiche `packaging: desktop entry and metainfo are valid`.
+- [x] `ls src-tauri/icons` ne montre que `32x32.png`, `64x64.png`, `128x128.png`, `128x128@2x.png`, `icon.png`.
+- [x] `git diff main -- branding/app-icon.svg` est vide.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 - [ ] Visuel : les quatre captures sont nettes, sans badge « Mock backend », et montrent l'interface entière.
 
 ## À regarder par Florian
