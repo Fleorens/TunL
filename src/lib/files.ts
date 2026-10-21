@@ -5,7 +5,7 @@
 // the mock and tests, `pickFile` and `pickFolder` return a preset path, so the gestures work without a real
 // dialog (docs/04 §6).
 import { isTauri } from "@tauri-apps/api/core";
-import { open } from "@tauri-apps/plugin-dialog";
+import { open, save } from "@tauri-apps/plugin-dialog";
 
 /** The files the mock "chooses" from the chooser: a report and a note, beside an existing name. */
 export const MOCK_PICKED_FILES: readonly string[] = [
@@ -21,6 +21,9 @@ export const MOCK_PICKED_PROGRAM = "/opt/freerdp/bin/sdl-freerdp3";
 
 /** The folder the mock "chooses" for the download directory (T31b). */
 export const MOCK_PICKED_FOLDER = "/home/user/Transfers";
+
+/** The file the mock "saves" the connections to (T32). */
+export const MOCK_SAVE_PATH = "/home/user/tunl-connections.json";
 
 /**
  * A file chosen in the system chooser, or `null` when the user cancels.
@@ -60,4 +63,21 @@ export async function pickFiles(): Promise<string[]> {
     return paths == null ? [] : [...paths];
   }
   return [...MOCK_PICKED_FILES];
+}
+
+/**
+ * The file the user "saves" to, or `null` when the user cancels (T32).
+ *
+ * In Tauri, `save` opens the chooser with a JSON filter and asks itself before replacing an existing file. In
+ * the mock, `MOCK_SAVE_PATH`.
+ */
+export async function pickSaveFile(defaultName: string | null): Promise<string | null> {
+  if (isTauri()) {
+    const path = await save({
+      defaultPath: defaultName ?? undefined,
+      filters: [{ name: "JSON", extensions: ["json"] }],
+    });
+    return path;
+  }
+  return MOCK_SAVE_PATH;
 }

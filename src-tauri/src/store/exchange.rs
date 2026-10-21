@@ -1,4 +1,4 @@
-//! Export and import of the whole store as one JSON file, without secrets (docs/06-securite.md S1).
+//! Export and import of the whole store as one JSON file, without any credential (docs/06-securite.md S1).
 //!
 //! The export is a snapshot of the store; the import fuses it: nothing is overwritten or removed,
 //! every connection gets a fresh id, and a connection already here (same protocol, host, port and
@@ -46,8 +46,17 @@ pub struct ImportReport {
 /// Same connection, compared without its identity or history: protocol, host (case-insensitive),
 /// port and user. Two connections with the same key are the same server.
 fn same_connection(a: &Connection, b: &Connection) -> bool {
-    (a.settings.protocol(), a.host.to_lowercase(), a.port, a.username.clone())
-        == (b.settings.protocol(), b.host.to_lowercase(), b.port, b.username.clone())
+    (
+        a.settings.protocol(),
+        a.host.to_lowercase(),
+        a.port,
+        a.username.clone(),
+    ) == (
+        b.settings.protocol(),
+        b.host.to_lowercase(),
+        b.port,
+        b.username.clone(),
+    )
 }
 
 /// The whole store, `last_connected_at` cleared (it is history, not configuration).

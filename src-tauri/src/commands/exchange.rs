@@ -1,7 +1,7 @@
 //! The export and import commands. They read and write the file themselves (never trust the UI),
-//! and never let a secret reach a log or an error message (S7, S9).
+//! and never let a credential reach a log or an error message (S7, S9).
 //!
-//! The export writes one JSON file of the whole store (no password, S1). The import fuses it into
+//! The export writes one JSON file of the whole store (no credential, S1). The import fuses it into
 //! the current store: nothing is overwritten, a connection already here is left aside, and every
 //! new connection gets a fresh id.
 
@@ -17,7 +17,7 @@ use uuid::Uuid;
 use crate::clock::now_ms;
 use crate::error::{AppError, AppResult};
 use crate::state::AppState;
-use crate::store::exchange::{export_file, plan_import, ExportFile, ImportReport};
+use crate::store::exchange::{ExportFile, ImportReport, export_file, plan_import};
 
 /// Exported files past this size are refused before they are read into memory (5 MiB).
 const MAX_EXPORT_BYTES: u64 = 5 * 1024 * 1024;
@@ -53,10 +53,10 @@ fn write_export(path: &Path, value: &impl Serialize) -> AppResult<()> {
     // The main file exists at every instant: rename the finished `.tmp` over it, then sync the
     // directory so the rename survives a power cut.
     fs::rename(&tmp, path)?;
-    if let Some(dir) = path.parent() {
-        if let Ok(dir_file) = fs::File::open(dir) {
-            let _ = dir_file.sync_all();
-        }
+    if let Some(dir) = path.parent()
+        && let Ok(dir_file) = fs::File::open(dir)
+    {
+        let _ = dir_file.sync_all();
     }
     Ok(())
 }
@@ -94,12 +94,10 @@ pub async fn store_import(state: State<'_, AppState>, path: String) -> AppResult
     }
 
     // A file TunL did not write is not a TunL export: refuse it without echoing its content (S7).
-    let text = fs::read_to_string(&path).map_err(|_| {
-        AppError::validation("path", "is not a TunL export")
-    })?;
-    let file: ExportFile = serde_json::from_str(&text).map_err(|_| {
-        AppError::validation("path", "is not a TunL export")
-    })?;
+    let text = fs::read_to_string(&path)
+        .map_err(|_| AppError::validation("path", "is not a TunL export"))?;
+    let file: ExportFile = serde_json::from_str(&text)
+        .map_err(|_| AppError::validation("path", "is not a TunL export"))?;
 
     let report = state
         .mutate(|store| plan_import(store, &file, now_ms(), Uuid::new_v4))

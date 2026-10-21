@@ -9,6 +9,7 @@
       "sftp": "SFTP",
       "rdp": "RDP",
       "availability": "Availability",
+      "backup": "Backup",
       "about": "About"
     },
     "appearance": {
@@ -95,6 +96,14 @@
         "hours_other": "{{count}} hours"
       }
     },
+    "backup": {
+      "export": "Export connections",
+      "exportHelp": "Groups and connections, to a JSON file. No password goes with them: those stay in the keyring.",
+      "exportButton": "Export…",
+      "import": "Import connections",
+      "importHelp": "From a TunL export. A connection already here (same host, port and user) is left out.",
+      "importButton": "Import…"
+    },
     "about": {
       "version": "Version {{version}}",
       "licence": "Free software, GPL-3.0-or-later",
@@ -103,6 +112,17 @@
       "logDir": "Logs folder",
       "showFolder": "Show"
     }
+  },
+  "exchange": {
+    "exported_one": "{{count}} connection exported",
+    "exported_other": "{{count}} connections exported",
+    "imported": "Import done",
+    "added_one": "{{count}} connection added",
+    "added_other": "{{count}} connections added",
+    "skipped_one": "{{count}} already here",
+    "skipped_other": "{{count}} already here",
+    "invalid_one": "{{count}} refused (invalid)",
+    "invalid_other": "{{count}} refused (invalid)"
   },
   "app": {
     "name": "TunL",

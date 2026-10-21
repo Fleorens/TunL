@@ -474,11 +474,11 @@ test("import adds what is new, leaves out what is already here, and the list sho
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T32 --check` affiche `OK` partout.
-- [ ] `git diff main -- src-tauri/capabilities/default.json` n'ajoute que `dialog:allow-save`.
-- [ ] `grep -rniE "password|passphrase|secret" src-tauri/src/store/exchange.rs src-tauri/src/commands/exchange.rs`
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T32 --check` affiche `OK` partout.
+- [x] `git diff main -- src-tauri/capabilities/default.json` n'ajoute que `dialog:allow-save`.
+- [x] `grep -rniE "password|passphrase|secret" src-tauri/src/store/exchange.rs src-tauri/src/commands/exchange.rs`
       ne trouve rien (aucun secret n'existe dans le store).
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 
