@@ -1,4 +1,74 @@
 {
+  "settings": {
+    "title": "Settings",
+    "sectionsLabel": "Settings sections",
+    "sections": {
+      "appearance": "Appearance",
+      "terminal": "Terminal",
+      "availability": "Availability",
+      "about": "About"
+    },
+    "appearance": {
+      "theme": "Theme",
+      "language": "Language",
+      "reduceMotion": "Reduce animations",
+      "reduceMotionHelp": "\"System\" follows your desktop's accessibility setting.",
+      "motion": {
+        "system": "System",
+        "on": "On",
+        "off": "Off"
+      },
+      "confirmClose": "Confirm before closing a connected tab",
+      "confirmCloseHelp": "Closing a tab ends its session."
+    },
+    "terminal": {
+      "theme": "Theme",
+      "themes": {
+        "auto": "Follow the app",
+        "tunlNight": "TunL Night",
+        "tunlDay": "TunL Day"
+      },
+      "fontFamily": "Font",
+      "fontFamilyHelp": "A monospaced font installed on this computer.",
+      "fontFamilyInvalid": "Between 1 and {{max}} characters.",
+      "fontSize": "Font size",
+      "pixels_one": "{{count}} px",
+      "pixels_other": "{{count}} px",
+      "lineHeight": "Line height",
+      "cursorStyle": "Cursor",
+      "cursors": {
+        "bar": "Bar",
+        "block": "Block",
+        "underline": "Underline"
+      },
+      "cursorBlink": "Blinking cursor",
+      "scrollback": "Scrollback",
+      "lines_one": "{{count}} line",
+      "lines_other": "{{count}} lines",
+      "copyOnSelect": "Copy on select"
+    },
+    "availability": {
+      "enabled": "Check which machines are reachable",
+      "enabledHelp": "TunL opens a TCP connection to each machine's port, sends nothing and closes it. Never for a machine behind a jump host.",
+      "interval": "Check every",
+      "every": {
+        "seconds_one": "{{count}} second",
+        "seconds_other": "{{count}} seconds",
+        "minutes_one": "{{count}} minute",
+        "minutes_other": "{{count}} minutes",
+        "hours_one": "{{count}} hour",
+        "hours_other": "{{count}} hours"
+      }
+    },
+    "about": {
+      "version": "Version {{version}}",
+      "licence": "Free software, GPL-3.0-or-later",
+      "repository": "Source code",
+      "configDir": "Configuration folder",
+      "logDir": "Logs folder",
+      "showFolder": "Show"
+    }
+  },
   "app": {
     "name": "TunL",
     "tagline": "SSH, SFTP and RDP connection manager"
@@ -102,7 +172,8 @@
   "tabs": {
     "label": "Open sessions",
     "new": "New session",
-    "close": "Close {{name}}"
+    "close": "Close {{name}}",
+    "closeSettings": "Close Settings"
   },
   "sessions": {
     "connecting": "Connecting to {{name}}…",
