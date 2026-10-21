@@ -38,6 +38,11 @@ sudo dnf install ./tunl-*.x86_64.rpm     # Fedora
 chmod +x tunl_*_amd64.AppImage && ./tunl_*_amd64.AppImage
 ```
 
+You can also build a Flatpak for immutable distros (Silverblue, Kinoite, SteamOS…) and Flathub: it builds offline from
+the two files in `packaging/flatpak/` (regenerate them with `npm run flatpak:sources` after a lockfile changes), with
+`flatpak-builder --user --install --force-clean build packaging/flatpak/io.github.fleorens.TunL.yml`, needing the GNOME 51
+runtime and the `rust-stable`, `node22` Flathub extensions.
+
 What TunL relies on, beside the package's own dependencies (WebKitGTK 4.1):
 - a **Secret Service** keyring (KWallet on Plasma, GNOME Keyring elsewhere) to remember passwords;
 - **FreeRDP 3** for RDP: `freerdp3-sdl` (Debian, Ubuntu), `freerdp` (Fedora, Arch). TunL tells you when it is
@@ -91,7 +96,7 @@ npm run dev           # the interface only, in a browser at http://localhost:142
 npm run tauri build   # the .deb, .rpm and AppImage packages, in src-tauri/target/release/bundle/
 ```
 
-`npm run dev` answers every backend call with an in-memory mock (the status bar says "Mock backend"): handy to look
+`npm run dev` answers every backend call with an in-memory mock (the status bar says “Mock backend”): handy to look
 at the interface, but only `npm run tauri dev` proves that the app works.
 
 ### Check everything
