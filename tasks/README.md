@@ -139,7 +139,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
 | T31 | Onglet Paramètres : apparence, terminal, disponibilité, à propos | T30b | moyen | Sonnet 5 · medium | livrée |
-| T31b | Paramètres : SSH (valeurs par défaut, serveurs connus), SFTP (dossier de téléchargement), RDP (client) | T31 | moyen | Sonnet 5 · medium | prête |
+| T31b | Paramètres : SSH (valeurs par défaut, serveurs connus), SFTP (dossier de téléchargement), RDP (client) | T31 | moyen | Sonnet 5 · medium | livrée |
 | T32 | Export / import JSON des connexions (sans secrets), section « Sauvegarde » des Paramètres | T31b | faible | Sonnet 5 · medium | prête |
 | T33 | Animations : tunnel de connexion, coche tracée, « Réduire les animations » aussi pour le CSS | T32 | moyen | Sonnet 5 · medium | prête |
 | T34 | Accessibilité et clavier : `IconButton` partout, flèches dans la sidebar et les onglets, aide F1 | T33 | moyen | Sonnet 5 · medium | prête |

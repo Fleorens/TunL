@@ -6,6 +6,7 @@ import type { ConnectionTemplates } from "@/bindings/ConnectionTemplates";
 import type { Group } from "@/bindings/Group";
 import type { GroupInput } from "@/bindings/GroupInput";
 import type { ImportPreview } from "@/bindings/ImportPreview";
+import type { KnownHostEntry } from "@/bindings/KnownHostEntry";
 import type { ProbeResult } from "@/bindings/ProbeResult";
 import type { PromptAnswer } from "@/bindings/PromptAnswer";
 import type { RdpClient } from "@/bindings/RdpClient";
@@ -176,6 +177,9 @@ export const ipc = {
   promptAnswer: (id: string, answer: PromptAnswer) => call<void>("prompt_answer", { id, answer }),
   knownHostRemove: (host: string, port: number) =>
     call<number>("known_host_remove", { host, port }),
+
+  // Known hosts (T31b): the hosts TunL trusts, as the Settings tab lists them.
+  knownHostsList: () => call<KnownHostEntry[]>("known_hosts_list"),
 
   // RDP (T27): the FreeRDP 3 client TunL would launch with, or none.
   rdpDetect: () => call<RdpClient>("rdp_detect"),

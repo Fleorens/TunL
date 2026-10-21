@@ -14,6 +14,8 @@ pub mod transfer;
 pub mod wol;
 
 #[cfg(test)]
+mod ipc_known_hosts_tests;
+#[cfg(test)]
 mod ipc_prompts_tests;
 
 #[cfg(test)]

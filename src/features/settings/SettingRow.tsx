@@ -11,7 +11,10 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
-/** The label and its help on the left, the control on the right. */
+/**
+ * The label and its help on the left, the control on the right. Without a control, the label is a `<p>` (there is
+ * nothing to associate it to) and the right column is not rendered.
+ */
 function SettingRow({
   id,
   label,
@@ -21,15 +24,19 @@ function SettingRow({
   id?: string;
   label: string;
   description?: string;
-  children: ReactNode;
+  children?: ReactNode;
 }) {
   return (
     <div className="flex items-center justify-between gap-6 py-3">
       <div className="grid gap-1">
-        {id ? (
+        {id && children ? (
           <Label htmlFor={id} className="text-sm font-medium">
             {label}
           </Label>
+        ) : id ? (
+          <p id={id} className="text-sm font-medium">
+            {label}
+          </p>
         ) : (
           <span className="text-sm font-medium">{label}</span>
         )}

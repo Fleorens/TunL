@@ -1,10 +1,12 @@
-//! The two commands the frontend calls to answer a prompt and to remove a known host (T17).
+//! The commands the frontend calls to answer a prompt, to list TunL's known hosts, and to remove one
+//! (T17, T31b).
 use tauri::State;
 use uuid::Uuid;
 
 use crate::error::{AppError, AppResult};
 use crate::prompts::PromptAnswer;
 use crate::ssh::known_hosts::host_pattern;
+use crate::ssh::known_hosts_file::KnownHostEntry;
 use crate::state::AppState;
 
 /// Answer the prompt `id` from the UI. An unknown id is `not_found`.
@@ -36,4 +38,10 @@ pub async fn known_host_remove(
         log::info!("removed {removed} known-host line(s) for {pattern}");
     }
     Ok(removed as u32)
+}
+
+/// List TunL's own known hosts, as the Settings tab lists them (T31b). No argument.
+#[tauri::command]
+pub async fn known_hosts_list(state: State<'_, AppState>) -> AppResult<Vec<KnownHostEntry>> {
+    Ok(state.known_hosts.list_own())
 }

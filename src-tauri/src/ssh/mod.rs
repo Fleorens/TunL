@@ -23,6 +23,8 @@ mod error_tests;
 #[cfg(test)]
 mod known_hosts_format_tests;
 #[cfg(test)]
+mod known_hosts_list_tests;
+#[cfg(test)]
 mod known_hosts_tests;
 #[cfg(test)]
 mod session_tests;

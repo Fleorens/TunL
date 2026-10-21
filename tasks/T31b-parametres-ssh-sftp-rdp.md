@@ -406,10 +406,10 @@ test("the RDP client found, then a program chosen by hand", async ({ page }) => 
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T31b --check` affiche `OK` partout.
-- [ ] `git diff src-tauri/capabilities/default.json` est vide (S14).
-- [ ] `grep -rn "plugin-dialog" src` ne trouve que `src/lib/files.ts`.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T31b --check` affiche `OK` partout.
+- [x] `git diff src-tauri/capabilities/default.json` est vide (S14).
+- [x] `grep -rn "plugin-dialog" src` ne trouve que `src/lib/files.ts`.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 - [ ] Visuel : la liste des serveurs connus reste lisible avec une longue empreinte (tronquée, pas de défilement
       horizontal), en clair et en sombre.
 

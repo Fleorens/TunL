@@ -5,6 +5,9 @@
     "sections": {
       "appearance": "Appearance",
       "terminal": "Terminal",
+      "ssh": "SSH",
+      "sftp": "SFTP",
+      "rdp": "RDP",
       "availability": "Availability",
       "about": "About"
     },
@@ -46,6 +49,38 @@
       "lines_one": "{{count}} line",
       "lines_other": "{{count}} lines",
       "copyOnSelect": "Copy on select"
+    },
+    "ssh": {
+      "defaults": "Defaults",
+      "defaultsHelp": "For connections that set none.",
+      "connectTimeout": "Connection timeout",
+      "keepalive": "Keepalive",
+      "keepaliveHelp": "Keeps idle sessions open through firewalls.",
+      "off": "Off",
+      "seconds_one": "{{count}} second",
+      "seconds_other": "{{count}} seconds",
+      "knownHosts": "Known hosts",
+      "knownHostsHelp": "Servers whose key TunL trusts. Hosts from ~/.ssh/known_hosts are not listed: TunL never changes that file.",
+      "noKnownHosts": "No server yet. TunL asks to check a server's key the first time it connects.",
+      "forget": "Forget {{host}}",
+      "forgetTitle": "Forget the key of {{host}}?",
+      "forgetDescription": "The next connection to this server will show its fingerprint again, for you to check.",
+      "forgetConfirm": "Forget"
+    },
+    "sftp": {
+      "downloadDir": "Download folder",
+      "systemDownloads": "The system Downloads folder",
+      "useSystem": "Use the system folder",
+      "choose": "Choose…"
+    },
+    "rdp": {
+      "client": "FreeRDP client",
+      "found": "{{path}} (version {{version}})",
+      "missing": "Not found. Install FreeRDP 3, or choose the program below.",
+      "path": "Program",
+      "pathAuto": "Found automatically",
+      "useFound": "Find automatically",
+      "choose": "Choose…"
     },
     "availability": {
       "enabled": "Check which machines are reachable",

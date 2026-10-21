@@ -9,6 +9,10 @@ export const LINE_HEIGHTS = [1, 1.1, 1.2, 1.25, 1.3, 1.4, 1.5, 1.75, 2] as const
 export const SCROLLBACKS = [1000, 5000, 10000, 25000, 50000, 100000] as const;
 /** The probe intervals the availability section offers, in seconds. */
 export const PROBE_INTERVALS = [15, 30, 60, 120, 300, 900, 3600] as const;
+/** The connection timeouts the SSH section offers, in seconds. */
+export const CONNECT_TIMEOUTS = [5, 10, 15, 30, 60, 120] as const;
+/** The keepalive intervals the SSH section offers, in seconds (0 disables it). */
+export const KEEPALIVES = [0, 15, 30, 60, 120, 300] as const;
 /** The longest a font name may be (the backend's limit). */
 export const FONT_FAMILY_MAX = 64;
 
@@ -19,6 +23,13 @@ export const FONT_FAMILY_MAX = 64;
 export function withCurrent<T>(options: readonly T[], current: T): T[] {
   if (options.includes(current)) return [...options];
   return [...options, current].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+}
+
+/**
+ * The host and port as the Settings tab shows it: `host` on the default SSH port, `host:port` otherwise.
+ */
+export function hostLabel(host: string, port: number): string {
+  return port === 22 ? host : `${host}:${port}`;
 }
 
 /**

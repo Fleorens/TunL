@@ -2,7 +2,7 @@
 // painted (the shell hides it with `hidden`); each section is one card, rendered by its own component.
 
 import type { LucideIcon } from "lucide-react";
-import { Info, Palette, Radar, SquareTerminal } from "lucide-react";
+import { FolderTree, Info, KeyRound, Monitor, Palette, Radar, SquareTerminal } from "lucide-react";
 import type { ComponentType } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,16 +10,30 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { AboutSection } from "@/features/settings/sections/AboutSection";
 import { AppearanceSection } from "@/features/settings/sections/AppearanceSection";
 import { AvailabilitySection } from "@/features/settings/sections/AvailabilitySection";
+import { RdpSection } from "@/features/settings/sections/RdpSection";
+import { SftpSection } from "@/features/settings/sections/SftpSection";
+import { SshSection } from "@/features/settings/sections/SshSection";
 import { TerminalSection } from "@/features/settings/sections/TerminalSection";
 import { cn } from "@/lib/utils";
 
 /** The sections of the Settings tab, in display order. */
-export const SETTINGS_SECTIONS = ["appearance", "terminal", "availability", "about"] as const;
+export const SETTINGS_SECTIONS = [
+  "appearance",
+  "terminal",
+  "ssh",
+  "sftp",
+  "rdp",
+  "availability",
+  "about",
+] as const;
 type SectionKey = (typeof SETTINGS_SECTIONS)[number];
 
 const SECTION_ICONS: Record<SectionKey, LucideIcon> = {
   appearance: Palette,
   terminal: SquareTerminal,
+  ssh: KeyRound,
+  sftp: FolderTree,
+  rdp: Monitor,
   availability: Radar,
   about: Info,
 };
@@ -27,6 +41,9 @@ const SECTION_ICONS: Record<SectionKey, LucideIcon> = {
 const SECTION_COMPONENTS: Record<SectionKey, ComponentType> = {
   appearance: AppearanceSection,
   terminal: TerminalSection,
+  ssh: SshSection,
+  sftp: SftpSection,
+  rdp: RdpSection,
   availability: AvailabilitySection,
   about: AboutSection,
 };
