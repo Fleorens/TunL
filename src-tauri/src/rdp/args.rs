@@ -1,9 +1,10 @@
 //! Build the FreeRDP arguments for a connection.
 //!
-//! `build_args` is a pure function: it returns the argument lines in the exact
+//! `build_tunnel_args` is a pure function: it returns the argument lines in the exact
 //! order FreeRDP expects them, one per line on stdin. It is fully covered by
 //! `args_tests.rs`, and it re-checks every input (defense in depth) even though
-//! the settings were already validated when stored.
+//! the settings were already validated when stored. `build_args` is the direct
+//! form (no tunnel, no server name); `build_tunnel_args` is used behind a bastion.
 
 use std::fmt;
 
@@ -62,8 +63,12 @@ impl fmt::Debug for RdpArgs {
 }
 
 /// The arguments, in the order FreeRDP expects them (see `docs/01-architecture.md` §8).
-pub fn build_args(
+///
+/// `server_name` is the real host, passed right after `/v:` behind a bastion so FreeRDP checks the
+/// certificate against it (T28c); `None` for a direct connection.
+pub fn build_tunnel_args(
     endpoint: &RdpEndpoint<'_>,
+    server_name: Option<&str>,
     settings: &RdpSettings,
     credentials: &RdpCredentials,
 ) -> AppResult<RdpArgs> {
@@ -71,6 +76,9 @@ pub fn build_args(
     // never echoes the offending value (S7).
     no_control("host", endpoint.host)?;
     no_control("name", endpoint.name)?;
+    if let Some(server_name) = server_name {
+        no_control("serverName", server_name)?;
+    }
     if let Some(username) = &credentials.username {
         no_control("username", username)?;
     }
@@ -92,7 +100,13 @@ pub fn build_args(
     };
     lines.push(Zeroizing::new(address));
 
-    // 2-4. Credentials (empty user/domain are omitted, not written as `/u:`).
+    // 2. The real host name, right after the address, so FreeRDP files and checks the certificate
+    // against it (T28c). Without a tunnel, no extra line.
+    if let Some(server_name) = server_name {
+        lines.push(Zeroizing::new(format!("/server-name:{server_name}")));
+    }
+
+    // 3-5. Credentials (empty user/domain are omitted, not written as `/u:`).
     if let Some(username) = &credentials.username
         && !username.is_empty()
     {
@@ -107,10 +121,10 @@ pub fn build_args(
         lines.push(Zeroizing::new(format!("/p:{}", password.expose())));
     }
 
-    // 5. The window title.
+    // 6. The window title.
     lines.push(Zeroizing::new(format!("/t:{} — TunL", endpoint.name)));
 
-    // 6. Window layout.
+    // 7. Window layout.
     match settings.display {
         RdpDisplay::Fit => {}
         RdpDisplay::Fullscreen => {
@@ -124,14 +138,14 @@ pub fn build_args(
         }
     }
 
-    // 7. Resolution: dynamic, or smart-sizing only when fitting (they conflict).
+    // 8. Resolution: dynamic, or smart-sizing only when fitting (they conflict).
     if settings.dynamic_resolution {
         lines.push(Zeroizing::new("/dynamic-resolution".to_string()));
     } else if matches!(settings.display, RdpDisplay::Fit) {
         lines.push(Zeroizing::new("/smart-sizing".to_string()));
     }
 
-    // 8. Clipboard.
+    // 9. Clipboard.
     let clipboard = if settings.clipboard {
         "+clipboard"
     } else {
@@ -139,7 +153,7 @@ pub fn build_args(
     };
     lines.push(Zeroizing::new(clipboard.to_string()));
 
-    // 9. Audio.
+    // 10. Audio.
     let audio = match settings.audio {
         RdpAudio::Local => "/sound",
         RdpAudio::Remote => "/audio-mode:1",
@@ -147,22 +161,31 @@ pub fn build_args(
     };
     lines.push(Zeroizing::new(audio.to_string()));
 
-    // 10. Home directory.
+    // 11. Home directory.
     if settings.share_home {
         lines.push(Zeroizing::new("+home-drive".to_string()));
     }
 
-    // 11. Certificate policy (Prompt lets FreeRDP ask in its own window).
+    // 12. Certificate policy (Prompt lets FreeRDP ask in its own window).
     if settings.cert_policy == RdpCertPolicy::Tofu {
         lines.push(Zeroizing::new("/cert:tofu".to_string()));
     }
 
-    // 12. Extra arguments, last, so they can override what came before.
+    // 13. Extra arguments, last, so they can override what came before.
     for arg in extra {
         lines.push(Zeroizing::new(arg));
     }
 
     Ok(RdpArgs(lines))
+}
+
+/// The direct form: no tunnel, no server name (`build_tunnel_args` with `None`).
+pub fn build_args(
+    endpoint: &RdpEndpoint<'_>,
+    settings: &RdpSettings,
+    credentials: &RdpCredentials,
+) -> AppResult<RdpArgs> {
+    build_tunnel_args(endpoint, None, settings, credentials)
 }
 
 /// Reject any control character in a field, without echoing it (S4, S5, S7).

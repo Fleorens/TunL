@@ -12,11 +12,11 @@ use uuid::Uuid;
 
 use crate::error::{AppError, AppResult};
 use crate::model::{ProtocolSettings, RdpSettings, SshDefaults};
-use crate::rdp::args::{RdpCredentials, RdpEndpoint, build_args};
+use crate::rdp::args::{RdpCredentials, RdpEndpoint, build_tunnel_args};
 use crate::rdp::launch::{launch, watch};
 use crate::sessions::{SessionEvent, SessionSink, StepKind};
 use crate::ssh::SshContext;
-use crate::ssh::forward::{bind_local, forward};
+use crate::ssh::forward::{bind_tunnel, forward};
 use crate::ssh::link::{SshLink, establish};
 use crate::ssh::session::{SessionTarget, SshTarget, connect_step, resolve_target};
 use crate::store::Store;
@@ -101,9 +101,10 @@ async fn establish_bastion(
     let link = establish(ctx, &via, id, cancel.clone(), sink).await?;
     let link = Arc::new(link);
 
-    // The `Open` step opens a free loopback port; nothing off this machine can reach it (S15).
+    // The `Open` step opens the connection's own loopback port; nothing off this machine can reach
+    // it (S15). A stable port lets FreeRDP re-find the certificate it trusted last time (T28c).
     let listener = match connect_step(cancel.clone(), sink, StepKind::Open, "tunnel", || async {
-        bind_local().await
+        bind_tunnel(target.connection_id).await
     })
     .await
     {
@@ -170,6 +171,9 @@ pub async fn run_rdp_session(ctx: SshContext, run: RdpRun, sink: Arc<dyn Session
         cancel,
     } = run;
 
+    // The real host name, before the bastion replaces `target.host` with the tunnel (T28c).
+    let server_name = target.via.as_ref().map(|_| target.host.clone());
+
     // Behind a bastion: establish the link and open the tunnel (the target's address becomes the tunnel).
     let link: Option<Arc<SshLink>> = match target.via.clone() {
         None => None,
@@ -193,7 +197,12 @@ pub async fn run_rdp_session(ctx: SshContext, run: RdpRun, sink: Arc<dyn Session
         port: target.port,
     };
     let child = match connect_step(cancel.clone(), &*sink, StepKind::Launch, &label, || async {
-        let args = build_args(&endpoint, &target.settings, &credentials)?;
+        let args = build_tunnel_args(
+            &endpoint,
+            server_name.as_deref(),
+            &target.settings,
+            &credentials,
+        )?;
         launch(&client, &args).await
     })
     .await

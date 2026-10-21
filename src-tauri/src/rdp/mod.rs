@@ -9,3 +9,5 @@ mod args_tests;
 mod detect_tests;
 #[cfg(test)]
 mod launch_tests;
+#[cfg(test)]
+mod tunnel_cert_tests;
