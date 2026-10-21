@@ -29,8 +29,8 @@ import {
   type QuickTarget,
 } from "@/features/palette/quick-connect";
 import { openQuickSession, openSession } from "@/features/sessions/open-session";
+import { useSessions } from "@/features/sessions/store";
 import { useSettings } from "@/features/settings/store";
-import { notifyComingSoon } from "@/features/shell/coming-soon";
 import { SHORTCUTS, type ShortcutId } from "@/features/shell/shortcuts";
 import { type PaletteMode, useUi } from "@/features/shell/ui-store";
 import { notifyError } from "@/lib/errors";
@@ -268,7 +268,7 @@ function runAction(id: PaletteActionId) {
       useUi.getState().openShortcuts();
       break;
     case "settings":
-      notifyComingSoon();
+      useSessions.getState().openSettings();
       break;
   }
 }

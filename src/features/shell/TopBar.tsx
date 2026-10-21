@@ -4,7 +4,7 @@ import { Logo, Wordmark } from "@/components/Logo";
 import { ShortcutHint } from "@/components/ShortcutHint";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { notifyComingSoon } from "@/features/shell/coming-soon";
+import { useSessions } from "@/features/sessions/store";
 import { useUi } from "@/features/shell/ui-store";
 
 export function TopBar() {
@@ -53,7 +53,7 @@ export function TopBar() {
             variant="ghost"
             size="icon-sm"
             aria-label={t("topbar.settings")}
-            onClick={notifyComingSoon}
+            onClick={() => useSessions.getState().openSettings()}
           >
             <Settings2 className="size-4" />
           </Button>
