@@ -7,12 +7,15 @@ use serde::{Deserialize, Serialize};
 use crate::error::{AppError, AppResult, ErrorKind};
 use crate::model::{Connection, Group, Settings, normalize_settings};
 
+pub mod exchange;
 pub mod file;
 mod migrate;
 pub mod ops;
 
 pub use migrate::migrate_to_current;
 
+#[cfg(test)]
+mod exchange_tests;
 #[cfg(test)]
 mod ops_tests;
 

@@ -6,6 +6,7 @@ import type { ConnectionTemplates } from "@/bindings/ConnectionTemplates";
 import type { Group } from "@/bindings/Group";
 import type { GroupInput } from "@/bindings/GroupInput";
 import type { ImportPreview } from "@/bindings/ImportPreview";
+import type { ImportReport } from "@/bindings/ImportReport";
 import type { KnownHostEntry } from "@/bindings/KnownHostEntry";
 import type { ProbeResult } from "@/bindings/ProbeResult";
 import type { PromptAnswer } from "@/bindings/PromptAnswer";
@@ -68,6 +69,10 @@ export const ipc = {
   // Store
   storeLoad: () => call<StoreSnapshot>("store_load"),
   connectionTemplates: () => call<ConnectionTemplates>("connection_templates"),
+
+  // Export and import (T32): the whole store as one JSON file, without secrets (S1).
+  storeExport: (path: string) => call<number>("store_export", { path }),
+  storeImport: (path: string) => call<ImportReport>("store_import", { path }),
 
   // Connections
   connectionCreate: (input: ConnectionInput) => call<Connection>("connection_create", { input }),

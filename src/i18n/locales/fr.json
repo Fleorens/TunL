@@ -9,6 +9,7 @@
       "sftp": "SFTP",
       "rdp": "RDP",
       "availability": "Disponibilité",
+      "backup": "Sauvegarde",
       "about": "À propos"
     },
     "appearance": {
@@ -95,6 +96,14 @@
         "hours_other": "{{count}} heures"
       }
     },
+    "backup": {
+      "export": "Exporter les connexions",
+      "exportHelp": "Les groupes et les connexions, dans un fichier JSON. Aucun mot de passe ne part avec : ils restent dans le trousseau.",
+      "exportButton": "Exporter…",
+      "import": "Importer des connexions",
+      "importHelp": "Depuis un export de TunL. Une connexion déjà présente (même hôte, port et utilisateur) est laissée de côté.",
+      "importButton": "Importer…"
+    },
     "about": {
       "version": "Version {{version}}",
       "licence": "Logiciel libre, GPL-3.0-or-later",
@@ -103,6 +112,17 @@
       "logDir": "Dossier des journaux",
       "showFolder": "Afficher"
     }
+  },
+  "exchange": {
+    "exported_one": "{{count}} connexion exportée",
+    "exported_other": "{{count}} connexions exportées",
+    "imported": "Import terminé",
+    "added_one": "{{count}} connexion ajoutée",
+    "added_other": "{{count}} connexions ajoutées",
+    "skipped_one": "{{count}} déjà présente",
+    "skipped_other": "{{count}} déjà présentes",
+    "invalid_one": "{{count}} refusée (invalide)",
+    "invalid_other": "{{count}} refusées (invalides)"
   },
   "app": {
     "name": "TunL",

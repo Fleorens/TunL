@@ -1,5 +1,6 @@
 pub mod app;
 pub mod connections;
+pub mod exchange;
 pub mod groups;
 pub mod import;
 pub mod probe;
@@ -41,3 +42,6 @@ mod ipc_ssh_tests;
 
 #[cfg(test)]
 mod ipc_transfer_tests;
+
+#[cfg(test)]
+mod ipc_exchange_tests;

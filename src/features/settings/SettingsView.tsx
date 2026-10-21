@@ -2,7 +2,16 @@
 // painted (the shell hides it with `hidden`); each section is one card, rendered by its own component.
 
 import type { LucideIcon } from "lucide-react";
-import { FolderTree, Info, KeyRound, Monitor, Palette, Radar, SquareTerminal } from "lucide-react";
+import {
+  DatabaseBackup,
+  FolderTree,
+  Info,
+  KeyRound,
+  Monitor,
+  Palette,
+  Radar,
+  SquareTerminal,
+} from "lucide-react";
 import type { ComponentType } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,6 +19,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { AboutSection } from "@/features/settings/sections/AboutSection";
 import { AppearanceSection } from "@/features/settings/sections/AppearanceSection";
 import { AvailabilitySection } from "@/features/settings/sections/AvailabilitySection";
+import { BackupSection } from "@/features/settings/sections/BackupSection";
 import { RdpSection } from "@/features/settings/sections/RdpSection";
 import { SftpSection } from "@/features/settings/sections/SftpSection";
 import { SshSection } from "@/features/settings/sections/SshSection";
@@ -24,6 +34,7 @@ export const SETTINGS_SECTIONS = [
   "sftp",
   "rdp",
   "availability",
+  "backup",
   "about",
 ] as const;
 type SectionKey = (typeof SETTINGS_SECTIONS)[number];
@@ -35,6 +46,7 @@ const SECTION_ICONS: Record<SectionKey, LucideIcon> = {
   sftp: FolderTree,
   rdp: Monitor,
   availability: Radar,
+  backup: DatabaseBackup,
   about: Info,
 };
 
@@ -45,6 +57,7 @@ const SECTION_COMPONENTS: Record<SectionKey, ComponentType> = {
   sftp: SftpSection,
   rdp: RdpSection,
   availability: AvailabilitySection,
+  backup: BackupSection,
   about: AboutSection,
 };
 

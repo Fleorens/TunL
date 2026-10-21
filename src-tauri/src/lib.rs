@@ -112,6 +112,8 @@ pub fn invoke_handler<R: tauri::Runtime>()
         commands::app::app_info,
         commands::store::store_load,
         commands::store::connection_templates,
+        commands::exchange::store_export,
+        commands::exchange::store_import,
         commands::connections::connection_create,
         commands::connections::connection_update,
         commands::connections::connection_duplicate,

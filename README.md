@@ -24,7 +24,7 @@ A modern SSH, SFTP and RDP connection manager for Linux, built with Tauri 2, Rea
 | SFTP uploads: Upload files (several at once) and drag-and-drop from the desktop, beside an existing name (T26b) | |
 | RDP tab: FreeRDP in its own window, session card with duration, translated end reason, filtered log, relaunch, install help when the client is missing (T28b) | |
 | RDP through a bastion: a stable tunnel port and the real host name so FreeRDP re-checks the certificate it trusted (T28c) | |
-| Settings tab: appearance, terminal (applied live), SSH defaults and known-hosts list, SFTP download folder, FreeRDP client (program detection, manual choice), availability probes, about with the config and log folders (T31, T31b) | |
+| Settings tab: appearance, terminal (applied live), SSH defaults and known-hosts list, SFTP download folder, FreeRDP client (program detection, manual choice), availability probes, about with the config and log folders, export/import connections as JSON (no secrets) (T31, T31b, T32) | |
 
 The progress of each task is in [`tasks/README.md`](tasks/README.md).
 
