@@ -1,4 +1,5 @@
 import { Channel, invoke, isTauri } from "@tauri-apps/api/core";
+import { getCurrentWindow, type Window } from "@tauri-apps/api/window";
 import type { AppInfo } from "@/bindings/AppInfo";
 import type { Connection } from "@/bindings/Connection";
 import type { ConnectionInput } from "@/bindings/ConnectionInput";
@@ -17,7 +18,9 @@ import type { SessionEvent } from "@/bindings/SessionEvent";
 import type { SessionTarget } from "@/bindings/SessionTarget";
 import type { Settings } from "@/bindings/Settings";
 import type { StoreSnapshot } from "@/bindings/StoreSnapshot";
+import type { TitleBarMode } from "@/bindings/TitleBarMode";
 import type { TransferEvent } from "@/bindings/TransferEvent";
+import type { WindowChrome } from "@/bindings/WindowChrome";
 import { mockInvoke } from "./ipc-mock";
 
 type Args = Record<string, unknown>;
@@ -27,6 +30,15 @@ export const isMockBackend = !isTauri();
 
 function call<T>(command: string, args?: Args): Promise<T> {
   return isMockBackend ? mockInvoke<T>(command, args) : invoke<T>(command, args);
+}
+
+/**
+ * Run a window action inside Tauri only (`getCurrentWindow()` throws outside the window, like `Channel`). The
+ * three window buttons (T35) go through here; the mock does nothing.
+ */
+function runOnWindow(run: (window: Window) => void): void {
+  if (!isTauri()) return;
+  run(getCurrentWindow());
 }
 
 /** Where a shell session reports back to the UI: its events, and its shell bytes. */
@@ -93,6 +105,13 @@ export const ipc = {
   // Settings
   settingsGet: () => call<Settings>("settings_get"),
   settingsUpdate: (settings: Settings) => call<Settings>("settings_update", { settings }),
+
+  // Window (T35): drop (or keep) the decorations for the chosen title bar, and the window buttons.
+  windowApplyTitleBar: (mode: TitleBarMode) =>
+    call<WindowChrome>("window_apply_title_bar", { mode }),
+  windowMinimize: () => runOnWindow((window) => window.minimize()),
+  windowToggleMaximize: () => runOnWindow((window) => window.toggleMaximize()),
+  windowClose: () => runOnWindow((window) => window.close()),
 
   // Import: preview a `~/.ssh/config`, then apply the selected candidates.
   importSshConfigPreview: (path: string | null) =>

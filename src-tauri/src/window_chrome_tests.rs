@@ -25,14 +25,26 @@ fn the_mode_is_stored_in_lowercase_under_title_bar() {
         serde_json::to_value(TitleBarMode::Custom).unwrap(),
         serde_json::json!("custom")
     );
-    let ui = UiSettings { title_bar: TitleBarMode::Custom, ..UiSettings::default() };
-    assert_eq!(serde_json::to_value(&ui).unwrap()["titleBar"], serde_json::json!("custom"));
+    let ui = UiSettings {
+        title_bar: TitleBarMode::Custom,
+        ..UiSettings::default()
+    };
+    assert_eq!(
+        serde_json::to_value(&ui).unwrap()["titleBar"],
+        serde_json::json!("custom")
+    );
 }
 
 #[test]
 fn without_the_variable_the_setting_applies() {
-    assert_eq!(effective_title_bar(TitleBarMode::Custom, None), chrome(TitleBarMode::Custom, false));
-    assert_eq!(effective_title_bar(TitleBarMode::Native, None), chrome(TitleBarMode::Native, false));
+    assert_eq!(
+        effective_title_bar(TitleBarMode::Custom, None),
+        chrome(TitleBarMode::Custom, false)
+    );
+    assert_eq!(
+        effective_title_bar(TitleBarMode::Native, None),
+        chrome(TitleBarMode::Native, false)
+    );
 }
 
 #[test]

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { Protocol } from "@/bindings/Protocol";
+import type { WindowChrome } from "@/bindings/WindowChrome";
 
 /** Where the editor comes from: create (optionally prefilled with a protocol) or edit an existing connection. */
 export type EditorTarget =
@@ -39,6 +40,14 @@ interface UiState {
   importOpen: boolean;
   openImport: () => void;
   closeImport: () => void;
+
+  /** The title bar the window really has (T35): the setting, unless the system bar is forced. */
+  windowChrome: WindowChrome;
+  setWindowChrome: (chrome: WindowChrome) => void;
+
+  /** Whether the window is maximized (T35), so the maximize button can become restore. */
+  maximized: boolean;
+  setMaximized: (maximized: boolean) => void;
 }
 
 export const useUi = create<UiState>()((set) => ({
@@ -60,4 +69,10 @@ export const useUi = create<UiState>()((set) => ({
   importOpen: false,
   openImport: () => set({ importOpen: true }),
   closeImport: () => set({ importOpen: false }),
+
+  windowChrome: { mode: "native", forced: false },
+  setWindowChrome: (chrome) => set({ windowChrome: chrome }),
+
+  maximized: false,
+  setMaximized: (maximized) => set({ maximized }),
 }));

@@ -6,13 +6,18 @@ import { ShortcutHint } from "@/components/ShortcutHint";
 import { Button } from "@/components/ui/button";
 import { useSessions } from "@/features/sessions/store";
 import { useUi } from "@/features/shell/ui-store";
+import { WindowControls } from "@/features/shell/WindowControls";
 
 export function TopBar() {
   const { t } = useTranslation();
   const toggleSidebar = useUi((state) => state.toggleSidebar);
+  const windowChrome = useUi((state) => state.windowChrome);
 
   return (
-    <header className="flex h-12 shrink-0 items-center gap-2 border-b bg-sidebar px-2 select-none">
+    <header
+      data-tauri-drag-region={windowChrome.mode === "custom"}
+      className="flex h-12 shrink-0 items-center gap-2 border-b bg-sidebar px-2 select-none"
+    >
       <IconButton
         variant="ghost"
         size="sm"
@@ -22,10 +27,13 @@ export function TopBar() {
         <PanelLeft className="size-4" />
       </IconButton>
 
-      <Logo size={20} />
-      <Wordmark />
+      <Logo size={20} data-tauri-drag-region={windowChrome.mode === "custom"} />
+      <Wordmark data-tauri-drag-region={windowChrome.mode === "custom"} />
 
-      <div className="flex flex-1 justify-center">
+      <div
+        data-tauri-drag-region={windowChrome.mode === "custom"}
+        className="flex flex-1 justify-center"
+      >
         <button
           type="button"
           onClick={() => useUi.getState().openPalette("all")}
@@ -50,6 +58,9 @@ export function TopBar() {
       >
         <Settings2 className="size-4" />
       </IconButton>
+
+      <div className="mx-1 h-6 w-px bg-border" />
+      <WindowControls />
     </header>
   );
 }

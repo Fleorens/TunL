@@ -2,8 +2,8 @@
 //! system one, or the window refused to drop its decorations. Pure helpers here; the command and the
 //! startup call in `lib.rs` apply them to the real window.
 use serde::Serialize;
-use ts_rs::TS;
 use tauri::{Runtime, WebviewWindow};
+use ts_rs::TS;
 
 use crate::error::AppResult;
 use crate::model::TitleBarMode;
@@ -28,16 +28,22 @@ pub fn effective_title_bar(setting: TitleBarMode, env: Option<&str>) -> WindowCh
         .map(|value| value.trim().eq_ignore_ascii_case("native"))
         .unwrap_or(false);
     WindowChrome {
-        mode: if forced { TitleBarMode::Native } else { setting },
+        mode: if forced {
+            TitleBarMode::Native
+        } else {
+            setting
+        },
         forced,
     }
 }
 
 /// Applies the effective bar to the window (`set_decorations(mode == Native)`). If `set_decorations(false)`
 /// fails: warn, decorations back on, and `WindowChrome { mode: Native, forced: true }`.
-pub fn apply_title_bar<R: Runtime>(window: &WebviewWindow<R>, setting: TitleBarMode) -> WindowChrome {
-    let effective =
-        effective_title_bar(setting, std::env::var(TITLE_BAR_ENV).ok().as_deref());
+pub fn apply_title_bar<R: Runtime>(
+    window: &WebviewWindow<R>,
+    setting: TitleBarMode,
+) -> WindowChrome {
+    let effective = effective_title_bar(setting, std::env::var(TITLE_BAR_ENV).ok().as_deref());
     match window.set_decorations(effective.mode == TitleBarMode::Native) {
         Ok(()) => effective,
         Err(error) => {

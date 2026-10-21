@@ -1,14 +1,17 @@
-// Listen for the prompts the backend poses (T21b) and the files dropped on the window (T26b). This is the ONLY file
-// that calls `listen()` and `onDragDropEvent`.
+// Listen for the prompts the backend poses (T21b), the files dropped on the window (T26b), and the window
+// resize that toggles maximize (T35). This is the ONLY file that calls `listen()`, `onDragDropEvent`, and
+// `onResized`.
 //
 // In Tauri, `listen()` resolves to the unsubscribe function asynchronously: keep it, and unsubscribe even if the
 // caller goes away before it resolves (docs/01 §7). In the mock and tests, the prompt bus is the synchronous
-// subscriber registry in `lib/mock/prompts.ts`, and dropping does nothing.
+// subscriber registry in `lib/mock/prompts.ts`, the resize bus in `lib/mock/window.ts`, and dropping does nothing.
 import { isTauri } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { type DragDropEvent, getCurrentWebview } from "@tauri-apps/api/webview";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { PromptRequest } from "@/bindings/PromptRequest";
 import { subscribeMockPrompts } from "./mock/prompts";
+import { subscribeMockWindowMaximized } from "./mock/window";
 
 /** The global event the backend emits a prompt on. */
 export const PROMPT_EVENT = "tunl://prompt";
@@ -28,6 +31,36 @@ export function onPrompt(handler: (request: PromptRequest) => void): () => void 
     };
   }
   return subscribeMockPrompts(handler);
+}
+
+/**
+ * Calls `handler` when the window is maximized or restored (T35): once now with the current state, then on every
+ * resize. Returns the unsubscribe function.
+ */
+export function onWindowMaximized(handler: (maximized: boolean) => void): () => void {
+  if (isTauri()) {
+    let unlisten: (() => void) | null = null;
+    let cancelled = false;
+    const window = getCurrentWindow();
+
+    // `isMaximized()` is async, so report the state once now and on every resize through it.
+    const report = (): void => {
+      window.isMaximized().then((maximized) => {
+        if (!cancelled) handler(maximized);
+      });
+    };
+
+    report();
+    void window.onResized(report).then((fn) => {
+      unlisten = fn;
+      if (cancelled) fn();
+    });
+    return () => {
+      cancelled = true;
+      unlisten?.();
+    };
+  }
+  return subscribeMockWindowMaximized(handler);
 }
 
 /** The drag-and-drop phases the window reports back (T26b). */
