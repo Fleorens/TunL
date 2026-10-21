@@ -282,10 +282,10 @@ test("F1 lists the keys of lists and files", async ({ page }) => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T34 --check` affiche `OK` partout.
-- [ ] `git grep -n 'size="icon' src/features src/components | grep -v "components/ui\|IconButton.tsx"` ne trouve rien.
-- [ ] `npm run rules` connaît la règle `icon-button`.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T34 --check` affiche `OK` partout.
+- [x] `git grep -n 'size="icon' src/features src/components | grep -v "components/ui\|IconButton.tsx"` ne trouve rien.
+- [x] `npm run rules` connaît la règle `icon-button`.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 - [ ] Visuel : l'anneau de focus se voit sur une ligne de la sidebar, un onglet et un bouton icône, en clair et en
       sombre ; les infobulles ne cachent pas le bouton voisin dans la barre d'outils SFTP.
 

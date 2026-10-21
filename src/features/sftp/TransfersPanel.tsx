@@ -6,6 +6,7 @@ import type { TFunction } from "i18next";
 import { ChevronDown, ChevronUp, FolderOpen, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { IconButton } from "@/components/IconButton";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Progress } from "@/components/ui/progress";
@@ -40,27 +41,27 @@ function rowAction(transfer: Transfer, t: TFunction) {
   if (transfer.status === "running") {
     const label = t("sftp.transfers.cancel", { name: transfer.name });
     return (
-      <Button
-        size="icon-xs"
+      <IconButton
+        size="xs"
         variant="ghost"
-        aria-label={label}
+        label={label}
         onClick={() => useTransfers.getState().cancel(transfer.id)}
       >
         <X aria-hidden />
-      </Button>
+      </IconButton>
     );
   }
   const path = transfer.path;
   if (transfer.status !== "done" || transfer.direction !== "download" || !path) return null;
   return (
-    <Button
-      size="icon-xs"
+    <IconButton
+      size="xs"
       variant="ghost"
-      aria-label={t("sftp.transfers.reveal", { name: transfer.name })}
+      label={t("sftp.transfers.reveal", { name: transfer.name })}
       onClick={() => void reveal(path)}
     >
       <FolderOpen aria-hidden />
-    </Button>
+    </IconButton>
   );
 }
 

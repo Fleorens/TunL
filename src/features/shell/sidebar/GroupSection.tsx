@@ -2,7 +2,7 @@ import { ChevronDown, ChevronRight, ChevronUp, MoreHorizontal, Pencil, Trash2 } 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Group } from "@/bindings/Group";
-import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/IconButton";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   DropdownMenu,
@@ -64,14 +64,14 @@ export function GroupSection({
         <div className="relative ml-auto">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
+              <IconButton
                 variant="ghost"
-                size="icon"
-                aria-label={t("sidebar.groupActions")}
+                size="md"
+                label={t("sidebar.groupActions")}
                 className="size-6 opacity-0 group-hover/header:opacity-100 focus-visible:opacity-100"
               >
                 <MoreHorizontal className="size-4" />
-              </Button>
+              </IconButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuGroup>

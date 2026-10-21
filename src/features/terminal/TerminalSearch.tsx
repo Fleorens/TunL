@@ -2,10 +2,9 @@ import type { SearchAddon } from "@xterm/addon-search";
 import { CaseSensitive, ChevronDown, ChevronUp, Regex } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/IconButton";
 import { Input } from "@/components/ui/input";
 import { Toggle } from "@/components/ui/toggle";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { DAY_SEARCH, NIGHT_SEARCH, searchDecorations } from "@/features/terminal/themes";
 import { useResolvedTheme } from "@/lib/theme";
 
@@ -117,32 +116,22 @@ export function TerminalSearch({ search, open, onClose, onFocusTerminal }: Termi
             : t("terminal.search.count", { current: count.index + 1, total: count.total })}
         </span>
       )}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon"
-            aria-label={t("terminal.search.previous")}
-            onClick={() => jump(true)}
-          >
-            <ChevronUp className="size-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{t("terminal.search.previous")}</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon"
-            aria-label={t("terminal.search.next")}
-            onClick={() => jump(false)}
-          >
-            <ChevronDown className="size-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{t("terminal.search.next")}</TooltipContent>
-      </Tooltip>
+      <IconButton
+        variant="outline"
+        size="md"
+        label={t("terminal.search.previous")}
+        onClick={() => jump(true)}
+      >
+        <ChevronUp className="size-4" />
+      </IconButton>
+      <IconButton
+        variant="outline"
+        size="md"
+        label={t("terminal.search.next")}
+        onClick={() => jump(false)}
+      >
+        <ChevronDown className="size-4" />
+      </IconButton>
       <Toggle
         pressed={caseSensitive}
         onPressedChange={setCaseSensitive}

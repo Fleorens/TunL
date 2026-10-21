@@ -5,15 +5,15 @@ import { Plus, Settings2, X } from "lucide-react";
 import { motion } from "motion/react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { IconButton } from "@/components/IconButton";
 import { ProtocolIcon } from "@/components/ProtocolIcon";
 import { StatusDot } from "@/components/StatusDot";
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Session } from "@/features/sessions/session-model";
 import { tabStatus } from "@/features/sessions/session-model";
 import { useSessions } from "@/features/sessions/store";
 import { SETTINGS_TAB } from "@/features/sessions/tabs";
 import { useUi } from "@/features/shell/ui-store";
+import { listMove, moveIndex } from "@/lib/list-keys";
 import { cn } from "@/lib/utils";
 
 /** The shared tab shell: role, click, middle-click, Enter, close button, and the active indicator. */
@@ -93,6 +93,19 @@ function SessionTab({ session }: { session: Session }) {
   );
 }
 
+/** Arrow keys / Home / End move the focus along the tab row (wraps around); Enter or Space opens the
+ *  focused tab (TabFrame). It never activates on arrow press, so a focused tab keeps its focus. */
+function moveBetweenTabs(event: React.KeyboardEvent<HTMLElement>): void {
+  if (!(event.target instanceof HTMLElement)) return;
+  const move = listMove(event.key, "horizontal");
+  if (!move) return;
+  const tabs = event.currentTarget.querySelectorAll<HTMLElement>("[role=tab]");
+  const index = moveIndex(move, Array.from(tabs).indexOf(event.target), tabs.length, true);
+  if (index < 0) return;
+  event.preventDefault();
+  tabs[index].focus();
+}
+
 export function TabBar() {
   const { t } = useTranslation();
   const sessions = useSessions((s) => s.sessions);
@@ -105,6 +118,7 @@ export function TabBar() {
     <div
       role="tablist"
       aria-label={t("tabs.label")}
+      onKeyDown={moveBetweenTabs}
       className="flex h-10 shrink-0 items-end gap-0.5 overflow-x-auto bg-sidebar px-2 select-none"
     >
       {sessions.map((session) => (
@@ -132,19 +146,14 @@ export function TabBar() {
           <span className="truncate">{t("settings.title")}</span>
         </TabFrame>
       )}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            aria-label={t("tabs.new")}
-            onClick={() => useUi.getState().openPalette("quickConnect")}
-          >
-            <Plus className="size-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{t("tabs.new")}</TooltipContent>
-      </Tooltip>
+      <IconButton
+        variant="ghost"
+        size="xs"
+        label={t("tabs.new")}
+        onClick={() => useUi.getState().openPalette("quickConnect")}
+      >
+        <Plus className="size-4" />
+      </IconButton>
     </div>
   );
 }

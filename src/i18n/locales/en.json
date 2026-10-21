@@ -442,6 +442,16 @@
       "zoomIn": "Zoom in",
       "zoomOut": "Zoom out",
       "zoomReset": "Reset zoom"
+    },
+    "lists": {
+      "title": "Lists and files",
+      "move": "Move in a list",
+      "open": "Connect, or open a file or folder",
+      "menu": "Open the menu of the item",
+      "rename": "Rename a file",
+      "delete": "Delete a file",
+      "parent": "Go to the parent folder",
+      "tabs": "Move between the tabs (tab row focused)"
     }
   },
   "protocols": {

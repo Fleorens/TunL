@@ -129,3 +129,16 @@ export const TERMINAL_SHORTCUTS: readonly { id: TerminalKeyAction; display: read
     { id: "zoomOut", display: ["Ctrl", "-"] },
     { id: "zoomReset", display: ["Ctrl", "0"] },
   ];
+
+export type ListKeyAction = "move" | "open" | "menu" | "rename" | "delete" | "parent" | "tabs";
+
+// Display-only: the detection of these keys lives in the sidebar and the tab row (T34).
+export const LIST_SHORTCUTS: readonly { id: ListKeyAction; display: readonly string[] }[] = [
+  { id: "move", display: ["↑", "↓", "Home", "End"] },
+  { id: "open", display: ["Enter"] },
+  { id: "menu", display: ["⇧", "F10"] },
+  { id: "rename", display: ["F2"] },
+  { id: "delete", display: ["Del"] },
+  { id: "parent", display: ["Backspace"] },
+  { id: "tabs", display: ["←", "→"] },
+];

@@ -444,6 +444,16 @@
       "zoomIn": "Zoom avant",
       "zoomOut": "Zoom arrière",
       "zoomReset": "Réinitialiser le zoom"
+    },
+    "lists": {
+      "title": "Listes et fichiers",
+      "move": "Se déplacer dans une liste",
+      "open": "Se connecter, ou ouvrir un fichier ou un dossier",
+      "menu": "Ouvrir le menu de l'élément",
+      "rename": "Renommer un fichier",
+      "delete": "Supprimer un fichier",
+      "parent": "Aller au dossier parent",
+      "tabs": "Passer d'un onglet à l'autre (barre d'onglets active)"
     }
   },
   "protocols": {

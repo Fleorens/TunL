@@ -105,6 +105,15 @@ const LINE_RULES = [
     message: "localStorage only in src/lib/theme.ts (S1: never a secret there)",
   },
   {
+    id: "icon-button",
+    files: own.filter(
+      (p) => !isTest(p) && !p.startsWith("src/dev/") && p !== "src/components/IconButton.tsx",
+    ),
+    pattern: /size="icon/,
+    message:
+      "an icon-only button is an IconButton: its label is both its aria-label and its tooltip (docs/03 §10)",
+  },
+  {
     id: "e2e-console-guard",
     files: e2e.filter((p) => p.endsWith(".spec.ts")),
     pattern: /from "@playwright\/test"/,

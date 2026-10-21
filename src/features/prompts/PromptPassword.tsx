@@ -4,6 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { PromptKind } from "@/bindings/PromptKind";
+import { IconButton } from "@/components/IconButton";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -86,15 +87,14 @@ export function PromptPassword({ id, prompt }: { id: string; prompt: SecretPromp
                 }}
                 className="flex-1"
               />
-              <Button
+              <IconButton
                 type="button"
-                variant="ghost"
-                size="icon"
+                size="md"
+                label={toggleLabel}
                 onClick={() => setShow((current) => !current)}
-                aria-label={toggleLabel}
               >
                 {show ? <EyeOff aria-hidden /> : <Eye aria-hidden />}
-              </Button>
+              </IconButton>
             </div>
           </div>
           {prompt.canSave && (

@@ -3,6 +3,7 @@
 import { ArrowUp, Eye, EyeOff, FolderPlus, Pencil, RefreshCw, Upload } from "lucide-react";
 import { Fragment, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { IconButton } from "@/components/IconButton";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,7 +12,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Toggle } from "@/components/ui/toggle";
 import { pathSegments } from "./sftp-model";
@@ -96,12 +96,12 @@ export function SftpToolbar({
 
   return (
     <div className="flex h-11 shrink-0 items-center gap-1 border-b bg-card px-2">
-      <Button variant="outline" size="icon-sm" aria-label={t("sftp.up")} onClick={onUp}>
+      <IconButton variant="outline" size="sm" label={t("sftp.up")} onClick={onUp}>
         <ArrowUp className="size-4" />
-      </Button>
-      <Button variant="outline" size="icon-sm" aria-label={t("sftp.refresh")} onClick={onRefresh}>
+      </IconButton>
+      <IconButton variant="outline" size="sm" label={t("sftp.refresh")} onClick={onRefresh}>
         <RefreshCw className="size-4" />
-      </Button>
+      </IconButton>
       <div className="flex min-w-0 flex-1 items-center">
         {editing ? (
           <Input
@@ -120,20 +120,20 @@ export function SftpToolbar({
           <BreadcrumbPath segments={segments} onNavigate={onNavigate} />
         )}
       </div>
-      <Button variant="outline" size="icon-sm" aria-label={t("sftp.editPath")} onClick={startEdit}>
+      <IconButton variant="outline" size="sm" label={t("sftp.editPath")} onClick={startEdit}>
         <Pencil className="size-4" />
-      </Button>
-      <Button variant="outline" size="icon-sm" aria-label={t("sftp.upload")} onClick={onUpload}>
+      </IconButton>
+      <IconButton variant="outline" size="sm" label={t("sftp.upload")} onClick={onUpload}>
         <Upload className="size-4" />
-      </Button>
-      <Button
+      </IconButton>
+      <IconButton
         variant="outline"
-        size="icon-sm"
-        aria-label={t("sftp.menu.newFolder")}
+        size="sm"
+        label={t("sftp.menu.newFolder")}
         onClick={onNewFolder}
       >
         <FolderPlus className="size-4" />
-      </Button>
+      </IconButton>
       <Toggle
         size="sm"
         aria-label={t("sftp.showHidden")}
