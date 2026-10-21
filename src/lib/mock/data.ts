@@ -311,6 +311,7 @@ export const MOCK_SETTINGS: Settings = {
     sidebarCollapsed: false,
     confirmCloseActiveSession: true,
     downloadDir: null,
+    titleBar: "native",
   },
 };
 

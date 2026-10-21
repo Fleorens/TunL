@@ -13,6 +13,7 @@ pub mod sftp;
 pub mod ssh;
 pub mod state;
 pub mod store;
+pub mod window_chrome;
 pub mod wol;
 
 #[cfg(test)]
@@ -27,6 +28,8 @@ mod reload_tests;
 mod secrets_tests;
 #[cfg(test)]
 mod sessions_tests;
+#[cfg(test)]
+mod window_chrome_tests;
 #[cfg(test)]
 mod wol_tests;
 
@@ -85,6 +88,18 @@ pub fn run() {
                 }
             }));
             app.manage(state);
+            // Apply the saved title bar before the window shows, if we can reach it (T35). The frontend
+            // applies it again on load, so a window created too early is not stuck without a way out.
+            if let Some(window) = app.get_webview_window("main") {
+                let title_bar = app
+                    .state::<AppState>()
+                    .settings
+                    .try_read()
+                    .map(|guard| guard.ui.title_bar)
+                    .unwrap_or_default();
+                let chrome = window_chrome::apply_title_bar(&window, title_bar);
+                log::info!("title bar: {chrome:?}");
+            }
             Ok(())
         })
         // On reload (F5, inspecteur, Vite dev), end what the old page was running so nothing lingers.
@@ -153,6 +168,7 @@ pub fn invoke_handler<R: tauri::Runtime>()
         commands::rdp::rdp_detect,
         commands::rdp::rdp_open,
         commands::wol::wol_wake,
+        window_chrome::window_apply_title_bar,
     ]
 }
 

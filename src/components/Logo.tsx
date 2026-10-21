@@ -1,15 +1,17 @@
+import type { ComponentProps, JSX } from "react";
 import { useId } from "react";
 import { cn } from "@/lib/utils";
 
-interface LogoProps {
+interface LogoProps extends ComponentProps<"svg"> {
+  /** The SVG size, in pixels. */
   size?: number;
-  className?: string;
 }
 
-export function Logo({ size = 20, className }: LogoProps) {
+export function Logo({ size = 20, className, ...props }: LogoProps): JSX.Element {
   const gradientId = `tunl-logo-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   return (
     <svg
+      {...props}
       viewBox="0 0 32 32"
       width={size}
       height={size}
@@ -50,9 +52,11 @@ export function Logo({ size = 20, className }: LogoProps) {
   );
 }
 
-export function Wordmark({ className }: { className?: string }) {
+type WordmarkProps = Omit<ComponentProps<"span">, "children">;
+
+export function Wordmark(props: WordmarkProps): JSX.Element {
   return (
-    <span className={cn("text-[15px] font-semibold tracking-tight", className)}>
+    <span {...props} className={cn("text-[15px] font-semibold tracking-tight", props.className)}>
       Tun<span className="text-brand-gradient">L</span>
     </span>
   );

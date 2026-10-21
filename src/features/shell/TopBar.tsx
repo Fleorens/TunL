@@ -6,13 +6,20 @@ import { ShortcutHint } from "@/components/ShortcutHint";
 import { Button } from "@/components/ui/button";
 import { useSessions } from "@/features/sessions/store";
 import { useUi } from "@/features/shell/ui-store";
+import { WindowControls } from "@/features/shell/WindowControls";
 
 export function TopBar() {
   const { t } = useTranslation();
   const toggleSidebar = useUi((state) => state.toggleSidebar);
+  const custom = useUi((state) => state.windowChrome.mode === "custom");
+  // Present (empty) with the TunL title bar only: React would write `="false"` for a `false` value.
+  const drag = custom ? "" : undefined;
 
   return (
-    <header className="flex h-12 shrink-0 items-center gap-2 border-b bg-sidebar px-2 select-none">
+    <header
+      data-tauri-drag-region={drag}
+      className="flex h-12 shrink-0 items-center gap-2 border-b bg-sidebar px-2 select-none"
+    >
       <IconButton
         variant="ghost"
         size="sm"
@@ -22,10 +29,12 @@ export function TopBar() {
         <PanelLeft className="size-4" />
       </IconButton>
 
-      <Logo size={20} />
-      <Wordmark />
+      {/* Tauri's drag script skips SVG elements and only honours an empty attribute on the clicked element
+          itself: the logo lets the click through to the header, the name covers its inner « L » with "deep". */}
+      <Logo size={20} className={custom ? "pointer-events-none" : undefined} />
+      <Wordmark data-tauri-drag-region={custom ? "deep" : undefined} />
 
-      <div className="flex flex-1 justify-center">
+      <div data-tauri-drag-region={drag} className="flex flex-1 justify-center">
         <button
           type="button"
           onClick={() => useUi.getState().openPalette("all")}
@@ -50,6 +59,13 @@ export function TopBar() {
       >
         <Settings2 className="size-4" />
       </IconButton>
+
+      {custom && (
+        <>
+          <div className="mx-1 h-6 w-px bg-border" />
+          <WindowControls />
+        </>
+      )}
     </header>
   );
 }

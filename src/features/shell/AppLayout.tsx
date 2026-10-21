@@ -19,6 +19,8 @@ import { TabBar } from "@/features/shell/TabBar";
 import { TopBar } from "@/features/shell/TopBar";
 import { useUi } from "@/features/shell/ui-store";
 import { type ShortcutHandlers, useGlobalShortcuts } from "@/features/shell/use-global-shortcuts";
+import { useWindowChrome } from "@/features/shell/use-window-chrome";
+import { cn } from "@/lib/utils";
 
 export function AppLayout() {
   const panelRef = usePanelRef();
@@ -28,6 +30,8 @@ export function AppLayout() {
   const sessions = useSessions((state) => state.sessions);
   const activeId = useSessions((state) => state.activeId);
   const settingsOpen = useSessions((state) => state.settingsOpen);
+  const windowChrome = useUi((state) => state.windowChrome);
+  const maximized = useUi((state) => state.maximized);
 
   // The store is the source of truth; the panel follows it.
   useEffect(() => {
@@ -69,9 +73,15 @@ export function AppLayout() {
   };
   useGlobalShortcuts(handlers);
   useReachabilityPolling();
+  useWindowChrome();
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-background">
+    <div
+      className={cn(
+        "flex h-dvh flex-col overflow-hidden bg-background",
+        windowChrome.mode === "custom" && !maximized && "border",
+      )}
+    >
       <TopBar />
       <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
         <ResizablePanel

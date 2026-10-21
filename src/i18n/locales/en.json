@@ -1,4 +1,11 @@
 {
+  "window": {
+    "controls": "Window controls",
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "restore": "Restore",
+    "close": "Close window"
+  },
   "settings": {
     "title": "Settings",
     "sectionsLabel": "Settings sections",
@@ -23,7 +30,14 @@
         "off": "Off"
       },
       "confirmClose": "Confirm before closing a connected tab",
-      "confirmCloseHelp": "Closing a tab ends its session."
+      "confirmCloseHelp": "Closing a tab ends its session.",
+      "titleBar": "Title bar",
+      "titleBarHelp": "Choose System if the window misbehaves. If you can no longer move it, start TunL with TUNL_TITLEBAR=native.",
+      "titleBarForced": "The system title bar is in use: TUNL_TITLEBAR=native is set, or the window kept its decorations.",
+      "titleBarOption": {
+        "custom": "TunL",
+        "native": "System"
+      }
     },
     "terminal": {
       "theme": "Theme",

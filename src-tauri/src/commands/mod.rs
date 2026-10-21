@@ -45,3 +45,6 @@ mod ipc_transfer_tests;
 
 #[cfg(test)]
 mod ipc_exchange_tests;
+
+#[cfg(test)]
+mod ipc_window_tests;

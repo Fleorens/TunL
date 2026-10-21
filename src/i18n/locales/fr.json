@@ -1,4 +1,11 @@
 {
+  "window": {
+    "controls": "Contrôles de la fenêtre",
+    "minimize": "Réduire",
+    "maximize": "Agrandir",
+    "restore": "Restaurer",
+    "close": "Fermer la fenêtre"
+  },
   "settings": {
     "title": "Paramètres",
     "sectionsLabel": "Sections des paramètres",
@@ -23,7 +30,14 @@
         "off": "Désactivé"
       },
       "confirmClose": "Confirmer avant de fermer un onglet connecté",
-      "confirmCloseHelp": "Fermer un onglet met fin à sa session."
+      "confirmCloseHelp": "Fermer un onglet met fin à sa session.",
+      "titleBar": "Barre de titre",
+      "titleBarHelp": "Choisissez Système si la fenêtre se comporte mal. Si vous ne pouvez plus la déplacer, lancez TunL avec TUNL_TITLEBAR=native.",
+      "titleBarForced": "La barre du système est utilisée : TUNL_TITLEBAR=native est défini, ou la fenêtre a gardé ses décorations.",
+      "titleBarOption": {
+        "custom": "TunL",
+        "native": "Système"
+      }
     },
     "terminal": {
       "theme": "Thème",

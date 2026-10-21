@@ -75,7 +75,8 @@ pub fn apply_title_bar(window: &tauri::WebviewWindow, setting: TitleBarMode) -> 
 - **Au démarrage** (`setup` dans `lib.rs`) : lire les réglages enregistrés (comme la commande qui les renvoie au
   frontend) et appeler `apply_title_bar` sur la fenêtre `main`, avant qu'elle s'affiche si possible.
 - **Commande** `window_apply_title_bar(window: tauri::WebviewWindow, mode: TitleBarMode) -> Result<WindowChrome,
-  AppError>` : appelle `apply_title_bar`. Ajoutée à `invoke_handler()` et à `commands/ipc_tests.rs` (clé `mode`).
+  AppError>` : appelle `apply_title_bar`. Ajoutée à `invoke_handler()`, et testée par IPC (clé `mode`)
+  dans `commands/ipc_window_tests.rs`, qui réutilise les helpers de `ipc_tests.rs` (contrat de T12, à ne pas modifier).
 - `src-tauri/src/window_chrome_tests.rs` (fourni) : `#[cfg(test)] mod window_chrome_tests;` dans `lib.rs`.
 
 ### Permissions (`capabilities/default.json`)
@@ -297,9 +298,9 @@ test("the help under the setting gives the way back", async ({ page }) => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T35 --check` affiche `OK` partout.
-- [ ] `getCurrentWindow` n'apparaît que dans `src/lib/ipc.ts` et `src/lib/events.ts`.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T35 --check` affiche `OK` partout.
+- [x] `getCurrentWindow` n'apparaît que dans `src/lib/ipc.ts` et `src/lib/events.ts`.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 - [ ] Visuel : avec la barre TunL, la barre du haut garde sa hauteur, ses boutons de fenêtre sont alignés à droite,
   Fermer rougit au survol.
 

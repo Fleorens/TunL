@@ -15,6 +15,7 @@ import { resetMockSessions, sessionHandlers } from "./mock/sessions";
 import { settingsHandlers } from "./mock/settings";
 import { resetMockSftp, sftpHandlers } from "./mock/sftp";
 import { resetMockTransfers, transferHandlers } from "./mock/transfers";
+import { resetMockWindow, windowHandlers } from "./mock/window";
 import { wolHandlers } from "./mock/wol";
 
 type Args = Record<string, unknown> | undefined;
@@ -62,6 +63,7 @@ const HANDLERS: Record<string, Handler> = {
   ...sessionHandlers,
   ...sftpHandlers,
   ...transferHandlers,
+  ...windowHandlers,
   ...wolHandlers,
 };
 
@@ -85,6 +87,7 @@ export function resetMockBackend(): void {
   resetMockSftp();
   resetMockTransfers();
   resetMockPrompts();
+  resetMockWindow();
 }
 
 /** Browser-only fake backend used by `npm run dev` outside Tauri, and by the tests. */
