@@ -16,6 +16,7 @@ import { describeError } from "@/lib/errors";
 import { type Session, type SessionStepView, stepKey } from "./session-model";
 import { getSessionPort } from "./session-ports";
 import { useSessions } from "./store";
+import { TunnelAnimation } from "./TunnelAnimation";
 
 /** The tab's terminal, and the overlay matching its status. */
 export function SessionView({ session, active }: { session: Session; active: boolean }) {
@@ -103,7 +104,10 @@ function ConnectingOverlay({ session, onClose }: { session: Session; onClose: ()
       transition={{ duration: 0.12 }}
     >
       <div className="flex w-80 max-w-[calc(100%-2rem)] flex-col rounded-lg glass shadow-elevated p-5">
-        <p className="text-sm font-medium">{t("sessions.connecting", { name: session.title })}</p>
+        <TunnelAnimation protocol={session.kind} />
+        <p className="mt-3 text-sm font-medium">
+          {t("sessions.connecting", { name: session.title })}
+        </p>
         <ul className="mt-3 flex flex-col gap-1.5 text-sm">
           {session.steps.map((step) => (
             <StepLine key={`${step.step}:${step.label}`} step={step} />
@@ -124,7 +128,7 @@ function StepLine({ step }: { step: SessionStepView }) {
     step.state === "started" ? (
       <Loader2 className="size-4 animate-spin" />
     ) : step.state === "done" ? (
-      <Check className="size-4" />
+      <Check className="size-4 draw-in" />
     ) : (
       <X className="size-4 text-destructive" />
     );

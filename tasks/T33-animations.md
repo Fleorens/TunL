@@ -209,9 +209,9 @@ test("System follows the desktop; Off animates even when the desktop asks for le
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T33 --check` affiche `OK` partout.
-- [ ] `grep -n "important" src/index.css` ne trouve que le commentaire de `.theme-switching`.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T33 --check` affiche `OK` partout.
+- [x] `grep -n "important" src/index.css` ne trouve que le commentaire de `.theme-switching`.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 - [ ] Visuel : le tunnel est centré au-dessus du titre de la carte, ses anneaux ne sont pas coupés en grandissant,
       lisible en clair et en sombre ; la coche se dessine au lieu d'apparaître.
 
