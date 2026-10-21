@@ -4,12 +4,12 @@ import { useTranslation } from "react-i18next";
 import type { AccentColor } from "@/bindings/AccentColor";
 import type { Connection } from "@/bindings/Connection";
 import type { Group } from "@/bindings/Group";
+import { IconButton } from "@/components/IconButton";
 import { SectionHeader } from "@/components/SectionHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { filterConnections } from "@/features/connections/filter";
 import { openImport } from "@/features/connections/open-import";
 import { buildSidebarSections, compareNames } from "@/features/connections/sections";
@@ -20,6 +20,7 @@ import { ConnectionContextMenu } from "@/features/shell/sidebar/ConnectionContex
 import { ConnectionRow } from "@/features/shell/sidebar/ConnectionRow";
 import { GroupDialog } from "@/features/shell/sidebar/GroupDialog";
 import { GroupSection } from "@/features/shell/sidebar/GroupSection";
+import { listMove, moveIndex } from "@/lib/list-keys";
 
 interface PendingDialog {
   mode: "create" | "rename";
@@ -31,6 +32,19 @@ interface PendingDialog {
 // Placeholder rows shown while the store is idle or loading. Defined as values (not
 // the map index) so the skeleton list has stable keys without linting the index.
 const SKELETON_KEYS = [0, 1, 2, 3, 4, 5];
+
+/** Arrow keys / Home / End move the focus from row to row across every sidebar section (favorites,
+ *  recents, groups, ungrouped), without wrapping. Escape and the menu are handled per row. */
+function moveBetweenRows(event: React.KeyboardEvent<HTMLElement>): void {
+  if (!(event.target instanceof HTMLElement)) return;
+  const move = listMove(event.key, "vertical");
+  if (!move) return;
+  const rows = event.currentTarget.querySelectorAll<HTMLElement>("[data-sidebar-row]");
+  const index = moveIndex(move, Array.from(rows).indexOf(event.target), rows.length, false);
+  if (index < 0) return;
+  event.preventDefault();
+  rows[index].focus();
+}
 
 export function Sidebar({ showRecents = true }: { showRecents?: boolean }) {
   const { t } = useTranslation();
@@ -119,19 +133,9 @@ export function Sidebar({ showRecents = true }: { showRecents?: boolean }) {
         {t("sidebar.createGroup")}
       </Button>
     ) : (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={t("sidebar.newGroup")}
-            onClick={openCreateGroup}
-          >
-            <FolderPlus className="size-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{t("sidebar.newGroup")}</TooltipContent>
-      </Tooltip>
+      <IconButton variant="ghost" size="md" label={t("sidebar.newGroup")} onClick={openCreateGroup}>
+        <FolderPlus className="size-4" />
+      </IconButton>
     );
 
   return (
@@ -151,7 +155,7 @@ export function Sidebar({ showRecents = true }: { showRecents?: boolean }) {
         </div>
       </div>
 
-      <ScrollArea className="flex-1 px-2 pb-2">
+      <ScrollArea className="flex-1 px-2 pb-2" onKeyDown={moveBetweenRows}>
         {status === "idle" || status === "loading" ? (
           <div className="flex flex-col gap-0.5">
             {SKELETON_KEYS.map((key) => (
@@ -254,14 +258,14 @@ export function Sidebar({ showRecents = true }: { showRecents?: boolean }) {
 
       <footer className="flex h-9 items-center justify-between border-t px-2 text-xs text-muted-foreground">
         <span>{t("sidebar.count", { count: connections.length })}</span>
-        <Button
+        <IconButton
           variant="ghost"
-          size="icon"
-          aria-label={t("sidebar.import")}
+          size="md"
+          label={t("sidebar.import")}
           onClick={() => openImport()}
         >
           <Import className="size-4" />
-        </Button>
+        </IconButton>
       </footer>
 
       {groupDialog !== null && (

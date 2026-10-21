@@ -1,9 +1,9 @@
 import { PanelLeft, Plus, Search, Settings2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { IconButton } from "@/components/IconButton";
 import { Logo, Wordmark } from "@/components/Logo";
 import { ShortcutHint } from "@/components/ShortcutHint";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSessions } from "@/features/sessions/store";
 import { useUi } from "@/features/shell/ui-store";
 
@@ -13,19 +13,14 @@ export function TopBar() {
 
   return (
     <header className="flex h-12 shrink-0 items-center gap-2 border-b bg-sidebar px-2 select-none">
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={t("topbar.toggleSidebar")}
-            onClick={toggleSidebar}
-          >
-            <PanelLeft className="size-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{t("topbar.toggleSidebar")}</TooltipContent>
-      </Tooltip>
+      <IconButton
+        variant="ghost"
+        size="sm"
+        label={t("topbar.toggleSidebar")}
+        onClick={toggleSidebar}
+      >
+        <PanelLeft className="size-4" />
+      </IconButton>
 
       <Logo size={20} />
       <Wordmark />
@@ -47,19 +42,14 @@ export function TopBar() {
         {t("topbar.newConnection")}
       </Button>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={t("topbar.settings")}
-            onClick={() => useSessions.getState().openSettings()}
-          >
-            <Settings2 className="size-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{t("topbar.settings")}</TooltipContent>
-      </Tooltip>
+      <IconButton
+        variant="ghost"
+        size="sm"
+        label={t("topbar.settings")}
+        onClick={() => useSessions.getState().openSettings()}
+      >
+        <Settings2 className="size-4" />
+      </IconButton>
     </header>
   );
 }

@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { KnownHostEntry } from "@/bindings/KnownHostEntry";
+import { IconButton } from "@/components/IconButton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,8 +16,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SettingGroup } from "@/features/settings/SettingRow";
 import { hostLabel } from "@/features/settings/settings-options";
 import { notifyError } from "@/lib/errors";
@@ -91,19 +90,9 @@ function KnownHostRow({ entry, onForget }: { entry: KnownHostEntry; onForget: ()
           {entry.keyType} · {entry.fingerprint}
         </span>
       </div>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={forgetLabel}
-            onClick={() => setOpen(true)}
-          >
-            <Trash2 className="size-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{forgetLabel}</TooltipContent>
-      </Tooltip>
+      <IconButton variant="ghost" size="md" label={forgetLabel} onClick={() => setOpen(true)}>
+        <Trash2 className="size-4" />
+      </IconButton>
       <ForgetDialog
         host={entry.host}
         open={open}

@@ -38,6 +38,7 @@ export function ConnectionRow({
   return (
     <button
       type="button"
+      data-sidebar-row
       {...buttonProps}
       aria-current={selected || undefined}
       onClick={(event) => {

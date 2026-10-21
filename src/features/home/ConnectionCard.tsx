@@ -2,10 +2,9 @@ import { FolderTree, Pencil, Plug } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { Connection } from "@/bindings/Connection";
+import { IconButton } from "@/components/IconButton";
 import { ProtocolBadge } from "@/components/ProtocolBadge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ConnectionStatusDot } from "@/features/reachability/ConnectionStatusDot";
 import { openSession } from "@/features/sessions/open-session";
 import { useUi } from "@/features/shell/ui-store";
@@ -102,19 +101,8 @@ function Action({
   icon: ReactNode;
 }) {
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          className="h-8 w-8"
-          aria-label={ariaLabel}
-          onClick={onClick}
-        >
-          {icon}
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>{ariaLabel}</TooltipContent>
-    </Tooltip>
+    <IconButton variant="ghost" size="sm" label={ariaLabel} className="h-8 w-8" onClick={onClick}>
+      {icon}
+    </IconButton>
   );
 }

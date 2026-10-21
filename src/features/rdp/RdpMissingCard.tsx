@@ -1,6 +1,7 @@
 // The RDP tab without a FreeRDP 3 client: say how to install one, per distribution family, then retry or close.
 import { ClipboardCopy, MonitorX } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { IconButton } from "@/components/IconButton";
 import { Button } from "@/components/ui/button";
 import { copyText } from "@/lib/clipboard";
 
@@ -59,16 +60,14 @@ function InstallRow({ distro, command }: { distro: string; command: string }) {
         <p className="text-sm font-medium">{distro}</p>
         <code className="text-sm font-mono text-muted-foreground">{command}</code>
       </div>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        aria-label={t("rdp.missing.copy", { distro })}
+      <IconButton
+        label={t("rdp.missing.copy", { distro })}
         onClick={async () => {
           await copyText(command);
         }}
       >
         <ClipboardCopy aria-hidden />
-      </Button>
+      </IconButton>
     </li>
   );
 }
