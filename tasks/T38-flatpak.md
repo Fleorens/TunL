@@ -192,9 +192,9 @@ modules:
 
 ## Critères d'acceptation
 
-- [ ] `node scripts/contract-tests.mjs T38 --check` affiche `OK`, et `npm run verify` passe.
-- [ ] `npm run flatpak:sources` régénère les deux fichiers ; relancé une seconde fois, `git status` reste propre.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `node scripts/contract-tests.mjs T38 --check` affiche `OK`, et `npm run verify` passe.
+- [x] `npm run flatpak:sources` régénère les deux fichiers ; relancé une fois de plus, `git status` reste propre.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 

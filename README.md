@@ -28,6 +28,7 @@ A modern SSH, SFTP and RDP connection manager for Linux, built with Tauri 2, Rea
 | Connecting card: a tunnel animates around the protocol icon while connecting, a check draws itself as each step finishes, and « Reduce animations » (settings or system) stops every animation (T33) | |
 | Desktop integration: brand icon, `tunl` package, desktop entry (Network menu) and AppStream metainfo with screenshots (T36) | |
 | Packaging without the devbox: a CI runs the whole recipe, both audits and the packaging checks on every push to main and pull request; a `vX.Y.Z` tag builds the deb, rpm and AppImage and attaches them with SHA-256 sums to a draft release (T37) | |
+| Flatpak for immutable distros and Flathub: an offline build, every crate and npm package declared in `packaging/flatpak/`, FreeRDP 3 compiled in the sandbox (T38) | |
 
 The progress of each task is in [`tasks/README.md`](tasks/README.md).
 
@@ -42,8 +43,13 @@ npm run tauri dev   # the real app, with the Rust backend (first build: a few mi
 npm run dev         # the interface only, in a browser at http://localhost:1420, on demo data
 ```
 
-`npm run dev` answers every backend call with an in-memory mock (the status bar says “Mock backend”): handy to look
+`npm run dev` answers every backend call with an in-memory mock (the status bar says "Mock backend"): handy to look
 at the interface, but only `npm run tauri dev` proves that the app works.
+
+You can also build a Flatpak for immutable distros (Silverblue, Kinoite, SteamOS…) and Flathub: it builds offline from
+the two files in `packaging/flatpak/` (regenerate them with `npm run flatpak:sources` after a lockfile changes), with
+`flatpak-builder --user --install --force-clean build packaging/flatpak/io.github.fleorens.TunL.yml`, needing the GNOME 51
+runtime and the `rust-stable`, `node22` Flathub extensions.
 
 To start from an empty store again: quit TunL, then remove `~/.config/io.github.fleorens.TunL/connections.json`.
 
