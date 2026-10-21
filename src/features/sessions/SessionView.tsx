@@ -32,7 +32,7 @@ export function SessionView({ session, active }: { session: Session; active: boo
     <section aria-label={session.title} hidden={!active} className="flex h-full flex-col">
       <div className="relative min-h-0 flex-1">
         {session.kind === "ssh" && port ? (
-          <TerminalView port={port} active={active} />
+          <TerminalView port={port} active={active} connected={session.status === "connected"} />
         ) : session.kind === "sftp" ? (
           session.status === "connected" ? (
             <SftpExplorer key={session.runId} sessionId={session.runId} active={active} />
