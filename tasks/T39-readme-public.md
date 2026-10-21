@@ -349,9 +349,9 @@ describe("CHANGELOG", () => {
 ## Critères d'acceptation
 
 - [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T39 --check` affiche `OK` partout.
-- [ ] `sha256sum LICENSE` donne `3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986`.
-- [ ] `git diff main -- README.md` ne retire aucune ligne du tableau « Where it stands ».
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `sha256sum LICENSE` donne `3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986`.
+- [x] `git diff main -- README.md` ne retire aucune ligne du tableau « Where it stands ».
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 
