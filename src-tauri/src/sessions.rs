@@ -155,6 +155,21 @@ impl SessionRegistry {
         }
     }
 
+    /// Cancel and forget every session. Returns how many were open; a poisoned lock closes nothing.
+    pub fn close_all(&self) -> usize {
+        let mut map = match self.sessions.lock() {
+            Ok(map) => map,
+            Err(_) => return 0,
+        };
+        let handles: Vec<SessionHandle> = map.drain().map(|(_, handle)| handle).collect();
+        drop(map);
+        let count = handles.len();
+        for handle in handles {
+            handle.cancel.cancel();
+        }
+        count
+    }
+
     /// Forget the session `id` without cancelling it: the task calls this when it ends.
     pub fn remove(&self, id: Uuid) {
         if let Ok(mut map) = self.sessions.lock() {

@@ -15,7 +15,15 @@ import { TerminalSearch } from "./TerminalSearch";
  * to a local echo). It owns the xterm instance through `useXterm`, the per-terminal zoom, and the
  * search panel.
  */
-export function TerminalView({ port, active }: { port: TerminalPort; active: boolean }) {
+export function TerminalView({
+  port,
+  active,
+  connected = false,
+}: {
+  port: TerminalPort;
+  active: boolean;
+  connected?: boolean;
+}) {
   const resolvedTheme = useResolvedTheme();
   const terminal = useSettings((state) => state.settings?.terminal);
   const baseFontSize = terminal?.fontSize ?? 13;
@@ -62,6 +70,14 @@ export function TerminalView({ port, active }: { port: TerminalPort; active: boo
       }
     },
   });
+
+  // Once a prompt dialog is answered and the session opens, `connected` flips true; the dialog had
+  // already returned the focus to the sidebar, so the terminal takes it again (T30b).
+  useEffect(() => {
+    if (term && active && connected) {
+      term.focus();
+    }
+  }, [term, active, connected]);
 
   const theme = terminal ? resolveTerminalTheme(terminal.theme, resolvedTheme === "dark") : null;
 

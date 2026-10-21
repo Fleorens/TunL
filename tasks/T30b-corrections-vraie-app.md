@@ -319,10 +319,12 @@ test("after the 2FA dialog, typing goes to the terminal", async ({ page }) => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T30b --check` affiche `OK` partout.
-- [ ] `grep -n "on_page_load" src-tauri/src/lib.rs` trouve le crochet.
-- [ ] `node -p "require('@tauri-apps/plugin-opener/package.json').version"` commence par `2.7`.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T30b --check` affiche `OK` partout.
+- [x] `grep -n "on_page_load" src-tauri/src/lib.rs` trouve le crochet.
+- [x] `node -p "require('@tauri-apps/plugin-opener/package.json').version"` commence par `2.7` (la commande renvoie
+  `ERR_PACKAGE_PATH_NOT_EXPORTED` car le champ `exports` du paquet cache `./package.json` en 2.7.x ; la version
+  installée est `2.7.2`, lue directement dans `node_modules/@tauri-apps/plugin-opener/package.json`).
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 

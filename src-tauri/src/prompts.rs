@@ -225,6 +225,17 @@ impl PromptBroker {
         }
     }
 
+    /// Cancel every pending prompt, across all sessions: dropping each sender ends its `ask` as cancelled.
+    pub fn cancel_all(&self) {
+        let mut pending = match self.lock() {
+            Ok(pending) => pending,
+            Err(_) => return,
+        };
+        for (_, entry) in pending.drain() {
+            drop(entry.sender);
+        }
+    }
+
     /// How many prompts are currently waiting for an answer.
     pub fn pending_count(&self) -> usize {
         match self.lock() {

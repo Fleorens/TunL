@@ -16,9 +16,13 @@ pub mod store;
 pub mod wol;
 
 #[cfg(test)]
+mod probe_dedup_tests;
+#[cfg(test)]
 mod probe_tests;
 #[cfg(test)]
 mod prompts_tests;
+#[cfg(test)]
+mod reload_tests;
 #[cfg(test)]
 mod secrets_tests;
 #[cfg(test)]
@@ -26,7 +30,7 @@ mod sessions_tests;
 #[cfg(test)]
 mod wol_tests;
 
-use tauri::{Emitter, Manager};
+use tauri::{Emitter, Manager, webview::PageLoadEvent};
 
 use crate::paths::AppPaths;
 use crate::secrets::SecretStore;
@@ -82,6 +86,18 @@ pub fn run() {
             }));
             app.manage(state);
             Ok(())
+        })
+        // On reload (F5, inspecteur, Vite dev), end what the old page was running so nothing lingers.
+        .on_page_load(|webview, payload| {
+            if let PageLoadEvent::Started = payload.event() {
+                // The very first load has no state yet; `try_state` returns `None` and we skip.
+                if let Some(state) = webview.try_state::<AppState>() {
+                    let count = state.end_all_sessions();
+                    if count > 0 {
+                        log::info!("page reloaded, ended {count} session(s)");
+                    }
+                }
+            }
         })
         .invoke_handler(invoke_handler())
         .run(tauri::generate_context!())

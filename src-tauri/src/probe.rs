@@ -3,6 +3,7 @@
 //! TunL opens the socket at startup and at a fixed interval, then drops it at once. A host behind a
 //! bastion is never probed directly (it would be reached from the wrong network and reveal TunL's name
 //! to the local DNS), so its result is `Skipped` with no network access at all.
+use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
 use serde::Serialize;
@@ -56,9 +57,11 @@ pub async fn probe(host: &str, port: u16, timeout: Duration) -> Option<Duration>
 
 /// Probe every connection, `max_parallel` at a time, results in the order of `connections`.
 ///
-/// A connection with a jump host is `Skipped` without any task (no network access). The others each get
-/// one task, gated by a semaphore; each result is placed back in its input slot, whatever the arrival
-/// order. A task that errors counts as `Offline` (the slot's initial value).
+/// Connections without a jump host are grouped by address (`host` lowercased, port): each distinct
+/// address gets one task, gated by a semaphore, and every connection in the group receives that
+/// address's result. A jump-host target is `Skipped` without any task (no network access). A task that
+/// errors counts as `Offline` (each slot's initial value). One probe per address avoids OpenSSH's
+/// `noauth` penalty (docs/06-securite.md, S15).
 pub async fn probe_all(
     connections: &[Connection],
     timeout: Duration,
@@ -74,9 +77,8 @@ pub async fn probe_all(
         })
         .collect();
 
-    let mut join_set: JoinSet<(usize, ProbeResult)> = JoinSet::new();
-    let semaphore = std::sync::Arc::new(Semaphore::new(max_parallel));
-
+    // Address -> the slots (connections) that share it. A jump-host target is skipped, no task.
+    let mut groups: HashMap<(String, u16), Vec<usize>> = HashMap::new();
     for (index, connection) in connections.iter().enumerate() {
         // A bastion target is never probed directly: no task, no network access.
         if connection.jump_host_id.is_some() {
@@ -87,36 +89,39 @@ pub async fn probe_all(
             };
             continue;
         }
+        let address = (connection.host.to_ascii_lowercase(), connection.port);
+        groups.entry(address).or_default().push(index);
+    }
 
+    let mut join_set: JoinSet<(Vec<usize>, ProbeStatus, Option<u32>)> = JoinSet::new();
+    let semaphore = std::sync::Arc::new(Semaphore::new(max_parallel));
+
+    for (address, indices) in groups {
         // Hold the permit for the task's whole lifetime, so at most `max_parallel` connects run.
         let permit = match semaphore.clone().acquire_owned().await {
             Ok(permit) => permit,
             // The semaphore is never closed here; only a closed semaphore reaches this branch.
             Err(_) => continue,
         };
-        // Own a copy: the future must outlive this call, and the reference borrows `connections`.
-        let connection = connection.clone();
+        let (host, port) = address;
         join_set.spawn(async move {
-            let latency = probe(connection.host.as_str(), connection.port, timeout).await;
+            let latency = probe(&host, port, timeout).await;
             // Release the slot now that the probe is done.
             drop(permit);
-            (
-                index,
-                ProbeResult {
-                    connection_id: connection.id,
-                    status: latency
-                        .map(|_| ProbeStatus::Online)
-                        .unwrap_or(ProbeStatus::Offline),
-                    latency_ms: latency.map(|d| d.as_millis() as u32),
-                },
-            )
+            let status = latency
+                .map(|_| ProbeStatus::Online)
+                .unwrap_or(ProbeStatus::Offline);
+            (indices, status, latency.map(|d| d.as_millis() as u32))
         });
     }
 
     while let Some(entry) = join_set.join_next().await {
-        // A task that would error counts as Offline (already the slot's value).
-        if let Ok((index, probe_result)) = entry {
-            results[index] = probe_result;
+        // A task that would error counts as Offline (already each slot's value).
+        if let Ok((indices, status, latency_ms)) = entry {
+            for index in indices {
+                results[index].status = status;
+                results[index].latency_ms = latency_ms;
+            }
         }
     }
 
