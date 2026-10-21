@@ -112,6 +112,7 @@ async function interactiveStep(ctx: ScenarioContext): Promise<AppError | null> {
 
 // The changed-host-key refusal: blocked until the old key is removed, then a first connect.
 async function changedKeyStep(ctx: ScenarioContext): Promise<AppError | null> {
+  if (isHostKeyLearned(ctx.host, ctx.port)) return null;
   if (!isHostKeyRemoved(ctx.host, ctx.port)) return changed();
   return hostKeyStep(ctx, NEW_FINGERPRINT);
 }

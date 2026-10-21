@@ -29,7 +29,7 @@ export function SshSection() {
 
   return (
     <div className="flex flex-col gap-6">
-      <SettingGroup title={t("settings.ssh.defaults")}>
+      <SettingGroup title={t("settings.ssh.defaults")} description={t("settings.ssh.defaultsHelp")}>
         <SettingSelect
           label={t("settings.ssh.connectTimeout")}
           value={String(connectTimeout)}

@@ -81,7 +81,7 @@ function KnownHostRow({ entry, onForget }: { entry: KnownHostEntry; onForget: ()
   const forgetLabel = t("settings.ssh.forget", { host: entry.host });
   return (
     <li aria-label={hostLabel(entry.host, entry.port)} className="flex items-center gap-3 py-2">
-      <div className="min-w-0 flex-1">
+      <div className="grid min-w-0 flex-1">
         <span className="truncate font-mono text-sm">{entry.host}</span>
         <span
           className="truncate font-mono text-xs text-muted-foreground"
@@ -132,7 +132,7 @@ export function KnownHostsList() {
         <ul aria-label={t("settings.ssh.knownHosts")}>
           {entries.map((entry) => (
             <KnownHostRow
-              key={`${entry.host}:${entry.port}`}
+              key={`${entry.host}:${entry.port}:${entry.keyType}:${entry.fingerprint}`}
               entry={entry}
               onForget={() => forget(entry)}
             />

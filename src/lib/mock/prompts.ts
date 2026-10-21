@@ -63,15 +63,15 @@ function learnedEntry(key: string): KnownHostEntry {
 }
 
 /**
- * The mock's own known_hosts: the preset hosts, plus the learned keys, minus the removed ones, sorted by
- * host (`localeCompare`) then port. Never mutates `MOCK_KNOWN_HOSTS`.
+ * The mock's own known_hosts: the preset hosts, plus the learned keys (a learned key replaces the preset of
+ * the same host), minus the removed ones, sorted by host (`localeCompare`) then port. Never mutates
+ * `MOCK_KNOWN_HOSTS`.
  */
 function ownHosts(): KnownHostEntry[] {
-  const entries = [...MOCK_KNOWN_HOSTS];
-  for (const key of learnedHostKeys) {
-    if (!removedHostKeys.has(key)) entries.push(learnedEntry(key));
-  }
-  return entries
+  const presets = MOCK_KNOWN_HOSTS.filter(
+    (entry) => !learnedHostKeys.has(`${entry.host}:${entry.port}`),
+  );
+  return [...presets, ...[...learnedHostKeys].map(learnedEntry)]
     .filter((entry) => !removedHostKeys.has(`${entry.host}:${entry.port}`))
     .sort((a, b) => a.host.localeCompare(b.host) || a.port - b.port);
 }
@@ -146,6 +146,8 @@ export function isHostKeyLearned(host: string, port: number): boolean {
 }
 export function markHostKeyLearned(host: string, port: number): void {
   learnedHostKeys.add(`${host}:${port}`);
+  // Approved again after « Forget »: back in the list, as the real app writes the line again.
+  removedHostKeys.delete(`${host}:${port}`);
 }
 export function hasStoredPassword(name: string): boolean {
   return storedPasswords.has(name);

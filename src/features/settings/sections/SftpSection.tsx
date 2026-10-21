@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { SettingGroup, SettingRow } from "@/features/settings/SettingRow";
 import { saveSettings } from "@/features/settings/save-settings";
 import { useSettings } from "@/features/settings/store";
+import { notifyError } from "@/lib/errors";
 import { pickFolder } from "@/lib/files";
 
 export function SftpSection() {
@@ -15,7 +16,13 @@ export function SftpSection() {
   const downloadDir = useSettings((s) => s.settings?.ui.downloadDir);
 
   const choose = async () => {
-    const path = await pickFolder();
+    let path: string | null;
+    try {
+      path = await pickFolder();
+    } catch (pickError) {
+      notifyError(pickError);
+      return;
+    }
     if (path === null) return;
     void saveSettings((s) => ({ ...s, ui: { ...s.ui, downloadDir: path } }));
   };

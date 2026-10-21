@@ -152,13 +152,7 @@ pub fn own_entries(path: &Path) -> Vec<KnownHostEntry> {
     let Ok(text) = std::fs::read_to_string(path) else {
         return Vec::new();
     };
-    let mut entries: Vec<KnownHostEntry> =
-        text.lines()
-            .filter_map(own_line)
-            .fold(Vec::new(), |mut acc, line| {
-                acc.extend(line);
-                acc
-            });
+    let mut entries: Vec<KnownHostEntry> = text.lines().filter_map(own_line).flatten().collect();
     entries.sort_by(|a, b| a.host.cmp(&b.host).then_with(|| a.port.cmp(&b.port)));
     entries
 }
