@@ -27,6 +27,7 @@ A modern SSH, SFTP and RDP connection manager for Linux, built with Tauri 2, Rea
 | Settings tab: appearance, terminal (applied live), SSH defaults and known-hosts list, SFTP download folder, FreeRDP client (program detection, manual choice), availability probes, about with the config and log folders, export/import connections as JSON (no secrets) (T31, T31b, T32) | |
 | Connecting card: a tunnel animates around the protocol icon while connecting, a check draws itself as each step finishes, and « Reduce animations » (settings or system) stops every animation (T33) | |
 | Desktop integration: brand icon, `tunl` package, desktop entry (Network menu) and AppStream metainfo with screenshots (T36) | |
+| Packaging without the devbox: a CI runs the whole recipe, both audits and the packaging checks on every push to main and pull request; a `vX.Y.Z` tag builds the deb, rpm and AppImage and attaches them with SHA-256 sums to a draft release (T37) | |
 
 The progress of each task is in [`tasks/README.md`](tasks/README.md).
 

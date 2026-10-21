@@ -1,0 +1,57 @@
+# T37: a tag `vX.Y.Z` builds the deb, rpm and AppImage packages and attaches them, with their SHA-256 sums,
+# to a draft GitHub release. Publishing the draft stays a human decision (T40's checklist).
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  packages:
+    name: deb, rpm, AppImage
+    # The oldest supported Ubuntu with WebKitGTK 4.1: the AppImage then runs on older systems too.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Tauri system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev libssl-dev build-essential libxdo-dev \
+            libayatana-appindicator3-dev librsvg2-dev file
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - name: The tag is the app's version
+        run: node scripts/check-version.mjs "${GITHUB_REF_NAME}"
+      - name: Build the packages
+        # linuxdeploy is itself an AppImage: no FUSE on the runner, so it extracts itself instead.
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: "1"
+        run: npx tauri build --bundles deb,rpm,appimage
+      - name: Collect the packages and their checksums
+        run: |
+          mkdir dist-packages
+          cp src-tauri/target/release/bundle/deb/*.deb \
+             src-tauri/target/release/bundle/rpm/*.rpm \
+             src-tauri/target/release/bundle/appimage/*.AppImage dist-packages/
+          cd dist-packages && sha256sum -- * > SHA256SUMS
+      - uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        with:
+          draft: true
+          files: dist-packages/*
