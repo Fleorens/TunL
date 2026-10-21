@@ -1,6 +1,6 @@
 // The window buttons TunL draws at the right of its own title bar (T35): minimize, maximize or restore, close.
-// Shown in the TopBar only when the window dropped its decorations; the buttons go through `getCurrentWindow()`
-// (ipc.ts), or the mock outside Tauri.
+// Shown in the TopBar only when the window dropped its decorations; the buttons drive the Tauri window through
+// ipc.ts, or the mock outside Tauri.
 
 import { Copy, Minus, Square, X } from "lucide-react";
 import type { JSX } from "react";

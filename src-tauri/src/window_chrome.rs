@@ -38,7 +38,9 @@ pub fn effective_title_bar(setting: TitleBarMode, env: Option<&str>) -> WindowCh
 }
 
 /// Applies the effective bar to the window (`set_decorations(mode == Native)`). If `set_decorations(false)`
-/// fails: warn, decorations back on, and `WindowChrome { mode: Native, forced: true }`.
+/// fails: warn, decorations back on, and `WindowChrome { mode: Native, forced: true }`. If that second call
+/// (or `set_decorations(true)` for the system bar) fails too, it is only logged: the window may then have no
+/// decorations while the result says `Native`, with no way left to restore them.
 pub fn apply_title_bar<R: Runtime>(
     window: &WebviewWindow<R>,
     setting: TitleBarMode,

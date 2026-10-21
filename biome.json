@@ -20,6 +20,12 @@
       "correctness": { "noNestedComponentDefinitions": "error" }
     }
   },
+  "overrides": [
+    {
+      "includes": ["src/release.test.ts"],
+      "linter": { "rules": { "suspicious": { "noTemplateCurlyInString": "off" } } }
+    }
+  ],
   "javascript": { "formatter": { "quoteStyle": "double", "semicolons": "always" } },
   "css": { "parser": { "tailwindDirectives": true } },
   "assist": { "enabled": true, "actions": { "source": { "organizeImports": "on" } } }

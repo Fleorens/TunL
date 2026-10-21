@@ -15,7 +15,14 @@ export function useWindowChrome(): void {
 
   useEffect(() => {
     if (!titleBar) return;
-    ipc.windowApplyTitleBar(titleBar).then(setWindowChrome, notifyError);
+    // A quick change of setting: only the answer for the latest one is kept.
+    let cancelled = false;
+    ipc.windowApplyTitleBar(titleBar).then((chrome) => {
+      if (!cancelled) setWindowChrome(chrome);
+    }, notifyError);
+    return () => {
+      cancelled = true;
+    };
   }, [titleBar, setWindowChrome]);
 
   useEffect(() => onWindowMaximized(setMaximized), [setMaximized]);

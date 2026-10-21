@@ -29,8 +29,10 @@ export function TopBar() {
         <PanelLeft className="size-4" />
       </IconButton>
 
-      <Logo size={20} data-tauri-drag-region={drag} />
-      <Wordmark data-tauri-drag-region={drag} />
+      {/* Tauri's drag script skips SVG elements and only honours an empty attribute on the clicked element
+          itself: the logo lets the click through to the header, the name covers its inner « L » with "deep". */}
+      <Logo size={20} className={custom ? "pointer-events-none" : undefined} />
+      <Wordmark data-tauri-drag-region={custom ? "deep" : undefined} />
 
       <div data-tauri-drag-region={drag} className="flex flex-1 justify-center">
         <button

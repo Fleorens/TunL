@@ -75,7 +75,8 @@ pub fn apply_title_bar(window: &tauri::WebviewWindow, setting: TitleBarMode) -> 
 - **Au démarrage** (`setup` dans `lib.rs`) : lire les réglages enregistrés (comme la commande qui les renvoie au
   frontend) et appeler `apply_title_bar` sur la fenêtre `main`, avant qu'elle s'affiche si possible.
 - **Commande** `window_apply_title_bar(window: tauri::WebviewWindow, mode: TitleBarMode) -> Result<WindowChrome,
-  AppError>` : appelle `apply_title_bar`. Ajoutée à `invoke_handler()` et à `commands/ipc_tests.rs` (clé `mode`).
+  AppError>` : appelle `apply_title_bar`. Ajoutée à `invoke_handler()`, et testée par IPC (clé `mode`)
+  dans `commands/ipc_window_tests.rs`, qui réutilise les helpers de `ipc_tests.rs` (contrat de T12, à ne pas modifier).
 - `src-tauri/src/window_chrome_tests.rs` (fourni) : `#[cfg(test)] mod window_chrome_tests;` dans `lib.rs`.
 
 ### Permissions (`capabilities/default.json`)
