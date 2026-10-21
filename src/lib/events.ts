@@ -41,17 +41,21 @@ export function onWindowMaximized(handler: (maximized: boolean) => void): () => 
   if (isTauri()) {
     let unlisten: (() => void) | null = null;
     let cancelled = false;
-    const window = getCurrentWindow();
+    const appWindow = getCurrentWindow();
 
     // `isMaximized()` is async, so report the state once now and on every resize through it.
     const report = (): void => {
-      window.isMaximized().then((maximized) => {
-        if (!cancelled) handler(maximized);
-      });
+      appWindow.isMaximized().then(
+        (maximized) => {
+          if (!cancelled) handler(maximized);
+        },
+        // State unreadable: the maximize button keeps its last label until the next resize.
+        () => undefined,
+      );
     };
 
     report();
-    void window.onResized(report).then((fn) => {
+    void appWindow.onResized(report).then((fn) => {
       unlisten = fn;
       if (cancelled) fn();
     });

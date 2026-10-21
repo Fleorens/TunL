@@ -46,6 +46,10 @@ pub fn apply_title_bar<R: Runtime>(
     let effective = effective_title_bar(setting, std::env::var(TITLE_BAR_ENV).ok().as_deref());
     match window.set_decorations(effective.mode == TitleBarMode::Native) {
         Ok(()) => effective,
+        Err(error) if effective.mode == TitleBarMode::Native => {
+            log::warn!("cannot restore the window decorations: {error}");
+            effective
+        }
         Err(error) => {
             log::warn!("window refused to drop its decorations: {error}; keeping the system bar");
             let _ = window.set_decorations(true);
@@ -57,8 +61,8 @@ pub fn apply_title_bar<R: Runtime>(
     }
 }
 
-/// The window button commands the TunL title bar drives (T35). Only `window_apply_title_bar` is an IPC
-/// command; the three window actions go through `getCurrentWindow()` on the JS side.
+/// Applies the chosen title bar to the calling window and returns the one it really has (T35). The window
+/// buttons themselves go through `getCurrentWindow()` on the JS side.
 #[tauri::command]
 pub async fn window_apply_title_bar<R: Runtime>(
     window: WebviewWindow<R>,

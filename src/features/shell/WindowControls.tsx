@@ -1,12 +1,13 @@
 // The window buttons TunL draws at the right of its own title bar (T35): minimize, maximize or restore, close.
 // Shown in the TopBar only when the window dropped its decorations; the buttons go through `getCurrentWindow()`
-// (ipc.ts), which is a no-op outside Tauri.
+// (ipc.ts), or the mock outside Tauri.
 
 import { Copy, Minus, Square, X } from "lucide-react";
 import type { JSX } from "react";
 import { useTranslation } from "react-i18next";
 import { IconButton } from "@/components/IconButton";
 import { useUi } from "@/features/shell/ui-store";
+import { notifyError } from "@/lib/errors";
 import { ipc } from "@/lib/ipc";
 
 export function WindowControls(): JSX.Element {
@@ -16,13 +17,16 @@ export function WindowControls(): JSX.Element {
   return (
     <fieldset className="flex items-center gap-1 m-0 border-0 p-0">
       <legend className="sr-only">{t("window.controls")}</legend>
-      <IconButton label={t("window.minimize")} onClick={() => ipc.windowMinimize()}>
+      <IconButton
+        label={t("window.minimize")}
+        onClick={() => ipc.windowMinimize().catch(notifyError)}
+      >
         <Minus className="size-4" />
       </IconButton>
 
       <IconButton
         label={maximized ? t("window.restore") : t("window.maximize")}
-        onClick={() => ipc.windowToggleMaximize()}
+        onClick={() => ipc.windowToggleMaximize().catch(notifyError)}
       >
         {maximized ? <Copy className="size-4" /> : <Square className="size-4" />}
       </IconButton>
@@ -30,7 +34,7 @@ export function WindowControls(): JSX.Element {
       <IconButton
         label={t("window.close")}
         className="hover:bg-destructive/10 hover:text-destructive"
-        onClick={() => ipc.windowClose()}
+        onClick={() => ipc.windowClose().catch(notifyError)}
       >
         <X className="size-4" />
       </IconButton>

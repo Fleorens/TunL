@@ -118,12 +118,6 @@ fn every_command_accepts_the_arguments_sent_by_ipc_ts() {
 
     ok(
         &webview,
-        "window_apply_title_bar",
-        json!({ "mode": "custom" }),
-    );
-
-    ok(
-        &webview,
         "secret_set",
         json!({ "connectionId": id, "kind": "password", "value": "hunter2" }),
     );

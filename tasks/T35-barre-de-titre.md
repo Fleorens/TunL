@@ -297,9 +297,9 @@ test("the help under the setting gives the way back", async ({ page }) => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T35 --check` affiche `OK` partout.
-- [ ] `getCurrentWindow` n'apparaît que dans `src/lib/ipc.ts` et `src/lib/events.ts`.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T35 --check` affiche `OK` partout.
+- [x] `getCurrentWindow` n'apparaît que dans `src/lib/ipc.ts` et `src/lib/events.ts`.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 - [ ] Visuel : avec la barre TunL, la barre du haut garde sa hauteur, ses boutons de fenêtre sont alignés à droite,
   Fermer rougit au survol.
 

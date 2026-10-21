@@ -11,11 +11,13 @@ import { WindowControls } from "@/features/shell/WindowControls";
 export function TopBar() {
   const { t } = useTranslation();
   const toggleSidebar = useUi((state) => state.toggleSidebar);
-  const windowChrome = useUi((state) => state.windowChrome);
+  const custom = useUi((state) => state.windowChrome.mode === "custom");
+  // Present (empty) with the TunL title bar only: React would write `="false"` for a `false` value.
+  const drag = custom ? "" : undefined;
 
   return (
     <header
-      data-tauri-drag-region={windowChrome.mode === "custom"}
+      data-tauri-drag-region={drag}
       className="flex h-12 shrink-0 items-center gap-2 border-b bg-sidebar px-2 select-none"
     >
       <IconButton
@@ -27,13 +29,10 @@ export function TopBar() {
         <PanelLeft className="size-4" />
       </IconButton>
 
-      <Logo size={20} data-tauri-drag-region={windowChrome.mode === "custom"} />
-      <Wordmark data-tauri-drag-region={windowChrome.mode === "custom"} />
+      <Logo size={20} data-tauri-drag-region={drag} />
+      <Wordmark data-tauri-drag-region={drag} />
 
-      <div
-        data-tauri-drag-region={windowChrome.mode === "custom"}
-        className="flex flex-1 justify-center"
-      >
+      <div data-tauri-drag-region={drag} className="flex flex-1 justify-center">
         <button
           type="button"
           onClick={() => useUi.getState().openPalette("all")}
@@ -59,8 +58,12 @@ export function TopBar() {
         <Settings2 className="size-4" />
       </IconButton>
 
-      <div className="mx-1 h-6 w-px bg-border" />
-      <WindowControls />
+      {custom && (
+        <>
+          <div className="mx-1 h-6 w-px bg-border" />
+          <WindowControls />
+        </>
+      )}
     </header>
   );
 }

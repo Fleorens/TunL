@@ -20,6 +20,7 @@ import { TopBar } from "@/features/shell/TopBar";
 import { useUi } from "@/features/shell/ui-store";
 import { type ShortcutHandlers, useGlobalShortcuts } from "@/features/shell/use-global-shortcuts";
 import { useWindowChrome } from "@/features/shell/use-window-chrome";
+import { cn } from "@/lib/utils";
 
 export function AppLayout() {
   const panelRef = usePanelRef();
@@ -76,7 +77,10 @@ export function AppLayout() {
 
   return (
     <div
-      className={`flex h-dvh flex-col overflow-hidden bg-background${windowChrome.mode === "custom" && !maximized ? " border" : ""}`}
+      className={cn(
+        "flex h-dvh flex-col overflow-hidden bg-background",
+        windowChrome.mode === "custom" && !maximized && "border",
+      )}
     >
       <TopBar />
       <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">

@@ -32,9 +32,9 @@ function chrome(mode: TitleBarMode): WindowChrome {
 }
 
 export const windowHandlers: Record<string, Handler<Record<string, unknown>>> = {
-  window_apply_title_bar(_state, args) {
+  window_apply_title_bar(state, args) {
     const { mode } = arg<{ mode: TitleBarMode }>(args);
-    return { state: _state, result: chrome(mode) };
+    return { state, result: chrome(mode) };
   },
 
   window_toggle_maximize(state) {

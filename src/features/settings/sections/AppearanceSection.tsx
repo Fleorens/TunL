@@ -57,7 +57,9 @@ export function AppearanceSection() {
         options={titleBarOptions}
         onChange={(next) => saveSettings((s) => ({ ...s, ui: { ...s.ui, titleBar: next } }))}
         description={
-          forced ? t("settings.appearance.titleBarForced") : t("settings.appearance.titleBarHelp")
+          forced && titleBar === "custom"
+            ? t("settings.appearance.titleBarForced")
+            : t("settings.appearance.titleBarHelp")
         }
       />
       <SettingSwitch

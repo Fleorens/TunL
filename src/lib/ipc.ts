@@ -33,12 +33,11 @@ function call<T>(command: string, args?: Args): Promise<T> {
 }
 
 /**
- * Run a window action inside Tauri only (`getCurrentWindow()` throws outside the window, like `Channel`). The
- * three window buttons (T35) go through here; the mock does nothing.
+ * Run a window action on the real window inside Tauri only (`getCurrentWindow()` throws outside the window, like
+ * `Channel`); outside it, the mock handles `command`. The three window buttons (T35) go through here.
  */
-function runOnWindow(run: (window: Window) => void): void {
-  if (!isTauri()) return;
-  run(getCurrentWindow());
+function runOnWindow(command: string, run: (appWindow: Window) => Promise<void>): Promise<void> {
+  return isMockBackend ? mockInvoke<void>(command) : run(getCurrentWindow());
 }
 
 /** Where a shell session reports back to the UI: its events, and its shell bytes. */
@@ -109,9 +108,10 @@ export const ipc = {
   // Window (T35): drop (or keep) the decorations for the chosen title bar, and the window buttons.
   windowApplyTitleBar: (mode: TitleBarMode) =>
     call<WindowChrome>("window_apply_title_bar", { mode }),
-  windowMinimize: () => runOnWindow((window) => window.minimize()),
-  windowToggleMaximize: () => runOnWindow((window) => window.toggleMaximize()),
-  windowClose: () => runOnWindow((window) => window.close()),
+  windowMinimize: () => runOnWindow("window_minimize", (appWindow) => appWindow.minimize()),
+  windowToggleMaximize: () =>
+    runOnWindow("window_toggle_maximize", (appWindow) => appWindow.toggleMaximize()),
+  windowClose: () => runOnWindow("window_close", (appWindow) => appWindow.close()),
 
   // Import: preview a `~/.ssh/config`, then apply the selected candidates.
   importSshConfigPreview: (path: string | null) =>
