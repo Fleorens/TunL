@@ -177,10 +177,3 @@ local qui écrit le code (voir `AGENTS.md`).
 | 4 | T17 → T21b | **validé** à la revue du 2026-10-18 (T19b ajoutée le 2026-10-11 après une revue de T17 → T19) |
 | 5 | T22 → T30 (+ T25b, T26b, T26c, T26d, T28b) | **validé** à la revue du 2026-10-20 |
 | 6 | T31 → T40 | fin du lot 5 |
-
-## Where it stands
-
-### Works today
-
-- App distribuable sur Linux : icône de marque, paquet `tunl`, entrée de bureau et metainfo AppStream, captures
-  publiques (`T36`).
