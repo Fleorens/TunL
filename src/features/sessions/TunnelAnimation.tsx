@@ -7,6 +7,10 @@ import { useReducedMotionNow } from "@/lib/motion";
 
 const DELAYS = [0, 0.4, 0.8] as const;
 
+// Scale around the centre of the viewBox. motion sets `transform-box: fill-box` on the SVG elements
+// it transforms, so the box is named explicitly for the origin to mean the same thing in both modes.
+const ORIGIN = { transformBox: "view-box", transformOrigin: "48px 48px" } as const;
+
 // Fixed rings when motion is reduced: scaled and faded from the inside out.
 const STATIC_RINGS = [
   { scale: 0.6, opacity: 0.8 },
@@ -49,7 +53,7 @@ export function TunnelAnimation({ protocol }: { protocol: Protocol }) {
         </defs>
         {[0, 1, 2].map((i) =>
           reduce ? (
-            <rect key={i} {...stroke(gradientId)} style={STATIC_RINGS[i]} />
+            <rect key={i} {...stroke(gradientId)} style={{ ...ORIGIN, ...STATIC_RINGS[i] }} />
           ) : (
             <motion.rect
               key={i}
@@ -57,7 +61,7 @@ export function TunnelAnimation({ protocol }: { protocol: Protocol }) {
               initial={{ scale: 0.6, opacity: 0.8 }}
               animate={{ scale: 1.4, opacity: 0 }}
               transition={{ duration: 1.2, delay: DELAYS[i], repeat: Infinity, ease: "easeOut" }}
-              style={{ transformOrigin: "48px 48px" }}
+              style={ORIGIN}
             />
           ),
         )}
