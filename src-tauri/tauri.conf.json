@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "TunL",
+  "productName": "tunl",
   "version": "0.1.0",
   "identifier": "io.github.fleorens.TunL",
   "build": {
@@ -42,16 +42,35 @@
     "active": true,
     "targets": ["deb", "rpm", "appimage"],
     "category": "Utility",
-    "shortDescription": "SSH, SFTP and RDP connection manager",
+    "shortDescription": "SSH, SFTP and RDP connections, with jump hosts and Wake-on-LAN",
     "longDescription": "TunL is a modern, keyboard-first SSH, SFTP and RDP connection manager for Linux.",
     "license": "GPL-3.0-or-later",
     "homepage": "https://github.com/Fleorens/TunL",
     "icon": [
       "icons/32x32.png",
+      "icons/64x64.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ]
+      "icons/icon.png"
+    ],
+    "linux": {
+      "deb": {
+        "desktopTemplate": "../packaging/linux/tunl.desktop.hbs",
+        "files": {
+          "/usr/share/metainfo/io.github.fleorens.TunL.metainfo.xml": "../packaging/linux/io.github.fleorens.TunL.metainfo.xml"
+        }
+      },
+      "rpm": {
+        "desktopTemplate": "../packaging/linux/tunl.desktop.hbs",
+        "files": {
+          "/usr/share/metainfo/io.github.fleorens.TunL.metainfo.xml": "../packaging/linux/io.github.fleorens.TunL.metainfo.xml"
+        }
+      },
+      "appimage": {
+        "files": {
+          "/usr/share/metainfo/io.github.fleorens.TunL.metainfo.xml": "../packaging/linux/io.github.fleorens.TunL.metainfo.xml"
+        }
+      }
+    }
   }
 }

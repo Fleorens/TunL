@@ -48,7 +48,8 @@ export function AboutSection() {
       <div className="flex items-center gap-4 py-3">
         <Logo size={40} />
         <div className="flex flex-col gap-0.5">
-          <span className="text-sm font-medium">{info?.name ?? "TunL"}</span>
+          {/* `info.name` is the package name `tunl` (D14); the brand is shown as a literal. */}
+          <span className="text-sm font-medium">TunL</span>
           <span className="font-mono text-xs text-muted-foreground">
             {t("settings.about.version", { version: info?.version ?? "…" })}
           </span>

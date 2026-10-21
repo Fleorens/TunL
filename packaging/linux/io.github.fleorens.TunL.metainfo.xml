@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- AppStream metadata of TunL (T36): what software centres (GNOME Software, Discover, Flathub) show. -->
+<component type="desktop-application">
+  <id>io.github.fleorens.TunL</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <name>TunL</name>
+  <summary>Connect to your servers over SSH, SFTP and RDP</summary>
+  <summary xml:lang="fr">Se connecter à ses serveurs en SSH, SFTP et RDP</summary>
+
+  <developer id="io.github.fleorens">
+    <name>Fleorens</name>
+  </developer>
+
+  <description>
+    <p>
+      TunL keeps your SSH, SFTP and RDP connections in one window: terminals in tabs, a file explorer with
+      transfers, and remote desktops through FreeRDP, even behind a chain of jump hosts.
+    </p>
+    <p xml:lang="fr">
+      TunL réunit vos connexions SSH, SFTP et RDP dans une seule fenêtre : des terminaux en onglets, un explorateur
+      de fichiers avec ses transferts, et des bureaux distants avec FreeRDP, même derrière une chaîne de bastions.
+    </p>
+    <ul>
+      <li>SSH terminal in tabs, with password, key, agent and two-factor sign-in</li>
+      <li xml:lang="fr">Terminal SSH en onglets, avec mot de passe, clé, agent et double authentification</li>
+      <li>Host keys checked, and a changed key refused with an explanation</li>
+      <li xml:lang="fr">Clés d'hôte vérifiées, et une clé changée refusée avec une explication</li>
+      <li>SFTP explorer: browse, rename, delete, upload and download with progress, drag and drop</li>
+      <li xml:lang="fr">Explorateur SFTP : parcourir, renommer, supprimer, envoyer et télécharger, glisser-déposer</li>
+      <li>RDP through FreeRDP 3, with credentials never shown to other processes</li>
+      <li xml:lang="fr">RDP avec FreeRDP 3, sans que les identifiants soient visibles des autres processus</li>
+      <li>Jump hosts, Wake-on-LAN and reachability dots</li>
+      <li xml:lang="fr">Bastions, Wake-on-LAN et pastilles de disponibilité</li>
+      <li>Passwords in the system keyring, never in a file; import of ~/.ssh/config</li>
+      <li xml:lang="fr">Mots de passe dans le trousseau du système, jamais dans un fichier ; import de ~/.ssh/config</li>
+      <li>Keyboard first: command palette, quick connect, shortcuts</li>
+      <li xml:lang="fr">Clavier d'abord : palette de commandes, connexion rapide, raccourcis</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">tunl.desktop</launchable>
+
+  <url type="homepage">https://github.com/Fleorens/TunL</url>
+  <url type="bugtracker">https://github.com/Fleorens/TunL/issues</url>
+  <url type="vcs-browser">https://github.com/Fleorens/TunL</url>
+
+  <categories>
+    <category>Network</category>
+    <category>RemoteAccess</category>
+  </categories>
+  <keywords>
+    <keyword>ssh</keyword>
+    <keyword>sftp</keyword>
+    <keyword>rdp</keyword>
+    <keyword>terminal</keyword>
+    <keyword>bastion</keyword>
+  </keywords>
+
+  <provides>
+    <binary>tunl</binary>
+  </provides>
+
+  <requires>
+    <display_length compare="ge">960</display_length>
+  </requires>
+  <supports>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </supports>
+
+  <branding>
+    <color type="primary" scheme_preference="light">#2196a7</color>
+    <color type="primary" scheme_preference="dark">#6e41db</color>
+  </branding>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Home: favorites, recent connections and quick connect</caption>
+      <image>https://raw.githubusercontent.com/Fleorens/TunL/main/docs/screenshots/home.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>An SSH session in a tab</caption>
+      <image>https://raw.githubusercontent.com/Fleorens/TunL/main/docs/screenshots/terminal.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>The SFTP explorer and its transfers</caption>
+      <image>https://raw.githubusercontent.com/Fleorens/TunL/main/docs/screenshots/sftp.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>The connection editor</caption>
+      <image>https://raw.githubusercontent.com/Fleorens/TunL/main/docs/screenshots/editor.png</image>
+    </screenshot>
+  </screenshots>
+
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <release version="0.1.0" date="2026-10-20" type="development">
+      <description>
+        <p>First preview: SSH, SFTP and RDP connections, jump hosts, Wake-on-LAN.</p>
+      </description>
+    </release>
+  </releases>
+</component>

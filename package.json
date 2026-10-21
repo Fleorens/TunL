@@ -12,6 +12,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
+    "check:packaging": "scripts/check-packaging.sh",
+    "screenshots": "playwright test --config scripts/screenshots/playwright.config.ts",
     "tauri": "tauri",
     "test-env:up": "scripts/test-env/up.sh",
     "test-env:down": "scripts/test-env/down.sh",
