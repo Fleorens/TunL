@@ -165,6 +165,15 @@ impl AppState {
         *current = next.clone();
         Ok(next)
     }
+
+    /// Sessions (shell, SFTP, RDP), transfers and prompts: everything the page was showing.
+    /// Returns how many sessions were open.
+    pub fn end_all_sessions(&self) -> usize {
+        let count = self.sessions.close_all();
+        self.transfers.cancel_all();
+        self.prompts.cancel_all();
+        count
+    }
 }
 
 /// File name of the store, mirrored here so the setup logs match (docs/01-architecture.md §9).

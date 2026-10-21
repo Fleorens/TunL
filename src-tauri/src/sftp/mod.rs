@@ -120,6 +120,17 @@ impl TransferRegistry {
         }
     }
 
+    /// Cancel every running transfer. Each one forgets itself as it ends.
+    pub fn cancel_all(&self) {
+        let tokens: Vec<CancellationToken> = match self.running.lock() {
+            Ok(map) => map.values().cloned().collect(),
+            Err(_) => return,
+        };
+        for token in tokens {
+            token.cancel();
+        }
+    }
+
     /// Forget the transfer `id`. Idempotent.
     pub fn remove(&self, id: Uuid) {
         if let Ok(mut map) = self.running.lock() {
