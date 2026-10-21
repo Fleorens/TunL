@@ -112,6 +112,8 @@ redemander une confiance déjà accordée. Toute nouvelle confiance est écrite 
 par les bords, les menus et le double-clic, avec des écarts entre KDE et GNOME sous Wayland.
 La v1 garde la barre native et soigne la barre d'outils interne. Une barre personnalisée est une option (T35),
 avec retour automatique aux décorations natives.
+T35 la range dans Paramètres › Apparence › Barre de titre (défaut : Système) ; la barre du haut devient alors la
+barre de titre, et `TUNL_TITLEBAR=native` impose la barre du système quoi que dise le réglage.
 
 ## D14 — Identifiant et nom
 
