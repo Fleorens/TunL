@@ -162,7 +162,8 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | T37 | Paquets deb / rpm / AppImage + CI GitHub Actions (recette, audits, publication brouillon) | T36 | moyen | Sonnet 5 · high | validée |
 | T38 | Flatpak (manifeste, FreeRDP embarqué, sources hors ligne) → Flathub | T37 | **élevé** | Opus 5 · high | validée |
 | T39 | README public, CONTRIBUTING, LICENSE, CHANGELOG | T37 | faible | Haiku 4.5 · low | validée |
-| T40 | Revue sécurité finale + liste de publication (**faite par Claude**) | T38, T39 | — | Opus 5 · xhigh | prête |
+| T40a | Revue sécurité, 1ʳᵉ passe sur le code (constats seulement, aucune correction) | T38, T39 | moyen | Cyber Tiel | prête |
+| T40 | Revue sécurité finale + liste de publication (**faite par Claude**) | T40a | — | Opus 5 · xhigh | prête |
 
 ## Chemin critique
 
