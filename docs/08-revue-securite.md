@@ -228,9 +228,10 @@ défaut corrigé est gardé par un test.
 
 - [ ] `RUSTSEC-2023-0071` (`rsa`, attaque Marvin) : TunL ne déchiffre jamais avec RSA ; exception gardée jusqu'à une
   version corrigée.
-- [ ] Avis `npm audit` des outils de build et de test (`braces`, `@vitest/mocker`) : rien n'est livré dans l'app.
-- [ ] Cache Rust (`Swatinem/rust-cache`) dans le job de publication : un cache empoisonné devrait venir d'une branche
-  de ce dépôt (les caches des PR ne sont pas lus sur un tag).
+- [ ] Avis `npm audit` sur `braces` (via `micromatch` → `fast-glob` → la CLI `shadcn`) : déni de service par un motif
+  de fichiers piégé, dans un outil de développement qu'on lance soi-même ; rien n'est livré dans l'app, et aucune
+  version de `shadcn` ne le corrige. (`@vitest/mocker` : corrigé, Vitest passé en 5.0.5.)
+- ~~Cache Rust dans le job de publication~~ : corrigé, le job de publication n'utilise plus de cache.
 - [ ] Sondes de disponibilité : une connexion TCP par adresse toutes les 60 s, sans rien envoyer ; `sshguard` ou
   `fail2ban` peuvent la compter comme une tentative. Désactivables dans les Paramètres.
 
