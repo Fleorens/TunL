@@ -173,3 +173,69 @@ Vérifications qui demandent la vraie app, une session réelle ou des droits, et
 - **S16** : relire `cargo audit` et confirmer que russh dépend d'un rsa patché (supprimer la ligne d'ignore, constat 1).
 - **Interface** : un prompt keyboard-interactive (2FA) masque-t-il la réponse quand le serveur pose `echo:false` ? La donnée porte le drapeau (`PromptKind::KeyboardInteractive.prompts[].echo`), le masquage dépend de l'UI — à regarder à l'écran.
 - **Flatpak** : un mot de passe mémorisé ne se lit pas hors du bac à sable (`secret-tool search application io.github.fleorens.TunL`) ; `flatpak run --command=sh io.github.fleorens.TunL -c 'ls ~'`.
+
+## Passe 2 — revue finale (Claude, 2026-10-22)
+
+Relecture de la passe 1, recherche des failles qu'elle n'a pas couvertes, vérifications sur le binaire. Chaque
+défaut corrigé est gardé par un test.
+
+### 1. Tri des constats de la passe 1
+
+| # | Verdict | Pourquoi |
+|---|---|---|
+| 1 | **faux** | `RUSTSEC-2023-0071` n'apparaît pas parce que `src-tauri/.cargo/audit.toml` l'ignore. Sans ce fichier (`cargo audit -f src-tauri/Cargo.lock` depuis la racine) : « 1 vulnerability found », `rsa 0.10.0-rc.18`, aucune version corrigée. L'exception reste, sa justification tient (TunL signe avec RSA, ne déchiffre jamais). |
+| 2 | juste, attribution corrigée | Les 6 avertissements existent, mais `glib` et `proc-macro-error` viennent de `gtk` (Tauri), `yoke-derive` de `tao`/`tauri` ; seuls `zbus_names`/`zvariant*` viennent d'`oo7`. Aucun n'est exploitable par TunL. |
+| 3 | rejeté | Un nom de fichier venu du serveur, rendu à l'utilisateur dans une erreur SFTP, n'est pas un secret : S7 ne s'applique pas. |
+| (§4) | conforme | La réponse 2FA est masquée quand le serveur pose `echo: false` : `src/features/prompts/PromptInteractive.tsx:66`. |
+
+### 2. Constats de la passe 2
+
+| # | Gravité | Règle | Où | Scénario | État |
+|---|---|---|---|---|---|
+| A | à corriger | S5, S12 | `store/exchange.rs`, `plan_import` | Un export JSON reçu d'un tiers ramenait, sans le dire, les arguments FreeRDP libres d'une connexion RDP (`/drive:`, `/shell:`…) et le partage du dossier personnel. | corrigé `b4f88f7` (retirés, le toast le dit) ; `store/exchange_untrusted_tests.rs` |
+| B | à corriger | S6 | `ssh/forward.rs`, `bind_tunnel` | Port de tunnel de la connexion déjà pris → port aléatoire → nouvelle entrée de certificat : `/cert:tofu` acceptait n'importe quel certificat. | corrigé : sur le port de repli, pas de `/cert:tofu`, FreeRDP demande ; `rdp/tunnel_fallback_tests.rs` |
+| C | à corriger | S6 | `model/validate_args.rs` | Un argument supplémentaire `/server-name:` (passé en dernier) annulait la vérification du certificat derrière un bastion (T28c). | corrigé `bd96796` (réservé) ; `model/review_lot6_tests.rs` |
+| D | mineur | — | `plan_import` | Un groupe au nom invalide faisait échouer tout l'import. | corrigé `b4f88f7` |
+| E | mineur | — | `features/connections/exchange.ts` | Le sélecteur de l'import n'avait pas de filtre JSON. | corrigé `b4f88f7` |
+
+### 3. Vérifications faites
+
+- **CSP sur le binaire** (`npx tauri build --debug --no-bundle`, lancé sous Xvfb avec l'inspecteur WebKit) : la
+  politique arrive en en-tête (pas de balise `meta`). Violations relevées par `securitypolicyviolation` :
+  `script-src-elem inline` (script en ligne), `script-src-elem https://cdnjs…` (script externe), `connect-src
+  https://example.com/` (`fetch` refusé, `TypeError`), `script-src eval` (`setTimeout` avec une chaîne). Un `eval`
+  lancé depuis la console de l'inspecteur passe : c'est l'inspecteur qui contourne la CSP, pas la page.
+- **Menu contextuel** : un `contextmenu` sur la page est annulé ; dans un champ de saisie, il passe (menu natif).
+- **S4** : `rdp/launch_tests.rs`, `the_arguments_go_on_stdin_and_only_args_from_stdin_on_the_command_line` lance un
+  faux FreeRDP et vérifie que son `argv` vaut `/args-from:stdin` seul ; `launch()` est le seul lancement de FreeRDP.
+- **S12** : `grep -rn "Command::new" src-tauri/src` → deux sites seulement, `rdp/launch.rs:46` (le client) et
+  `rdp/detect.rs:133` (sa détection). Ni l'import `~/.ssh/config` ni l'import JSON ne peuvent lancer un programme.
+- **S16** : `npm audit --omit=dev` → 0 ; `npm audit` complet → `@vitest/mocker` (modéré) et `braces` (élevé),
+  outils de test et de build seulement.
+- **Flatpak** (manifeste) : chaque `finish-args` est commenté ; ni `--filesystem=home`, ni
+  `--talk-name=org.freedesktop.Flatpak` ; `~/.ssh` en lecture seule ; FreeRDP compilé dans le bac à sable.
+- **CI** : actions épinglées par commit, `permissions: contents: read` sauf le job de publication (`contents: write`,
+  brouillon seulement), aucun `pull_request_target`, aucune expression `${{ github.event… }}` dans un `run`.
+
+### 4. Menaces : complément
+
+| Actif | Menace | Protection | Test |
+|---|---|---|---|
+| Config importée | export JSON d'un tiers (options RDP) | options retirées à l'import (constat A) | `store/exchange_untrusted_tests.rs` |
+| Confiance dans un serveur RDP | certificat non vérifié derrière un bastion | port stable + `/server-name` (T28c), réservé (C), repli sans tofu (B) | `rdp/tunnel_cert_tests.rs`, `model/review_lot6_tests.rs`, `rdp/tunnel_fallback_tests.rs` |
+
+### 5. Risques à accepter par écrit (Florian)
+
+- [ ] `RUSTSEC-2023-0071` (`rsa`, attaque Marvin) : TunL ne déchiffre jamais avec RSA ; exception gardée jusqu'à une
+  version corrigée.
+- [ ] Avis `npm audit` des outils de build et de test (`braces`, `@vitest/mocker`) : rien n'est livré dans l'app.
+- [ ] Cache Rust (`Swatinem/rust-cache`) dans le job de publication : un cache empoisonné devrait venir d'une branche
+  de ce dépôt (les caches des PR ne sont pas lus sur un tag).
+- [ ] Sondes de disponibilité : une connexion TCP par adresse toutes les 60 s, sans rien envoyer ; `sshguard` ou
+  `fail2ban` peuvent la compter comme une tentative. Désactivables dans les Paramètres.
+
+### 6. Reste à faire à la main (Florian, sur son poste)
+
+S1 (`grep` du mot de passe après une vraie session et dans un export), S8 (logs après usage), S9 (`stat` du dossier
+de configuration), S15 (`ss -tnp` / `tcpdump`, sondes coupées puis actives), le Flatpak (T40 §3 : `secret-tool`,
+`ls ~` dans le bac à sable), puis la liste de publication (T40 §5 : tag signé, paquets du brouillon).
