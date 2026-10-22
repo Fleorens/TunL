@@ -70,6 +70,6 @@ Crée `docs/08-revue-securite.md` avec un titre `# Revue de sécurité — TunL 
 
 ## Critères d'acceptation
 
-- [ ] `docs/08-revue-securite.md` contient les quatre parties du format, une sous-section par règle S1 → S16.
-- [ ] Chaque constat donne `fichier:ligne` et un scénario concret.
-- [ ] `git diff --stat` du commit ne touche que `docs/08-revue-securite.md` et `tasks/README.md`.
+- [x] `docs/08-revue-securite.md` contient les quatre parties du format, une sous-section par règle S1 → S16.
+- [x] Chaque constat donne `fichier:ligne` et un scénario concret.
+- [x] `git diff --stat` du commit ne touche que `docs/08-revue-securite.md` et `tasks/README.md`.

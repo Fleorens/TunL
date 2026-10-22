@@ -11,3 +11,5 @@ mod detect_tests;
 mod launch_tests;
 #[cfg(test)]
 mod tunnel_cert_tests;
+#[cfg(test)]
+mod tunnel_fallback_tests;

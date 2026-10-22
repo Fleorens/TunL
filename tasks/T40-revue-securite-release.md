@@ -78,8 +78,8 @@ noir sur blanc).
 
 ## Critères d'acceptation
 
-- [ ] `docs/08-revue-securite.md` : une section par règle (S1–S16), CSP, Flatpak, menaces, avec les commandes et
+- [x] `docs/08-revue-securite.md` : une section par règle (S1–S16), CSP, Flatpak, menaces, avec les commandes et
       leurs résultats.
 - [ ] Aucun point bloquant ouvert ; chaque risque accepté l'est par écrit, par Florian.
-- [ ] Chaque défaut trouvé est corrigé et gardé par un test ou une règle.
+- [x] Chaque défaut trouvé est corrigé et gardé par un test ou une règle.
 - [ ] La publication `v0.1.0` existe en brouillon, ses paquets vérifiés.

@@ -46,18 +46,43 @@ pub fn tunnel_port(connection_id: Uuid) -> u16 {
     TUNNEL_PORT_FIRST + offset
 }
 
-/// The connection's own port if free, otherwise any free loopback port (`bind_local`).
-pub async fn bind_tunnel(connection_id: Uuid) -> AppResult<TcpListener> {
+/// The tunnel of a connection: its listener, and whether it holds the connection's own port.
+///
+/// `stable` is true when the listener holds `tunnel_port(id)` (so FreeRDP re-finds the certificate
+/// it trusted last time, T28c), false when it fell back to a free loopback port.
+pub struct TunnelListener {
+    pub listener: TcpListener,
+    pub stable: bool,
+}
+
+/// The connection's own port if free (stable), otherwise any free loopback port (`bind_local`).
+///
+/// The caller keeps `stable` to know whether the tunnel port is the connection's own one, so it can
+/// adapt the certificate policy when it is not (see `tunnel_cert_policy`).
+pub async fn bind_tunnel_checked(connection_id: Uuid) -> AppResult<TunnelListener> {
     match TcpListener::bind((Ipv4Addr::LOCALHOST, tunnel_port(connection_id))).await {
-        Ok(listener) => Ok(listener),
+        Ok(listener) => Ok(TunnelListener {
+            listener,
+            stable: true,
+        }),
         Err(error) => {
             log::info!(
                 "tunnel port {} is taken, any free loopback port ({error})",
                 tunnel_port(connection_id)
             );
-            bind_local().await
+            Ok(TunnelListener {
+                listener: bind_local().await?,
+                stable: false,
+            })
         }
     }
+}
+
+/// The connection's own port if free, otherwise any free loopback port (`bind_local`).
+pub async fn bind_tunnel(connection_id: Uuid) -> AppResult<TcpListener> {
+    bind_tunnel_checked(connection_id)
+        .await
+        .map(|tunnel| tunnel.listener)
 }
 
 /// Carries each connection accepted on `listener` over `via` to `host:port`, until `cancel`.

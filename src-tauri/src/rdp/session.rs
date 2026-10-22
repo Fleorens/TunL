@@ -11,12 +11,12 @@ use tokio_util::sync::CancellationToken;
 use uuid::Uuid;
 
 use crate::error::{AppError, AppResult};
-use crate::model::{ProtocolSettings, RdpSettings, SshDefaults};
+use crate::model::{ProtocolSettings, RdpCertPolicy, RdpSettings, SshDefaults};
 use crate::rdp::args::{RdpCredentials, RdpEndpoint, build_tunnel_args};
 use crate::rdp::launch::{launch, watch};
 use crate::sessions::{SessionEvent, SessionSink, StepKind};
 use crate::ssh::SshContext;
-use crate::ssh::forward::{bind_tunnel, forward};
+use crate::ssh::forward::{bind_tunnel_checked, forward};
 use crate::ssh::link::{SshLink, establish};
 use crate::ssh::session::{SessionTarget, SshTarget, connect_step, resolve_target};
 use crate::store::Store;
@@ -86,6 +86,15 @@ pub struct RdpRun {
     pub cancel: CancellationToken,
 }
 
+/// The certificate policy to run behind a tunnel: a fallback port may hold a different machine, so
+/// a trust-on-first-use policy becomes a prompt (so FreeRDP asks before trusting it, T28c).
+pub fn tunnel_cert_policy(policy: RdpCertPolicy, stable_port: bool) -> RdpCertPolicy {
+    match (policy, stable_port) {
+        (RdpCertPolicy::Tofu, false) => RdpCertPolicy::Prompt,
+        _ => policy,
+    }
+}
+
 /// Establish the link behind a bastion, open the local tunnel, and point the target at it.
 ///
 /// Returns the link on success (so the caller can disconnect it), or `None` if the link or the tunnel
@@ -103,17 +112,29 @@ async fn establish_bastion(
 
     // The `Open` step opens the connection's own loopback port; nothing off this machine can reach
     // it (S15). A stable port lets FreeRDP re-find the certificate it trusted last time (T28c).
-    let listener = match connect_step(cancel.clone(), sink, StepKind::Open, "tunnel", || async {
-        bind_tunnel(target.connection_id).await
+    let tunnel = match connect_step(cancel.clone(), sink, StepKind::Open, "tunnel", || async {
+        bind_tunnel_checked(target.connection_id).await
     })
     .await
     {
-        Ok(listener) => listener,
+        Ok(tunnel) => tunnel,
         Err(()) => {
             link.disconnect().await;
             return None;
         }
     };
+
+    // If the tunnel fell back to another port, it may be a different machine: a trust-on-first-use
+    // policy would trust it silently, so downgrade it to a prompt (T28c). No secret leaves the log.
+    if !tunnel.stable && target.settings.cert_policy == RdpCertPolicy::Tofu {
+        target.settings = RdpSettings {
+            cert_policy: tunnel_cert_policy(target.settings.cert_policy, tunnel.stable),
+            ..target.settings.clone()
+        };
+        log::warn!("tunnel port taken: FreeRDP will ask before trusting the certificate");
+    }
+
+    let listener = tunnel.listener;
 
     let local_port = match listener.local_addr() {
         Ok(addr) => addr.port(),
