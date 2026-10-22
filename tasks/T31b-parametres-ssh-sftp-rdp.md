@@ -410,7 +410,7 @@ test("the RDP client found, then a program chosen by hand", async ({ page }) => 
 - [x] `git diff src-tauri/capabilities/default.json` est vide (S14).
 - [x] `grep -rn "plugin-dialog" src` ne trouve que `src/lib/files.ts`.
 - [x] Aucune nouvelle exception `project-rules: allow`.
-- [ ] Visuel : la liste des serveurs connus reste lisible avec une longue empreinte (tronquée, pas de défilement
+- [x] Visuel : la liste des serveurs connus reste lisible avec une longue empreinte (tronquée, pas de défilement
       horizontal), en clair et en sombre.
 
 ## À regarder par Florian

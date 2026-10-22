@@ -13,4 +13,6 @@ pub(crate) use validate_args::validate_extra_args;
 pub use validate_settings::{normalize_group_input, normalize_settings};
 
 #[cfg(test)]
+mod review_lot6_tests;
+#[cfg(test)]
 mod tests;

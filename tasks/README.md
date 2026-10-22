@@ -4,10 +4,12 @@
 L'orchestrateur (Claude) écrit les fiches détaillées **par lots** : chaque lot est ajusté après relecture de ce que
 le modèle a réellement livré. Une fiche qui cite des signatures de code pas encore écrit finirait par mentir.
 
-## Où on en est (2026-10-20)
+## Où on en est (2026-10-22)
 
 - Lots 1 à 5 : **validés** (T01 → T30). Revue du lot 5 le 2026-10-20 : quatre défauts corrigés et figés
   (`e2e/review-lot5.spec.ts`, `src-tauri/src/sftp/transfer_reserve_tests.rs`), voir le commit de revue.
+- Lot 6 : **validé** (T28c, T30b, T31 → T39). Revue du 2026-10-22 : deux défauts figés (`e2e/review-lot6.spec.ts`,
+  `src-tauri/src/model/review_lot6_tests.rs`). Reste T40 (revue de sécurité, faite par Claude).
 - À partir de T17b, `npm run review` démarre aussi les conteneurs SSH de test (podman, `npm run test:ssh`).
 - En attente de Florian, dans la vraie app (`npm run tauri dev`) :
   - T10 et T11 : créer, modifier et supprimer une connexion, avec un bastion (voir « À regarder » des deux fiches) ;
@@ -20,6 +22,13 @@ le modèle a réellement livré. Une fiche qui cite des signatures de code pas e
     `.part` après annulation), envoi par le sélecteur et par glisser-déposer depuis Dolphin ;
   - T28b (FreeRDP 3 installé) : une session RDP directe, puis via bastion ; T29 : un réveil réel ; T30 : les pastilles
     sur ton réseau.
+  - T28c : une session RDP via bastion, deux fois de suite : la 2ᵉ ne redemande pas le certificat ;
+  - T30b : F5 dans la vraie app ferme les sessions SSH (`ss -tn` côté serveur) ; le focus revient au terminal ;
+  - T31 → T32 : les Paramètres sur tes vraies données, un export puis un import dans un profil vide ;
+  - T33 : la coche qui se dessine, et le tunnel en thème clair ; T34 : l'anneau de focus sur un onglet, les
+    infobulles de la barre SFTP ;
+  - T35 : la barre TunL sous KDE (déplacer, double-clic pour maximiser, Fermer rougit au survol) ;
+  - T36 → T38 : un `npm run tauri build` (paquet `tunl`, entrée de menu, icône), puis le Flatpak (`flatpak-builder`).
 
 ## Comment Florian fait tourner une fiche
 
@@ -124,7 +133,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | T27 | Détection FreeRDP + constructeur d'arguments pur + tests exhaustifs | T08 | moyen | Sonnet 5 · medium | validée |
 | T28 | RDP : lancement par `/args-from:stdin`, suivi, journal filtré, tunnel via bastion (+ ipc et mock) | T23, T27 | **élevé** | Opus 5 · high | validée |
 | T28b | Onglet RDP : carte de session, journal, fin traduite, client introuvable | T28, T26d | moyen | Sonnet 5 · medium | validée |
-| T28c | RDP via bastion : port de tunnel stable et `/server-name`, pour que FreeRDP vérifie le certificat | T28b | moyen | Sonnet 5 · medium | livrée |
+| T28c | RDP via bastion : port de tunnel stable et `/server-name`, pour que FreeRDP vérifie le certificat | T28b | moyen | Sonnet 5 · medium | validée |
 
 ### M6 — Wake-on-LAN et disponibilité
 
@@ -132,27 +141,27 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 |---|---|---|---|---|---|
 | T29 | WoL : paquet magique, bouton, réveil avant connexion + attente du port | T22 | faible | Sonnet 5 · low | validée |
 | T30 | Sondes de disponibilité (TCP, pastilles, latence) | T09 | moyen | Sonnet 5 · medium | validée |
-| T30b | Corrections de la vraie app : une sonde par adresse, sessions fermées au rechargement, focus après un dialogue, opener 2.7 | T30 | moyen | Sonnet 5 · medium | livrée |
+| T30b | Corrections de la vraie app : une sonde par adresse, sessions fermées au rechargement, focus après un dialogue, opener 2.7 | T30 | moyen | Sonnet 5 · medium | validée |
 
 ### M7 — Finitions
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T31 | Onglet Paramètres : apparence, terminal, disponibilité, à propos | T30b | moyen | Sonnet 5 · medium | livrée |
-| T31b | Paramètres : SSH (valeurs par défaut, serveurs connus), SFTP (dossier de téléchargement), RDP (client) | T31 | moyen | Sonnet 5 · medium | livrée |
-| T32 | Export / import JSON des connexions (sans secrets), section « Sauvegarde » des Paramètres | T31b | faible | Sonnet 5 · medium | livrée |
-| T33 | Animations : tunnel de connexion, coche tracée, « Réduire les animations » aussi pour le CSS | T32 | moyen | Sonnet 5 · medium | livrée |
-| T34 | Accessibilité et clavier : `IconButton` partout, flèches dans la sidebar et les onglets, aide F1 | T33 | moyen | Sonnet 5 · medium | livrée |
-| T35 | *(optionnelle)* Barre de titre personnalisée avec repli natif | T34 | **élevé** | Opus 5 · high | livrée |
+| T31 | Onglet Paramètres : apparence, terminal, disponibilité, à propos | T30b | moyen | Sonnet 5 · medium | validée |
+| T31b | Paramètres : SSH (valeurs par défaut, serveurs connus), SFTP (dossier de téléchargement), RDP (client) | T31 | moyen | Sonnet 5 · medium | validée |
+| T32 | Export / import JSON des connexions (sans secrets), section « Sauvegarde » des Paramètres | T31b | faible | Sonnet 5 · medium | validée |
+| T33 | Animations : tunnel de connexion, coche tracée, « Réduire les animations » aussi pour le CSS | T32 | moyen | Sonnet 5 · medium | validée |
+| T34 | Accessibilité et clavier : `IconButton` partout, flèches dans la sidebar et les onglets, aide F1 | T33 | moyen | Sonnet 5 · medium | validée |
+| T35 | *(optionnelle)* Barre de titre personnalisée avec repli natif | T34 | **élevé** | Opus 5 · high | validée |
 
 ### M8 — Distribution
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T36 | Icône d'app (SVG fourni dans `branding/`), paquet `tunl`, `.desktop`, metainfo AppStream, captures | T34 | faible | Sonnet 5 · low | livrée |
-| T37 | Paquets deb / rpm / AppImage + CI GitHub Actions (recette, audits, publication brouillon) | T36 | moyen | Sonnet 5 · high | livrée |
-| T38 | Flatpak (manifeste, FreeRDP embarqué, sources hors ligne) → Flathub | T37 | **élevé** | Opus 5 · high | livrée |
-| T39 | README public, CONTRIBUTING, LICENSE, CHANGELOG | T37 | faible | Haiku 4.5 · low | livrée |
+| T36 | Icône d'app (SVG fourni dans `branding/`), paquet `tunl`, `.desktop`, metainfo AppStream, captures | T34 | faible | Sonnet 5 · low | validée |
+| T37 | Paquets deb / rpm / AppImage + CI GitHub Actions (recette, audits, publication brouillon) | T36 | moyen | Sonnet 5 · high | validée |
+| T38 | Flatpak (manifeste, FreeRDP embarqué, sources hors ligne) → Flathub | T37 | **élevé** | Opus 5 · high | validée |
+| T39 | README public, CONTRIBUTING, LICENSE, CHANGELOG | T37 | faible | Haiku 4.5 · low | validée |
 | T40 | Revue sécurité finale + liste de publication (**faite par Claude**) | T38, T39 | — | Opus 5 · xhigh | prête |
 
 ## Chemin critique
@@ -176,4 +185,4 @@ local qui écrit le code (voir `AGENTS.md`).
 | 3 | T12, T15, T15b, T13, T14, T16 | **validé** à la revue du 2026-09-28 |
 | 4 | T17 → T21b | **validé** à la revue du 2026-10-18 (T19b ajoutée le 2026-10-11 après une revue de T17 → T19) |
 | 5 | T22 → T30 (+ T25b, T26b, T26c, T26d, T28b) | **validé** à la revue du 2026-10-20 |
-| 6 | T31 → T40 | fin du lot 5 |
+| 6 | T31 → T40 (+ T28c, T30b) | **validé** à la revue du 2026-10-22 (T40 reste à faire) |

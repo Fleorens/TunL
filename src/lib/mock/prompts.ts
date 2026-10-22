@@ -35,19 +35,19 @@ export const MOCK_KNOWN_HOSTS: readonly KnownHostEntry[] = [
     host: "192.168.1.1",
     port: 22,
     keyType: "ssh-ed25519",
-    fingerprint: "SHA256:MockOwnHostKeyOne",
+    fingerprint: "SHA256:uNiVztksCsDhcc0u9e8BujQXVUpKZIDTMczCvj3tD2s",
   },
   {
     host: "192.168.1.10",
     port: 22,
     keyType: "ssh-ed25519",
-    fingerprint: "SHA256:MockOwnHostKeyTen",
+    fingerprint: "SHA256:p2QAMXNIC1TJYWeIOttrVc98/R1BUFWu3/LiyKgUfQM",
   },
   {
     host: "192.168.1.2",
     port: 22,
     keyType: "ecdsa-sha2-nistp256",
-    fingerprint: "SHA256:MockOwnHostKeyTwo",
+    fingerprint: "SHA256:Dx9Kq3eW7xYhV2mFzJp8LcTb4NsR6uGa1oQiE5kHw0Y",
   },
 ];
 
@@ -58,7 +58,7 @@ function learnedEntry(key: string): KnownHostEntry {
     host: key.slice(0, at),
     port: Number(key.slice(at + 1)),
     keyType: "ssh-ed25519",
-    fingerprint: "SHA256:MockLearnedHostKey",
+    fingerprint: "SHA256:a7Lm2TqZ9cVb4XeR1nKs8YwHd3PfJu6GoQi0BtNz5Ec",
   };
 }
 

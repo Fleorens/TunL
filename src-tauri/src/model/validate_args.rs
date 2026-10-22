@@ -123,6 +123,7 @@ pub(crate) fn validate_extra_args(args: &[String]) -> AppResult<Vec<String>> {
         "/gu:",
         "/gd:",
         "/cert:",
+        "/server-name",
     ];
     let mut out = Vec::with_capacity(args.len());
     for arg in args {
