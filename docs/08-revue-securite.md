@@ -224,12 +224,12 @@ défaut corrigé est gardé par un test.
 | Config importée | export JSON d'un tiers (options RDP) | options retirées à l'import (constat A) | `store/exchange_untrusted_tests.rs` |
 | Confiance dans un serveur RDP | certificat non vérifié derrière un bastion | port stable + `/server-name` (T28c), réservé (C), repli sans tofu (B) | `rdp/tunnel_cert_tests.rs`, `model/review_lot6_tests.rs`, `rdp/tunnel_fallback_tests.rs` |
 
-### 5. Risques à accepter par écrit (Florian)
+### 5. Risques acceptés par écrit (Florian, 2026-10-22)
 
-- [ ] `RUSTSEC-2023-0071` (`rsa`, attaque Marvin) : aucune version corrigée. TunL ne déchiffre jamais avec RSA, il signe
+- [x] `RUSTSEC-2023-0071` (`rsa`, attaque Marvin) : aucune version corrigée. TunL ne déchiffre jamais avec RSA, il signe
   une fois par connexion ; une clé ed25519 ou l'agent SSH ne passent pas par cette crate. Exception gardée jusqu'à une
   version corrigée.
-- [ ] Avis `npm audit` sur `braces` (via `micromatch` → `fast-glob` → la CLI `shadcn`) : déni de service par un motif
+- [x] Avis `npm audit` sur `braces` (via `micromatch` → `fast-glob` → la CLI `shadcn`) : déni de service par un motif
   de fichiers piégé, dans un outil de développement qu'on lance soi-même ; rien n'est livré dans l'app, et aucune
   version de `shadcn` ne le corrige. (`@vitest/mocker` : corrigé, Vitest passé en 5.0.5.)
 - ~~Cache Rust dans le job de publication~~ : corrigé, le job de publication n'utilise plus de cache.
