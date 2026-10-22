@@ -239,6 +239,6 @@ défaut corrigé est gardé par un test.
 
 ### 6. Reste à faire à la main (Florian, sur son poste)
 
-S1 (`grep` du mot de passe après une vraie session et dans un export), S8 (logs après usage), S9 (`stat` du dossier
+Tout est regroupé dans `scripts/security-checks.sh` (interactif, résultats dans `~/tunl-t40-checks.txt`) : S1 (`grep` du mot de passe après une vraie session et dans un export), S8 (logs après usage), S9 (`stat` du dossier
 de configuration), S15 (`ss -tnp` / `tcpdump`, sondes coupées puis actives), le Flatpak (T40 §3 : `secret-tool`,
 `ls ~` dans le bac à sable), puis la liste de publication (T40 §5 : tag signé, paquets du brouillon).
