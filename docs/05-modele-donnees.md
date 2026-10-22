@@ -179,7 +179,7 @@ pub struct TerminalSettings {
 }
 pub struct SshDefaults { pub connect_timeout_secs: u32 /* 15, 1..=120 */, pub keepalive_secs: u32 /* 30, 0..=3600 */ }
 pub struct RdpDefaults { pub client_path: Option<String> }
-pub struct ReachabilitySettings { pub enabled: bool /* true */, pub interval_secs: u32 /* 60, 15..=3600 */ }
+pub struct ReachabilitySettings { pub enabled: bool /* true */, pub interval_secs: u32 /* 300, 15..=3600 */ }
 pub struct UiSettings {
     pub sidebar_width: u16,                     // 272 (220..=400)
     pub sidebar_collapsed: bool,                // false

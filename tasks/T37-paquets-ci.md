@@ -279,9 +279,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
           toolchain: stable
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
-        with:
-          workspaces: src-tauri
+      # No Rust cache here: the packages are built from scratch, so no cache written by another run can end up
+      # in a release (T40).
       - run: npm ci
       - name: The tag is the app's version
         run: node scripts/check-version.mjs "${GITHUB_REF_NAME}"

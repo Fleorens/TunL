@@ -226,14 +226,16 @@ défaut corrigé est gardé par un test.
 
 ### 5. Risques à accepter par écrit (Florian)
 
-- [ ] `RUSTSEC-2023-0071` (`rsa`, attaque Marvin) : TunL ne déchiffre jamais avec RSA ; exception gardée jusqu'à une
+- [ ] `RUSTSEC-2023-0071` (`rsa`, attaque Marvin) : aucune version corrigée. TunL ne déchiffre jamais avec RSA, il signe
+  une fois par connexion ; une clé ed25519 ou l'agent SSH ne passent pas par cette crate. Exception gardée jusqu'à une
   version corrigée.
 - [ ] Avis `npm audit` sur `braces` (via `micromatch` → `fast-glob` → la CLI `shadcn`) : déni de service par un motif
   de fichiers piégé, dans un outil de développement qu'on lance soi-même ; rien n'est livré dans l'app, et aucune
   version de `shadcn` ne le corrige. (`@vitest/mocker` : corrigé, Vitest passé en 5.0.5.)
 - ~~Cache Rust dans le job de publication~~ : corrigé, le job de publication n'utilise plus de cache.
-- [ ] Sondes de disponibilité : une connexion TCP par adresse toutes les 60 s, sans rien envoyer ; `sshguard` ou
-  `fail2ban` peuvent la compter comme une tentative. Désactivables dans les Paramètres.
+- ~~Sondes toutes les 60 s~~ : atténué, décision de Florian. Une connexion TCP par adresse **toutes les 5 minutes** par
+  défaut (`model/review_t40_tests.rs`), sans rien envoyer ; `sshguard` ou `fail2ban` très stricts peuvent encore la
+  compter. Réglable de 15 s à 1 h, ou désactivable, dans les Paramètres.
 
 ### 6. Reste à faire à la main (Florian, sur son poste)
 

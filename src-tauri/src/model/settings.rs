@@ -138,7 +138,7 @@ impl Default for ReachabilitySettings {
     fn default() -> Self {
         Self {
             enabled: true,
-            interval_secs: 60,
+            interval_secs: 300,
         }
     }
 }

@@ -305,7 +305,7 @@ export const MOCK_SETTINGS: Settings = {
   },
   ssh: { connectTimeoutSecs: 15, keepaliveSecs: 30 },
   rdp: { clientPath: null },
-  reachability: { enabled: true, intervalSecs: 60 },
+  reachability: { enabled: true, intervalSecs: 300 },
   ui: {
     sidebarWidth: 272,
     sidebarCollapsed: false,
