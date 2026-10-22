@@ -136,7 +136,9 @@
     "skipped_one": "{{count}} déjà présente",
     "skipped_other": "{{count}} déjà présentes",
     "invalid_one": "{{count}} refusée (invalide)",
-    "invalid_other": "{{count}} refusées (invalides)"
+    "invalid_other": "{{count}} refusées (invalides)",
+    "rdpOptionsRemoved_one": "{{count}} connexion RDP : arguments supplémentaires et partage du dossier personnel retirés",
+    "rdpOptionsRemoved_other": "{{count}} connexions RDP : arguments supplémentaires et partage du dossier personnel retirés"
   },
   "app": {
     "name": "TunL",

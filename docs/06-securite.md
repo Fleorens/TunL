@@ -62,7 +62,9 @@ octets du terminal, contenu du presse-papiers, arguments FreeRDP, contenus de fi
 - Suppression récursive : confirmation qui affiche le nombre d'éléments.
 
 **S12 — Import `~/.ssh/config`.** On **n'exécute rien**. `ProxyCommand`, `LocalCommand`, `Match exec`,
-`KnownHostsCommand` sont ignorés et signalés dans l'aperçu.
+`KnownHostsCommand` sont ignorés et signalés dans l'aperçu. Même principe pour l'import d'un export JSON (T32), qui
+peut venir d'un tiers : les arguments FreeRDP supplémentaires et le partage du dossier personnel d'une connexion
+RDP sont retirés, et le toast le dit (décision de Florian, revue T40).
 
 **S13 — WebView.**
 - CSP stricte en production (voir §3). Aucun contenu distant chargé.

@@ -4,4 +4,9 @@
  * What `plan_import` did: how many connections it added, left aside, or refused, and how many
  * groups it had to create.
  */
-export type ImportReport = { added: number, skipped: number, invalid: number, groupsCreated: number, };
+export type ImportReport = { added: number, skipped: number, invalid: number, groupsCreated: number, 
+/**
+ * RDP connections whose extra arguments and home-directory sharing were dropped on import
+ * (docs/06-securite.md). `None` when no connection was touched.
+ */
+rdpOptionsRemoved?: number, };

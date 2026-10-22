@@ -136,7 +136,9 @@
     "skipped_one": "{{count}} already here",
     "skipped_other": "{{count}} already here",
     "invalid_one": "{{count}} refused (invalid)",
-    "invalid_other": "{{count}} refused (invalid)"
+    "invalid_other": "{{count}} refused (invalid)",
+    "rdpOptionsRemoved_one": "{{count}} RDP connection had its extra arguments and home sharing removed",
+    "rdpOptionsRemoved_other": "{{count}} RDP connections had their extra arguments and home sharing removed"
   },
   "app": {
     "name": "TunL",

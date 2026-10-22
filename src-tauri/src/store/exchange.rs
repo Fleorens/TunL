@@ -11,7 +11,7 @@ use ts_rs::TS;
 use uuid::Uuid;
 
 use crate::error::{AppError, AppResult};
-use crate::model::{Connection, ConnectionInput, Group, GroupInput};
+use crate::model::{Connection, ConnectionInput, Group, GroupInput, ProtocolSettings};
 
 use super::Store;
 
@@ -41,6 +41,11 @@ pub struct ImportReport {
     pub skipped: u32,
     pub invalid: u32,
     pub groups_created: u32,
+    /// RDP connections whose extra arguments and home-directory sharing were dropped on import
+    /// (docs/06-securite.md). `None` when no connection was touched.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub rdp_options_removed: Option<u32>,
 }
 
 /// Same connection, compared without its identity or history: protocol, host (case-insensitive),
@@ -57,6 +62,20 @@ fn same_connection(a: &Connection, b: &Connection) -> bool {
         b.port,
         b.username.clone(),
     )
+}
+
+/// When a third-party RDP import carries its own extra arguments or home-directory sharing, drop
+/// them on the connection's input (docs/06-securite.md): the user's machine decides what to pass.
+/// Returns whether anything was removed. Other RDP fields are left untouched.
+fn rdp_options_removed(input: &mut ConnectionInput) -> bool {
+    if let ProtocolSettings::Rdp(settings) = &mut input.settings
+        && (!settings.extra_args.is_empty() || settings.share_home)
+    {
+        settings.extra_args = Vec::new();
+        settings.share_home = false;
+        return true;
+    }
+    false
 }
 
 /// The whole store, `last_connected_at` cleared (it is history, not configuration).
@@ -100,7 +119,7 @@ pub fn plan_import(
     // 2. Groups, matched by name (case-insensitive, trimmed) or created.
     let mut groups_by_name: HashMap<String, Uuid> = HashMap::new();
     for group in &store.groups {
-        groups_by_name.insert(group.name.to_lowercase(), group.id);
+        groups_by_name.insert(group.name.trim().to_lowercase(), group.id);
     }
     // File group id -> the group id it maps to in the store under construction.
     let mut file_group_to_store: HashMap<Uuid, Uuid> = HashMap::new();
@@ -108,19 +127,23 @@ pub fn plan_import(
         let key = group.name.trim().to_lowercase();
         let id = match groups_by_name.get(&key) {
             Some(id) => *id,
-            None => {
-                let (store, created) = next.create_group(
-                    &GroupInput {
-                        name: group.name.clone(),
-                        color: group.color,
-                    },
-                    new_id(),
-                )?;
-                next = store;
-                report.groups_created += 1;
-                groups_by_name.insert(key, created.id);
-                created.id
-            }
+            None => match next.create_group(
+                &GroupInput {
+                    name: group.name.clone(),
+                    color: group.color,
+                },
+                new_id(),
+            ) {
+                Ok((store, created)) => {
+                    next = store;
+                    report.groups_created += 1;
+                    groups_by_name.insert(key, created.id);
+                    created.id
+                }
+                // An invalid name leaves the group out of the mapping: its connections arrive
+                // without a group, without failing the whole import.
+                Err(_) => continue,
+            },
         };
         file_group_to_store.insert(group.id, id);
     }
@@ -148,10 +171,16 @@ pub fn plan_import(
             .as_ref()
             .and_then(|id| file_group_to_store.get(id).copied());
         input.jump_host_id = None;
+        // Drop a third-party RDP connection's own extra arguments and home-directory sharing
+        // before it is stored (docs/06-securite.md), and count it once.
+        let stripped = rdp_options_removed(&mut input);
         match next.create_connection(&input, new_id(), now_ms) {
             Ok((store, created)) => {
                 next = store;
                 report.added += 1;
+                if stripped {
+                    report.rdp_options_removed = Some(report.rdp_options_removed.unwrap_or(0) + 1);
+                }
                 file_connection_to_store.insert(connection.id, created.id);
                 bastion_of.insert(created.id, (connection.jump_host_id, input.clone()));
             }

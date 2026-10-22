@@ -12,13 +12,17 @@ import { ipc } from "@/lib/ipc";
 export const EXPORT_FILE_NAME = "tunl-connections.json";
 
 /**
- * The toast text of an import: the number added (always), then the number skipped and refused, only when
- * they are not zero, joined by a middle dot.
+ * The toast text of an import: the number added (always), then the number skipped, refused and RDP
+ * options removed, only when they are not zero, joined by a middle dot.
  */
 export function importSummary(report: ImportReport): string {
   const parts: string[] = [i18n.t("exchange.added", { count: report.added })];
   if (report.skipped !== 0) parts.push(i18n.t("exchange.skipped", { count: report.skipped }));
   if (report.invalid !== 0) parts.push(i18n.t("exchange.invalid", { count: report.invalid }));
+  const rdpOptionsRemoved = report.rdpOptionsRemoved ?? 0;
+  if (rdpOptionsRemoved >= 1) {
+    parts.push(i18n.t("exchange.rdpOptionsRemoved", { count: rdpOptionsRemoved }));
+  }
   return parts.join(" · ");
 }
 
@@ -44,7 +48,7 @@ export async function exportConnections(): Promise<void> {
 export async function importConnections(): Promise<void> {
   let path: string | null;
   try {
-    path = await pickFile();
+    path = await pickFile([{ name: "JSON", extensions: ["json"] }]);
   } catch (error) {
     notifyError(error);
     return;

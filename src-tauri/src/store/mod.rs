@@ -17,6 +17,8 @@ pub use migrate::migrate_to_current;
 #[cfg(test)]
 mod exchange_tests;
 #[cfg(test)]
+mod exchange_untrusted_tests;
+#[cfg(test)]
 mod ops_tests;
 
 /// File name of the connections store, inside the config directory (docs/01-architecture.md §9).

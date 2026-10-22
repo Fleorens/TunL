@@ -29,10 +29,13 @@ export const MOCK_SAVE_PATH = "/home/user/tunl-connections.json";
  * A file chosen in the system chooser, or `null` when the user cancels.
  *
  * In Tauri, `open` opens the chooser and `null` means the user cancelled. In the mock, `MOCK_PICKED_PROGRAM`.
+ * `filters` narrows the chooser to a set of file types (e.g. JSON for an import).
  */
-export async function pickFile(): Promise<string | null> {
+export async function pickFile(
+  filters?: { name: string; extensions: string[] }[],
+): Promise<string | null> {
   if (isTauri()) {
-    const path = await open({ multiple: false, directory: false });
+    const path = await open({ multiple: false, directory: false, filters });
     return path == null ? null : path;
   }
   return MOCK_PICKED_PROGRAM;
