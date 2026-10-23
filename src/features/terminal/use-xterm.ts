@@ -6,6 +6,7 @@ import { Terminal } from "@xterm/xterm";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { TerminalSettings } from "@/bindings/TerminalSettings";
+import { guardOrphanCompositionEnd } from "@/features/terminal/ime-guard";
 import type { TerminalPort } from "@/features/terminal/port";
 import type { TerminalKeyAction } from "@/features/terminal/terminal-keys";
 import { isOpenableUrl, terminalKeyAction } from "@/features/terminal/terminal-keys";
@@ -89,6 +90,7 @@ export function useXterm(options: UseXtermOptions): UseXterm {
     wireKeys(term, onActionRef);
 
     term.open(host);
+    const unguardIme = guardOrphanCompositionEnd(host);
     loadWebgl(term);
     setTerm(term);
     setSearch(search);
@@ -96,6 +98,7 @@ export function useXterm(options: UseXtermOptions): UseXterm {
     return () => {
       fitRef.current = () => undefined;
       pasteRef.current = () => undefined;
+      unguardIme();
       fitting.dispose();
       unsubscribe();
       pasting.dispose();
