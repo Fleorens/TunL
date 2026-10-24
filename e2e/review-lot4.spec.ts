@@ -39,6 +39,10 @@ test("the questions of a 2FA prompt are stacked, their fields aligned", async ({
   const dialog = page.getByRole("dialog");
   const fields = dialog.getByRole("textbox").or(dialog.locator("input[type=password]"));
   await expect(fields).toHaveCount(2);
+  // On a slow runner the dialog is still zooming in: its transform can round two equal edges apart.
+  await dialog.evaluate((el) =>
+    Promise.all(el.getAnimations({ subtree: true }).map((animation) => animation.finished)),
+  );
   const boxes = await Promise.all((await fields.all()).map((field) => field.boundingBox()));
   const lefts = boxes.map((box) => Math.round(box?.x ?? -1));
   const widths = boxes.map((box) => Math.round(box?.width ?? -1));
