@@ -185,12 +185,12 @@ describe("Copr entry point", () => {
 
 ## Critères d'acceptation
 
-- [ ] `node scripts/contract-tests.mjs T41 --check` affiche `OK`, et `npm run verify` passe.
-- [ ] Le paquet source se construit dans un conteneur Fedora 44 par `make -f .copr/Makefile srpm`, et `git status`
+- [x] `node scripts/contract-tests.mjs T41 --check` affiche `OK`, et `npm run verify` passe.
+- [x] Le paquet source se construit dans un conteneur Fedora 44 par `make -f .copr/Makefile srpm`, et `git status`
       reste propre ensuite.
-- [ ] Il se reconstruit sans réseau en un `.rpm` qui s'installe dans un Fedora 44 propre et contient les fichiers
+- [x] Il se reconstruit sans réseau en un `.rpm` qui s'installe dans un Fedora 44 propre et contient les fichiers
       du contrat.
-- [ ] Aucune nouvelle exception `project-rules: allow`, aucune dépendance npm ou Cargo ajoutée.
+- [x] Aucune nouvelle exception `project-rules: allow`, aucune dépendance npm ou Cargo ajoutée.
 
 ## À regarder par Florian
 

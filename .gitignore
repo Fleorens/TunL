@@ -33,3 +33,8 @@ playwright-report/
 
 # SSH test environment (T16): generated state (keys, known_hosts, env.json)
 scripts/test-env/.state/
+
+# COPR RPM build (T41): the source-package output and the build-time clone
+copr-out/
+.clone-tmp/
+podman-out.txt
