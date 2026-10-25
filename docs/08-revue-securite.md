@@ -262,4 +262,7 @@ l'enregistrement d'un secret y échoue, ce qui reste à voir sur le poste de Flo
 S1 avec un vrai trousseau, sur le poste de Florian (paquet `.rpm` v0.1.0, 2026-10-25) : mot de passe enregistré dans
 le trousseau, `grep` du mot de passe dans la configuration et les données de TunL sans résultat. OK.
 
-Reste le Flatpak (T40 §3).
+Flatpak (T40 §3), sur le poste de Florian (Fedora, build local du manifeste, 2026-10-25) : build et installation
+réussis ; icône dans le menu ; session SSH par mot de passe ; mot de passe mémorisé absent de
+`~/.var/app/io.github.fleorens.TunL` ; le bac à sable ne voit de `~` que `.ssh`, `Téléchargements`, `.var` et
+`.local/share/flatpak` (l'installation `--user` de Flatpak). RDP non essayé (pas de serveur RDP sous la main). OK.
