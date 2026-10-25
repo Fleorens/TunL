@@ -9,7 +9,7 @@ le modèle a réellement livré. Une fiche qui cite des signatures de code pas e
 - Lots 1 à 5 : **validés** (T01 → T30). Revue du lot 5 le 2026-10-20 : quatre défauts corrigés et figés
   (`e2e/review-lot5.spec.ts`, `src-tauri/src/sftp/transfer_reserve_tests.rs`), voir le commit de revue.
 - Lot 6 : **validé** (T28c, T30b, T31 → T39). Revue du 2026-10-22 : deux défauts figés (`e2e/review-lot6.spec.ts`,
-  `src-tauri/src/model/review_lot6_tests.rs`). Reste T40 (revue de sécurité, faite par Claude).
+  `src-tauri/src/model/review_lot6_tests.rs`). T40 (revue de sécurité, faite par Claude) validée le 2026-10-25 : paquets du brouillon `v0.1.0` vérifiés, `.rpm` testé par Florian.
 - À partir de T17b, `npm run review` démarre aussi les conteneurs SSH de test (podman, `npm run test:ssh`).
 - En attente de Florian, dans la vraie app (`npm run tauri dev`) :
   - T10 et T11 : créer, modifier et supprimer une connexion, avec un bastion (voir « À regarder » des deux fiches) ;
@@ -163,7 +163,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | T38 | Flatpak (manifeste, FreeRDP embarqué, sources hors ligne) → Flathub | T37 | **élevé** | Opus 5 · high | validée |
 | T39 | README public, CONTRIBUTING, LICENSE, CHANGELOG | T37 | faible | Haiku 4.5 · low | validée |
 | T40a | Revue sécurité, 1ʳᵉ passe sur le code (constats seulement, aucune correction) | T38, T39 | moyen | Cyber Tiel | validée |
-| T40 | Revue sécurité finale + liste de publication (**faite par Claude**) | T40a | — | Opus 5 · xhigh | prête |
+| T40 | Revue sécurité finale + liste de publication (**faite par Claude**) | T40a | — | Opus 5 · xhigh | validée |
 
 ## Chemin critique
 
@@ -186,4 +186,4 @@ local qui écrit le code (voir `AGENTS.md`).
 | 3 | T12, T15, T15b, T13, T14, T16 | **validé** à la revue du 2026-09-28 |
 | 4 | T17 → T21b | **validé** à la revue du 2026-10-18 (T19b ajoutée le 2026-10-11 après une revue de T17 → T19) |
 | 5 | T22 → T30 (+ T25b, T26b, T26c, T26d, T28b) | **validé** à la revue du 2026-10-20 |
-| 6 | T31 → T40 (+ T28c, T30b) | **validé** à la revue du 2026-10-22 (T40 reste à faire) |
+| 6 | T31 → T40 (+ T28c, T30b) | **validé** à la revue du 2026-10-22, T40 le 2026-10-25 |

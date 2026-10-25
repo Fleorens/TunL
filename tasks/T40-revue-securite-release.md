@@ -82,4 +82,4 @@ noir sur blanc).
       leurs résultats.
 - [x] Aucun point bloquant ouvert ; chaque risque accepté l'est par écrit, par Florian.
 - [x] Chaque défaut trouvé est corrigé et gardé par un test ou une règle.
-- [ ] La publication `v0.1.0` existe en brouillon, ses paquets vérifiés.
+- [x] La publication `v0.1.0` existe en brouillon, ses paquets vérifiés.
