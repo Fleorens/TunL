@@ -72,5 +72,5 @@ install -Dm644 src-tauri/icons/icon.png $RPM_BUILD_ROOT%{_datadir}/icons/hicolor
 %{_datadir}/icons/hicolor/512x512/apps/tunl.png
 
 %changelog
-* Sun Oct 25 2026 Florian <florian@leorens.com> - 0.1.0-1.fc44
+* Sun Oct 25 2026 Fleorens <96118195+Fleorens@users.noreply.github.com> - 0.1.0-1
 - Initial package built for COPR.
