@@ -61,7 +61,7 @@ stat -c '%a %n' "$CONFIG" "$CONFIG"/* "$EXPORT" 2>&1 | tee -a "$REPORT"
 
 step "Flatpak (T40 §3) — 20 à 40 minutes au premier build"
 if ask_yes "Construire et vérifier le Flatpak maintenant ?"; then
-  flatpak install -y flathub org.gnome.Sdk//51 org.freedesktop.Sdk.Extension.rust-stable//26.08 \
+  flatpak install -y flathub org.gnome.Platform//51 org.gnome.Sdk//51 org.freedesktop.Sdk.Extension.rust-stable//26.08 \
     org.freedesktop.Sdk.Extension.node22//26.08 2>&1 | tail -3 | tee -a "$REPORT"
   flatpak-builder --user --install --force-clean build packaging/flatpak/io.github.fleorens.TunL.yml 2>&1 \
     | tail -5 | tee -a "$REPORT"
