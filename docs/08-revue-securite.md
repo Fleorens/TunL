@@ -259,5 +259,7 @@ l'enregistrement d'un secret y échoue, ce qui reste à voir sur le poste de Flo
 | Clé d'hôte | serveur de test recréé (nouvelle clé) | OK : connexion refusée (`hostKeyChanged`) avant toute authentification |
 | Écoute réseau | `ss -tlnp` | OK : l'app n'écoute sur aucun port (celui vu pendant l'essai venait de l'inspecteur WebKit, activé pour l'essai) |
 
-Reste sur le poste de Florian : S1 avec un vrai trousseau (le mot de passe mémorisé n'est que dans le trousseau), et le
-Flatpak (T40 §3).
+S1 avec un vrai trousseau, sur le poste de Florian (paquet `.rpm` v0.1.0, 2026-10-25) : mot de passe enregistré dans
+le trousseau, `grep` du mot de passe dans la configuration et les données de TunL sans résultat. OK.
+
+Reste le Flatpak (T40 §3).
