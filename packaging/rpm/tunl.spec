@@ -27,6 +27,11 @@ with jump hosts and Wake-on-LAN.
 
 %prep
 %autosetup -n tunl-%{version} -a 1
+# Render the desktop entry from the template so it is available to %install and
+# %check (rpmbuild runs %install before %check).
+sed -e 's/{{exec}}/tunl/' -e 's/{{icon}}/tunl/' \
+    -e 's/{{comment}}/SSH, SFTP and RDP connections, with jump hosts and Wake-on-LAN/' \
+    packaging/linux/tunl.desktop.hbs > tunl.desktop
 
 %build
 # Install the npm dependencies from the vendored cache, then build the binary
@@ -35,11 +40,8 @@ npm ci --offline --ignore-scripts --cache npm-cache
 npx tauri build --no-bundle -- --offline
 
 %check
-# Render the desktop entry from the template, then validate the entry and the
-# AppStream metadata (same sources as the Flatpak, under the tunl.desktop id).
-sed -e 's/{{exec}}/tunl/' -e 's/{{icon}}/tunl/' \
-    -e 's/{{comment}}/SSH, SFTP and RDP connections, with jump hosts and Wake-on-LAN/' \
-    packaging/linux/tunl.desktop.hbs > tunl.desktop
+# Validate the rendered desktop entry and the AppStream metadata (same sources as
+# the Flatpak, under the tunl.desktop id).
 desktop-file-validate tunl.desktop
 appstream-util validate-relax --nonet packaging/linux/io.github.fleorens.TunL.metainfo.xml
 
