@@ -46,15 +46,18 @@ desktop-file-validate tunl.desktop
 appstream-util validate-relax --nonet packaging/linux/io.github.fleorens.TunL.metainfo.xml
 
 %install
-install -Dm755 src-tauri/target/release/tunl %{_bindir}/tunl
-install -Dm644 tunl.desktop %{_datadir}/applications/tunl.desktop
+# Install into $RPM_BUILD_ROOT: destinations are absolute so files land in the
+# build root regardless of the %install working directory (the unpacked source
+# dir). %files lists the same paths under the build root.
+install -Dm755 src-tauri/target/release/tunl $RPM_BUILD_ROOT%{_bindir}/tunl
+install -Dm644 tunl.desktop $RPM_BUILD_ROOT%{_datadir}/applications/tunl.desktop
 install -Dm644 packaging/linux/io.github.fleorens.TunL.metainfo.xml \
-    %{_datadir}/metainfo/io.github.fleorens.TunL.metainfo.xml
-install -Dm644 src-tauri/icons/32x32.png %{_datadir}/icons/hicolor/32x32/apps/tunl.png
-install -Dm644 src-tauri/icons/64x64.png %{_datadir}/icons/hicolor/64x64/apps/tunl.png
-install -Dm644 src-tauri/icons/128x128.png %{_datadir}/icons/hicolor/128x128/apps/tunl.png
-install -Dm644 src-tauri/icons/128x128@2x.png %{_datadir}/icons/hicolor/256x256@2/apps/tunl.png
-install -Dm644 src-tauri/icons/icon.png %{_datadir}/icons/hicolor/512x512/apps/tunl.png
+    $RPM_BUILD_ROOT%{_datadir}/metainfo/io.github.fleorens.TunL.metainfo.xml
+install -Dm644 src-tauri/icons/32x32.png $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/32x32/apps/tunl.png
+install -Dm644 src-tauri/icons/64x64.png $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/64x64/apps/tunl.png
+install -Dm644 src-tauri/icons/128x128.png $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/128x128/apps/tunl.png
+install -Dm644 src-tauri/icons/128x128@2x.png $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/256x256@2/apps/tunl.png
+install -Dm644 src-tauri/icons/icon.png $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/512x512/apps/tunl.png
 
 %files
 %license LICENSE
