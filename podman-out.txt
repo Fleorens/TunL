@@ -1,0 +1,4 @@
+/src/scripts/copr-srpm.sh /src/copr-out
+error: could not find `Cargo.toml` in `/tmp/tmp.Aert7XicSU` or any parent directory
+make: *** [.copr/Makefile:7: srpm] Error 101
+MAKE_EXIT=2

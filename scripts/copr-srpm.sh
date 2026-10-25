@@ -42,9 +42,12 @@ git archive --prefix "tunl-${version}/" -o "${outdir}/tunl-${version}.tar.gz" HE
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
-# Cargo vendor: the crates under vendor/ and the config (stdout). The config's
-# "directory = vendor" is relative to the .cargo/ dir, so it lands at the root.
-( cd "$tmp" && cargo vendor --locked src-tauri/Cargo.toml > .cargo-config.toml )
+# Cargo vendor: the crates under vendor/ and the config (stdout). Run from the
+# temp dir with the manifest path, so vendor/ lands here and the repo is
+# untouched. The config's "directory = vendor" is relative to the .cargo/ dir.
+( cd "$tmp" \
+  && cargo vendor --locked --manifest-path "${repo_root}/src-tauri/Cargo.toml" \
+       > .cargo-config.toml )
 mkdir -p "$tmp/.cargo"
 mv "$tmp/.cargo-config.toml" "$tmp/.cargo/config.toml"
 
