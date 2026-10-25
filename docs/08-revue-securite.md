@@ -242,3 +242,22 @@ défaut corrigé est gardé par un test.
 Tout est regroupé dans `scripts/security-checks.sh` (interactif, résultats dans `~/tunl-t40-checks.txt`) : S1 (`grep` du mot de passe après une vraie session et dans un export), S8 (logs après usage), S9 (`stat` du dossier
 de configuration), S15 (`ss -tnp` / `tcpdump`, sondes coupées puis actives), le Flatpak (T40 §3 : `secret-tool`,
 `ls ~` dans le bac à sable), puis la liste de publication (T40 §5 : tag signé, paquets du brouillon).
+
+### 7. Vérifications faites sur la devbox (Claude, 2026-10-25)
+
+App de développement (`npm run tauri dev`) sous Xvfb, contre les conteneurs podman de T16, avec une configuration de
+test (serveur de test, bastion, hôte caché derrière le bastion), restaurée ensuite. Pas de trousseau sur la devbox :
+l'enregistrement d'un secret y échoue, ce qui reste à voir sur le poste de Florian.
+
+| Règle | Essai | Résultat |
+|---|---|---|
+| S15 (sondes coupées) | 5 min sans action, `ss` toutes les 0,2 s | OK : aucune connexion vers les hôtes |
+| S15 (sondes actives, 15 s) | état des sondes dans l'interface, `nstat` sur 60 s comparé aux sondes coupées | OK : 7 connexions de plus pour 2 adresses (une par adresse et par tour) ; l'hôte derrière le bastion est `skipped`, aucun paquet vers lui |
+| S1 | session par mot de passe avec « mémoriser », export JSON, `grep` du mot de passe | OK : absent de la configuration, des données, des journaux, de l'export et de la sortie de l'app |
+| S8 | journaux après la session | OK : aucun secret ; seulement « system keyring unavailable ». Niveau `Debug` (messages de `russh`) en développement seulement, `Info` en release (`src-tauri/src/lib.rs:44`) |
+| S9 | `stat` | OK : dossier 700, `connections.json`, `.bak`, `known_hosts`, `settings.json` et export en 600 ; les journaux sont en 664, dans un dossier en 700 |
+| Clé d'hôte | serveur de test recréé (nouvelle clé) | OK : connexion refusée (`hostKeyChanged`) avant toute authentification |
+| Écoute réseau | `ss -tlnp` | OK : l'app n'écoute sur aucun port (celui vu pendant l'essai venait de l'inspecteur WebKit, activé pour l'essai) |
+
+Reste sur le poste de Florian : S1 avec un vrai trousseau (le mot de passe mémorisé n'est que dans le trousseau), et le
+Flatpak (T40 §3).
