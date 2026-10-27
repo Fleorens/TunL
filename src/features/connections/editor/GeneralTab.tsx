@@ -173,9 +173,11 @@ function GroupSelect() {
 export function GeneralTab({ portTouched }: { portTouched: RefObject<boolean> }) {
   const { t } = useTranslation();
 
+  // Each field already ends with the room `FieldError` reserves for its message: the gap between
+  // fields only has to keep a message apart from the next label.
   return (
-    <div className="grid gap-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-3">
+    <div className="grid gap-1">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-3">
         <div className="w-full flex-1">
           <TextField name="name" label={t("editor.fields.name")} required />
         </div>

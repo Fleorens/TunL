@@ -33,7 +33,15 @@ export function StringField({
 }
 
 /** A boolean field rendered as a labelled switch. */
-export function SwitchField({ name, label }: { name: keyof ConnectionFormValues; label: string }) {
+export function SwitchField({
+  name,
+  label,
+  disabled,
+}: {
+  name: keyof ConnectionFormValues;
+  label: string;
+  disabled?: boolean;
+}) {
   const form = useFormHook();
   const { field } = useController({ name, control: form.control });
   return (
@@ -43,6 +51,7 @@ export function SwitchField({ name, label }: { name: keyof ConnectionFormValues;
         id={name}
         checked={Boolean(field.value)}
         onCheckedChange={(value) => field.onChange(value)}
+        disabled={disabled}
       />
     </label>
   );

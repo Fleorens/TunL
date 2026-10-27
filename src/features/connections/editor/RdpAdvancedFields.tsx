@@ -1,4 +1,4 @@
-import { useController } from "react-hook-form";
+import { useController, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -119,12 +119,20 @@ function FieldSelect<LabelKey extends string>({
 /** The RDP options: display layout, a few switches, audio and certificate selects, and the extra arguments. */
 export function RdpAdvancedFields() {
   const { t } = useTranslation();
+  const form = useFormHook();
+  // `multimon` only changes the tunnel in full screen (`build_tunnel_args` adds `/multimon` then): disable it
+  // for every other display mode, but keep whatever value the user set.
+  const displayMode = useWatch({ name: "rdpDisplayMode", control: form.control });
   return (
     <div className="flex flex-col gap-4">
       <DisplayModeField />
 
       <div className="flex flex-col gap-3">
-        <SwitchField name="rdpMultimon" label={t("editor.fields.multimon")} />
+        <SwitchField
+          name="rdpMultimon"
+          label={t("editor.fields.multimon")}
+          disabled={displayMode !== "fullscreen"}
+        />
         <SwitchField name="rdpDynamicResolution" label={t("editor.fields.dynamicResolution")} />
         <SwitchField name="rdpClipboard" label={t("editor.fields.clipboard")} />
         <SwitchField name="rdpShareHome" label={t("editor.fields.shareHome")} />
