@@ -180,6 +180,11 @@ function start(id: string, runId: string): void {
       // A pending close confirmation no longer applies once the session is not connected.
       closing: state.closing === id && next.status !== "connected" ? null : state.closing,
     }));
+    // When the attempt ends (error or closed), drop this run's pending questions: an answer typed
+    // after the backend abandoned its wait (PROMPT_TIMEOUT) would otherwise go into the void.
+    if (next.status === "error" || next.status === "closed") {
+      usePrompts.getState().dropSession(runId);
+    }
     if (event.type === "connected") {
       // An SFTP tab has no terminal to size; only SSH does.
       if (session.kind === "ssh") sendSessionSize(id);
