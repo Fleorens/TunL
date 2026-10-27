@@ -23,5 +23,7 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  /** Node types stay out of the app: the one test that spawns a process has its own project. */
+  "exclude": ["src/version-spec.test.ts"]
 }

@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node-tests.tsbuildinfo",
+    "types": ["vite/client", "node"]
+  },
+  /** Tests under src/ that run Node APIs (T42 spawns check-version.mjs). */
+  "include": ["src/version-spec.test.ts"],
+  "exclude": []
+}
