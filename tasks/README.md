@@ -1,6 +1,6 @@
 # Plan de réalisation — TunL v1
 
-54 fiches en 10 jalons. Chaque fiche tient dans **une session opencode** du modèle local.
+70 fiches en 11 jalons (dont 16 encore à écrire). Chaque fiche tient dans **une session opencode** du modèle local.
 L'orchestrateur (Claude) écrit les fiches détaillées **par lots** : chaque lot est ajusté après relecture de ce que
 le modèle a réellement livré. Une fiche qui cite des signatures de code pas encore écrit finirait par mentir.
 
@@ -12,6 +12,8 @@ le modèle a réellement livré. Une fiche qui cite des signatures de code pas e
   `src-tauri/src/model/review_lot6_tests.rs`). T40 (revue de sécurité, faite par Claude) validée le 2026-10-25 : paquets du brouillon `v0.1.0` vérifiés, `.rpm` testé par Florian.
 - Lot 7 : **prêt** (T43 → T53), issu de la revue globale du 2026-10-27 (`docs/09-revue-globale.md`) : interface,
   ergonomie, défauts et performances. Ordre conseillé : celui du tableau M9 (chaque fiche dépend de la précédente).
+- Lots 8 et 9 (M10, nouvelles fonctions) : **cadrés** dans `docs/10-fonctions-a-venir.md`, fiches à écrire à la
+  revue du lot précédent.
 - À partir de T17b, `npm run review` démarre aussi les conteneurs SSH de test (podman, `npm run test:ssh`).
 - En attente de Florian, dans la vraie app (`npm run tauri dev`) :
   - T10 et T11 : créer, modifier et supprimer une connexion, avec un bastion (voir « À regarder » des deux fiches) ;
@@ -185,6 +187,29 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | T52 | Import `~/.ssh/config` : notes et erreurs traduites, avertissements du fichier affichés | T51 | faible | Sonnet 5 · medium | prête |
 | T53 | Réglages et sondes : deux changements rapprochés gardés, une seule alerte de sonde | T52 | faible | Sonnet 5 · medium | prête |
 
+### M10 — Nouvelles fonctions (lots 8 et 9)
+
+Périmètre et décisions : `docs/10-fonctions-a-venir.md`.
+
+| Fiche | Titre | Dépend de | Risque | Repli | Statut |
+|---|---|---|---|---|---|
+| T54 | SFTP : sélection multiple, téléchargement et suppression en lot | T53 | moyen | Sonnet 5 · medium | à écrire |
+| T55 | SFTP : téléchargement récursif d'un dossier | T54 | moyen | Opus 5 · high | à écrire |
+| T56 | SFTP : envoi récursif d'un dossier (reprend le contrat de T47 sur les dossiers) | T55 | moyen | Opus 5 · high | à écrire |
+| T57 | SFTP : éditer un fichier distant — moteur (dossier privé, surveillance, renvoi, conflit) | T56 | **élevé** | Opus 5 · high | à écrire |
+| T57b | SFTP : éditer un fichier distant — interface | T57 | moyen | Sonnet 5 · medium | à écrire |
+| T58 | SSH ↔ SFTP en un clic (ouvrir en SFTP, terminal dans le dossier) | T57b | faible | Sonnet 5 · medium | à écrire |
+| T59 | Onglets : glisser pour réordonner, menu d'onglet (dupliquer, fermer les autres) | T58 | moyen | Sonnet 5 · medium | à écrire |
+| T60 | Rouvrir les onglets de la dernière fois (réglage Jamais / Demander / Toujours) | T59 | faible | Sonnet 5 · medium | à écrire |
+| T61 | Commandes enregistrées : modèle, `snippets.json`, commandes, ipc et mock | T60 | moyen | Sonnet 5 · high | à écrire |
+| T61b | Commandes enregistrées : palette, menu du terminal, Paramètres | T61 | moyen | Sonnet 5 · medium | à écrire |
+| T62 | Clés SSH : générer une paire ed25519 | T61b | moyen | Opus 5 · high | à écrire |
+| T62b | Clés SSH : installer la clé publique sur un serveur | T62 | moyen | Opus 5 · high | à écrire |
+| T63 | RDP rapide sans enregistrer (reprend le contrat de T51 sur `rdp://`) | T62b | moyen | Sonnet 5 · high | à écrire |
+| T64 | Terminal en volets : modèle et store | T63 | moyen | Opus 5 · high | à écrire |
+| T64b | Terminal en volets : rendu, redimensionnement, focus, raccourcis | T64 | **élevé** | Opus 5 · high | à écrire |
+| T64c | Terminal en volets : fermeture, reconnexion par volet, barre d'état | T64b | moyen | Opus 5 · high | à écrire |
+
 ## Chemin critique
 
 ```
@@ -208,3 +233,5 @@ local qui écrit le code (voir `AGENTS.md`).
 | 5 | T22 → T30 (+ T25b, T26b, T26c, T26d, T28b) | **validé** à la revue du 2026-10-20 |
 | 6 | T31 → T40 (+ T28c, T30b) | **validé** à la revue du 2026-10-22, T40 le 2026-10-25 |
 | 7 | T43 → T53 | écrit le 2026-10-27, après la revue globale (`docs/09-revue-globale.md`) |
+| 8 | T54 → T60 (+ T57b) | cadré (`docs/10-fonctions-a-venir.md`), à écrire à la revue du lot 7 |
+| 9 | T61 → T64 (+ T61b, T62b, T64b, T64c) | cadré, à écrire à la revue du lot 8 |

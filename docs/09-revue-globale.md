@@ -59,10 +59,8 @@ La sécurité déjà couverte par `docs/08-revue-securite.md` et les défauts fi
 - Souris en mode X10 (octets > 127) perdue : l'IPC `ssh_write` prend une chaîne ; très rare (les applications
   actuelles utilisent le mode SGR).
 
-## Questions pour Florian
+## Réponses de Florian (2026-10-27)
 
-1. **Messages d'erreur techniques en anglais** : le détail des toasts et de la carte d'erreur est le message anglais
-   du backend (`docs/06` S7, choix d'origine). T45 ajoute une aide traduite par type d'erreur ; faut-il aller plus
-   loin (codes d'erreur traduits partout) ?
-2. **Fonctions absentes**, hors de cette revue : sélection multiple et transfert de dossiers en SFTP, réorganisation
-   des onglets, connexion rapide RDP sans enregistrer. À planifier dans un lot de fonctions si tu les veux.
+1. **Messages d'erreur techniques en anglais** : on les garde (pas de traduction de tous les messages). L'aide
+   traduite par type d'erreur de T45 suffit.
+2. **Fonctions absentes** : retenues et cadrées dans `docs/10-fonctions-a-venir.md` (lots 8 et 9).
