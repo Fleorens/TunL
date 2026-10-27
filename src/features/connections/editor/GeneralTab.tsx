@@ -1,4 +1,4 @@
-import type { ComponentProps, RefObject } from "react";
+import type { ComponentProps, Ref, RefObject } from "react";
 import { useState } from "react";
 import { useController } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -38,11 +38,13 @@ function TextField({
   name,
   label,
   required,
+  ref,
   ...inputProps
 }: {
   name: StringField;
   label: string;
   required?: boolean;
+  ref?: Ref<HTMLInputElement>;
 } & Omit<ComponentProps<typeof Input>, "name" | "value" | "onChange" | "onBlur" | "ref">) {
   const form = useFormHook();
   const { field, fieldState } = useController({ name, control: form.control });
@@ -54,7 +56,17 @@ function TextField({
       >
         {label}
       </Label>
-      <Input id={name} {...field} aria-invalid={fieldState.invalid} {...inputProps} />
+      <Input
+        id={name}
+        {...field}
+        ref={(node) => {
+          if (ref && "current" in ref) ref.current = node;
+          else if (typeof ref === "function") ref(node);
+          field.ref?.(node);
+        }}
+        aria-invalid={fieldState.invalid}
+        {...inputProps}
+      />
       <FieldError message={fieldState.error?.message} />
     </div>
   );
@@ -170,14 +182,20 @@ function GroupSelect() {
   );
 }
 
-export function GeneralTab({ portTouched }: { portTouched: RefObject<boolean> }) {
+export function GeneralTab({
+  portTouched,
+  nameRef,
+}: {
+  portTouched: RefObject<boolean>;
+  nameRef: RefObject<HTMLInputElement | null>;
+}) {
   const { t } = useTranslation();
 
   return (
     <div className="grid gap-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-3">
         <div className="w-full flex-1">
-          <TextField name="name" label={t("editor.fields.name")} required />
+          <TextField name="name" label={t("editor.fields.name")} required ref={nameRef} />
         </div>
         <div className="w-full flex-1">
           <TextField name="host" label={t("editor.fields.host")} required />

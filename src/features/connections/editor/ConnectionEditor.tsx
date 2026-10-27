@@ -91,6 +91,8 @@ type EditorTab = "general" | "authentication" | "network" | "advanced";
 export function ConnectionEditor() {
   const { t } = useTranslation();
   const portTouched = useRef(false);
+  // The Name field the editor focuses on opening a new connection (see the focus effect below).
+  const nameRef = useRef<HTMLInputElement | null>(null);
   const [savedName, setSavedName] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<EditorTab>("general");
   const [discardOpen, setDiscardOpen] = useState(false);
@@ -151,33 +153,54 @@ export function ConnectionEditor() {
   const shown = target ?? readyFor;
   const ready = shown !== null && readyFor === shown;
 
+  // On opening a new connection, focus the Name field. Radix would otherwise drop focus on the first
+  // focusable control (the protocol switch); `onOpenAutoFocus` cancels that, and here we focus once the
+  // fields are rendered (`ready`), not with a setTimeout.
+  useEffect(() => {
+    if (ready && shown?.mode === "create") nameRef.current?.focus();
+  }, [ready, shown]);
+
+  // Guards against a double save: a double-click on "Save" (or Ctrl+S tapped twice) could fire while the
+  // previous call still runs, because `isSubmitting` only flips true after zod validation, leaving the
+  // button active in that window. `form.handleSubmit` validates; this ref makes the save itself idempotent.
+  const savingRef = useRef(false);
+
   const save = async () => {
-    if (!target || !isValid || !secretsValid(drafts) || !templates) return;
-    const connection =
-      target.mode === "edit"
-        ? useConnections.getState().connections.find((c) => c.id === target.id)
-        : undefined;
-    const base: ConnectionInput =
-      connection ?? templates[target.mode === "create" ? (target.protocol ?? "ssh") : "ssh"];
-    const input = toConnectionInput(form.getValues(), base, templates);
+    if (savingRef.current) return;
+    savingRef.current = true;
+    try {
+      if (!target || !isValid || !secretsValid(drafts) || !templates) return;
+      const connection =
+        target.mode === "edit"
+          ? useConnections.getState().connections.find((c) => c.id === target.id)
+          : undefined;
+      const base: ConnectionInput =
+        connection ?? templates[target.mode === "create" ? (target.protocol ?? "ssh") : "ssh"];
+      const input = toConnectionInput(form.getValues(), base, templates);
 
-    const result =
-      target.mode === "create"
-        ? await useConnections.getState().create(input)
-        : await useConnections.getState().update(target.id, input);
+      const result =
+        target.mode === "create"
+          ? await useConnections.getState().create(input)
+          : await useConnections.getState().update(target.id, input);
 
-    if (result.ok) {
-      // Apply the drafts to the keyring (S2), in order; stop at the first failure, but close anyway.
-      await applySecrets(result.value.id);
-      closeEditor();
-      toast.success(t("editor.saved", { name: savedName ?? input.name }));
-      return;
+      if (result.ok) {
+        // Apply the drafts to the keyring (S2), in order; stop at the first failure, but close anyway.
+        await applySecrets(result.value.id);
+        closeEditor();
+        toast.success(t("editor.saved", { name: savedName ?? input.name }));
+        return;
+      }
+
+      const fieldError = backendFieldError(result.error);
+      if (fieldError) attachFieldError(fieldError);
+      else notifyError(result.error);
+    } finally {
+      savingRef.current = false;
     }
-
-    const fieldError = backendFieldError(result.error);
-    if (fieldError) attachFieldError(fieldError);
-    else notifyError(result.error);
   };
+
+  /** Validate with zod, then save only if the schema is valid; `save` still checks the secret drafts. */
+  const onSubmit = form.handleSubmit(save);
 
   /** Attaches a backend error to its field and opens the tab holding it. */
   function attachFieldError({ field, message }: BackendFieldError) {
@@ -215,7 +238,8 @@ export function ConnectionEditor() {
   const onKeyDown = (event: React.KeyboardEvent) => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
       event.preventDefault();
-      if (isValid) void save();
+      // Ignore Ctrl+S while a save is running; `save`'s own guard also catches a double tap.
+      if (!isSubmitting) void onSubmit();
     }
   };
 
@@ -231,7 +255,10 @@ export function ConnectionEditor() {
             requestClose();
           }}
         >
-          <SheetContent className="flex h-full flex-col gap-4 data-[side=right]:w-full data-[side=right]:sm:max-w-[520px]">
+          <SheetContent
+            className="flex h-full flex-col gap-4 data-[side=right]:w-full data-[side=right]:sm:max-w-[520px]"
+            onOpenAutoFocus={(event) => event.preventDefault()}
+          >
             <SheetHeader className="items-start gap-3">
               <SheetTitle>
                 {shown?.mode === "edit" && savedName
@@ -257,7 +284,7 @@ export function ConnectionEditor() {
                     <TabsTrigger value="advanced">{t("editor.tabs.advanced")}</TabsTrigger>
                   </TabsList>
                   <TabsContent value="general">
-                    <GeneralTab portTouched={portTouched} />
+                    <GeneralTab portTouched={portTouched} nameRef={nameRef} />
                   </TabsContent>
                   <TabsContent value="authentication">
                     <AuthTab />
@@ -282,7 +309,10 @@ export function ConnectionEditor() {
                 <Button variant="outline" onClick={requestClose}>
                   {t("common.cancel")}
                 </Button>
-                <Button onClick={save} disabled={!isValid || !secretsValid(drafts) || isSubmitting}>
+                <Button
+                  onClick={onSubmit}
+                  disabled={!isValid || !secretsValid(drafts) || isSubmitting}
+                >
                   {t("common.save")}
                 </Button>
               </div>
