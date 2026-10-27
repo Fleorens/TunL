@@ -119,8 +119,8 @@ test("an upload that ends in the folder shown lists the new file", async ({ page
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T46 --check` affiche `OK` partout.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T46 --check` affiche `OK` partout.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 - [ ] Pendant une suppression, l'indicateur remplace « Actualiser » sans décaler la barre d'outils (à l'écran).
 
 ## À regarder par Florian

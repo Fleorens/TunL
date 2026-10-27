@@ -13,6 +13,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import { Toggle } from "@/components/ui/toggle";
 import { pathSegments } from "./sftp-model";
 
@@ -25,6 +26,7 @@ interface SftpToolbarProps {
   onToggleHidden: (showHidden: boolean) => void;
   onNewFolder: () => void;
   onUpload: () => void;
+  busy: boolean;
 }
 
 /** The path as a clickable breadcrumb: one item per segment, the last is the page, separators between the rest. */
@@ -77,6 +79,7 @@ export function SftpToolbar({
   onToggleHidden,
   onNewFolder,
   onUpload,
+  busy,
 }: SftpToolbarProps) {
   const { t } = useTranslation();
   const segments = pathSegments(path);
@@ -99,9 +102,15 @@ export function SftpToolbar({
       <IconButton variant="outline" size="sm" label={t("sftp.up")} onClick={onUp}>
         <ArrowUp className="size-4" />
       </IconButton>
-      <IconButton variant="outline" size="sm" label={t("sftp.refresh")} onClick={onRefresh}>
-        <RefreshCw className="size-4" />
-      </IconButton>
+      {busy ? (
+        <span className="inline-flex h-8 w-8 items-center justify-center">
+          <Spinner aria-label={t("sftp.working")} />
+        </span>
+      ) : (
+        <IconButton variant="outline" size="sm" label={t("sftp.refresh")} onClick={onRefresh}>
+          <RefreshCw className="size-4" />
+        </IconButton>
+      )}
       <div className="flex min-w-0 flex-1 items-center">
         {editing ? (
           <Input

@@ -23,10 +23,20 @@ export type EntryActions = ReturnType<typeof useEntryActions>;
 export function useEntryActions(sessionId: string, dir: string, reload: (select?: string) => void) {
   const [dialog, setDialog] = useState<EntryDialog>(null);
   const [renaming, setRenaming] = useState<string | null>(null);
+  // True from the start of a delete's counting to its end (or its cancel, or an error): while it is,
+  // the delete / new folder / rename actions are ignored and the toolbar shows it is working.
+  const [busy, setBusy] = useState(false);
 
-  const closeDialog = (): void => setDialog(null);
+  const closeDialog = (): void => {
+    setDialog(null);
+    // Cancelling a dialog ends the busy window; a confirmed delete nulls its own dialog and stays busy.
+    setBusy(false);
+  };
 
-  const newFolder = (): void => setDialog({ type: "newFolder" });
+  const newFolder = (): void => {
+    if (busy) return;
+    setDialog({ type: "newFolder" });
+  };
 
   const createFolder = async (name: string): Promise<void> => {
     setDialog(null);
@@ -39,7 +49,10 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
     }
   };
 
-  const rename = (entry: RemoteEntry): void => setRenaming(entry.path);
+  const rename = (entry: RemoteEntry): void => {
+    if (busy) return;
+    setRenaming(entry.path);
+  };
 
   const renamed = async (entry: RemoteEntry, name: string | null): Promise<void> => {
     setRenaming(null);
@@ -81,10 +94,13 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
 
   // The server counts what would go before the confirmation opens: never a delete without the number (S11).
   const askDelete = async (entry: RemoteEntry): Promise<void> => {
+    if (busy) return;
+    setBusy(true);
     try {
       const count = await ipc.sftpCount(sessionId, entry.path);
       setDialog({ type: "delete", entry, count });
     } catch (error) {
+      setBusy(false);
       notifyError(error);
     }
   };
@@ -96,11 +112,14 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
       reload();
     } catch (error) {
       notifyError(error);
+    } finally {
+      setBusy(false);
     }
   };
 
   return {
     dialog,
+    busy,
     renaming,
     closeDialog,
     newFolder,

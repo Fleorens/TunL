@@ -68,6 +68,9 @@ export function SftpExplorer({ sessionId, active }: SftpExplorerProps) {
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   // The last navigation launched wins: a result older than this counter is dropped.
   const counter = useRef(0);
+  // The folder shown right now, updated when a navigation succeeds (not when it starts), so an upload
+  // that finishes only re-reads the folder it was dropped in if that folder is still shown.
+  const shownPath = useRef("/");
 
   const navigate = useCallback(
     (target: string, select?: string): void => {
@@ -80,6 +83,7 @@ export function SftpExplorer({ sessionId, active }: SftpExplorerProps) {
           const list = await ipc.sftpList(sessionId, resolved);
           if (myId !== counter.current) return;
           setPath(resolved);
+          shownPath.current = resolved;
           setEntries(list);
           setSelectedPath(select ?? null);
         })
@@ -99,10 +103,14 @@ export function SftpExplorer({ sessionId, active }: SftpExplorerProps) {
     navigate(".");
   }, [navigate]);
 
-  // Upload each chosen file to the folder shown, then re-read it when one finishes (the last re-read wins).
+  // Upload each chosen file to the folder shown, then re-read it when one finishes — but only if that
+  // folder is still the one shown (the ref is kept up to date by `navigate`, not the value captured here).
   const uploadAll = (paths: string[]): void => {
+    const target = shownPath.current;
     for (const localPath of paths) {
-      useTransfers.getState().upload(sessionId, localPath, path, () => navigate(path));
+      useTransfers.getState().upload(sessionId, localPath, target, () => {
+        if (shownPath.current === target) navigate(target);
+      });
     }
   };
 
@@ -146,6 +154,7 @@ export function SftpExplorer({ sessionId, active }: SftpExplorerProps) {
         onToggleHidden={setShowHidden}
         onNewFolder={actions.newFolder}
         onUpload={onUpload}
+        busy={actions.busy}
       />
       <ContextMenu modal={false}>
         <ContextMenuTrigger asChild onContextMenu={onContextMenu} {...dropProps}>
