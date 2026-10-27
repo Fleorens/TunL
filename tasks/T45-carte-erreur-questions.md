@@ -183,8 +183,8 @@ test("an ended RDP session offers to edit its connection", async ({ page }) => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T45 --check` affiche `OK` partout.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T45 --check` affiche `OK` partout.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 - [ ] La carte d'erreur garde sa largeur (`w-80`) et ne déborde pas avec une chaîne de deux bastions (à l'écran).
 
 ## À regarder par Florian
