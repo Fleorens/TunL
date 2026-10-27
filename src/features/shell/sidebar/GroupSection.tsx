@@ -1,5 +1,4 @@
 import { ChevronDown, ChevronRight, ChevronUp, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Group } from "@/bindings/Group";
 import { IconButton } from "@/components/IconButton";
@@ -23,6 +22,10 @@ interface GroupSectionProps {
   groupCount: number;
   /** Connections in this group, shown in the header counter (0 for an empty group). */
   count: number;
+  /** Whether the group is expanded. Controlled by the parent (the Sidebar). */
+  open: boolean;
+  /** Called when the user toggles the group. Replaces the previous set, never mutates it. */
+  onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
   onRename: () => void;
   onMoveUp: () => void;
@@ -35,6 +38,8 @@ export function GroupSection({
   index,
   groupCount,
   count,
+  open,
+  onOpenChange,
   children,
   onRename,
   onMoveUp,
@@ -42,12 +47,11 @@ export function GroupSection({
   onDelete,
 }: GroupSectionProps) {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(true);
 
   const dotClass = ACCENT_DOT_CLASSES[group.color ?? "slate"];
 
   return (
-    <Collapsible open={open} onOpenChange={setOpen}>
+    <Collapsible open={open} onOpenChange={onOpenChange}>
       <div className="group/header flex h-7 items-center gap-2 px-2 text-left text-sm">
         <CollapsibleTrigger asChild>
           <button type="button" className="flex flex-1 items-center gap-2 select-none">

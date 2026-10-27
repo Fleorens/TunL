@@ -46,10 +46,13 @@ function moveBetweenRows(event: React.KeyboardEvent<HTMLElement>): void {
   rows[index].focus();
 }
 
-export function Sidebar({ showRecents = true }: { showRecents?: boolean }) {
+export function Sidebar() {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Folded groups, as a Set of ids owned here so it survives a filter (sections unmount during
+  // search). Replaced with a new Set on every change, never mutated.
+  const [folded, setFolded] = useState<Set<string>>(() => new Set());
 
   const [groupDialog, setGroupDialog] = useState<PendingDialog | null>(null);
   const [groupDialogOpen, setGroupDialogOpen] = useState(false);
@@ -139,7 +142,7 @@ export function Sidebar({ showRecents = true }: { showRecents?: boolean }) {
     );
 
   return (
-    <aside className="flex w-full flex-col gap-2 border-r bg-sidebar">
+    <aside className="flex h-full min-h-0 w-full flex-col gap-2 border-r bg-sidebar">
       <div className="flex items-center gap-2 px-2 pt-2">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-subtle-foreground" />
@@ -155,7 +158,7 @@ export function Sidebar({ showRecents = true }: { showRecents?: boolean }) {
         </div>
       </div>
 
-      <ScrollArea className="flex-1 px-2 pb-2" onKeyDown={moveBetweenRows}>
+      <ScrollArea className="min-h-0 flex-1 px-2 pb-2" onKeyDown={moveBetweenRows}>
         {status === "idle" || status === "loading" ? (
           <div className="flex flex-col gap-0.5">
             {SKELETON_KEYS.map((key) => (
@@ -202,8 +205,8 @@ export function Sidebar({ showRecents = true }: { showRecents?: boolean }) {
               </section>
             )}
 
-            {showRecents && sections.recents.length > 0 && (
-              <section aria-label={t("sidebar.recents")}>
+            {sections.recents.length > 0 && (
+              <section aria-label={t("sidebar.recentsRegion")}>
                 <SectionHeader title={t("sidebar.recents")} />
                 <ConnectionsList
                   connections={sections.recents}
@@ -224,6 +227,15 @@ export function Sidebar({ showRecents = true }: { showRecents?: boolean }) {
                   index={index}
                   groupCount={sections.groups.length}
                   count={section.connections.length}
+                  open={!folded.has(section.group.id)}
+                  onOpenChange={(open) =>
+                    setFolded((prev) => {
+                      const next = new Set(prev);
+                      if (open) next.delete(section.group.id);
+                      else next.add(section.group.id);
+                      return next;
+                    })
+                  }
                   onRename={() => openRenameGroup(section.group)}
                   onMoveUp={() => useConnections.getState().moveGroup(section.group.id, -1)}
                   onMoveDown={() => useConnections.getState().moveGroup(section.group.id, 1)}
