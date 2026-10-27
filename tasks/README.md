@@ -1,15 +1,17 @@
 # Plan de réalisation — TunL v1
 
-43 fiches en 9 jalons. Chaque fiche tient dans **une session opencode** du modèle local.
+54 fiches en 10 jalons. Chaque fiche tient dans **une session opencode** du modèle local.
 L'orchestrateur (Claude) écrit les fiches détaillées **par lots** : chaque lot est ajusté après relecture de ce que
 le modèle a réellement livré. Une fiche qui cite des signatures de code pas encore écrit finirait par mentir.
 
-## Où on en est (2026-10-22)
+## Où on en est (2026-10-27)
 
 - Lots 1 à 5 : **validés** (T01 → T30). Revue du lot 5 le 2026-10-20 : quatre défauts corrigés et figés
   (`e2e/review-lot5.spec.ts`, `src-tauri/src/sftp/transfer_reserve_tests.rs`), voir le commit de revue.
 - Lot 6 : **validé** (T28c, T30b, T31 → T39). Revue du 2026-10-22 : deux défauts figés (`e2e/review-lot6.spec.ts`,
   `src-tauri/src/model/review_lot6_tests.rs`). T40 (revue de sécurité, faite par Claude) validée le 2026-10-25 : paquets du brouillon `v0.1.0` vérifiés, `.rpm` testé par Florian.
+- Lot 7 : **prêt** (T43 → T53), issu de la revue globale du 2026-10-27 (`docs/09-revue-globale.md`) : interface,
+  ergonomie, défauts et performances. Ordre conseillé : celui du tableau M9 (chaque fiche dépend de la précédente).
 - À partir de T17b, `npm run review` démarre aussi les conteneurs SSH de test (podman, `npm run test:ssh`).
 - En attente de Florian, dans la vraie app (`npm run tauri dev`) :
   - T10 et T11 : créer, modifier et supprimer une connexion, avec un bastion (voir « À regarder » des deux fiches) ;
@@ -167,6 +169,22 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | T41 | Paquet RPM pour COPR (spec, sources hors ligne, construction à chaque tag) | T37, T38 | moyen | Cyber Tiel | validée |
 | T42 | Version de la spec RPM vérifiée par `check-version.mjs` | T41 | faible | Cyber Tiel | validée |
 
+### M9 — Revue globale (lot 7)
+
+| Fiche | Titre | Dépend de | Risque | Repli | Statut |
+|---|---|---|---|---|---|
+| T43 | Barre latérale : la liste défile seule, Récents toujours affichés, groupes repliés conservés | T34 | faible | Sonnet 5 · medium | prête |
+| T44 | Éditeur : un seul enregistrement, focus sur le nom, champs resserrés, plusieurs écrans en plein écran | T43 | faible | Sonnet 5 · medium | prête |
+| T45 | Sessions : carte d'erreur explicite, questions retirées en fin de tentative, « Modifier » sur la carte RDP | T44 | moyen | Sonnet 5 · medium | prête |
+| T46 | SFTP (interface) : un envoi ne ramène plus au dossier de départ, la suppression montre qu'elle travaille | T45 | faible | Sonnet 5 · medium | prête |
+| T47 | SFTP (moteur) : envois simultanés sans collision, dossier refusé, comptage sans un `stat` par entrée | T46 | moyen | Opus 5 · high | prête |
+| T48 | SFTP : un lien symbolique vers un fichier se télécharge comme un fichier | T47 | moyen | Sonnet 5 · high | prête |
+| T49 | SSH : délai jusqu'à la clé d'hôte, boucle d'acceptation du tunnel, une copie en moins | T48 | **élevé** | Opus 5 · high | prête |
+| T50 | Terminal : contrôle de flux des gros affichages, copie à la sélection groupée | T49 | **élevé** | Opus 5 · high | prête |
+| T51 | Palette et menus : pas de groupe vide, connexion rapide RDP, favori sans coche, « bastion » en français | T50 | faible | Sonnet 5 · medium | prête |
+| T52 | Import `~/.ssh/config` : notes et erreurs traduites, avertissements du fichier affichés | T51 | faible | Sonnet 5 · medium | prête |
+| T53 | Réglages et sondes : deux changements rapprochés gardés, une seule alerte de sonde | T52 | faible | Sonnet 5 · medium | prête |
+
 ## Chemin critique
 
 ```
@@ -189,3 +207,4 @@ local qui écrit le code (voir `AGENTS.md`).
 | 4 | T17 → T21b | **validé** à la revue du 2026-10-18 (T19b ajoutée le 2026-10-11 après une revue de T17 → T19) |
 | 5 | T22 → T30 (+ T25b, T26b, T26c, T26d, T28b) | **validé** à la revue du 2026-10-20 |
 | 6 | T31 → T40 (+ T28c, T30b) | **validé** à la revue du 2026-10-22, T40 le 2026-10-25 |
+| 7 | T43 → T53 | écrit le 2026-10-27, après la revue globale (`docs/09-revue-globale.md`) |
