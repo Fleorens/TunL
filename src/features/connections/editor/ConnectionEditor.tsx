@@ -91,8 +91,6 @@ type EditorTab = "general" | "authentication" | "network" | "advanced";
 export function ConnectionEditor() {
   const { t } = useTranslation();
   const portTouched = useRef(false);
-  // The Name field the editor focuses on opening a new connection (see the focus effect below).
-  const nameRef = useRef<HTMLInputElement | null>(null);
   const [savedName, setSavedName] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<EditorTab>("general");
   const [discardOpen, setDiscardOpen] = useState(false);
@@ -113,7 +111,7 @@ export function ConnectionEditor() {
     resolver: zodResolver(connectionFormSchema),
     mode: "onChange",
   });
-  const { isValid, isDirty, isSubmitting } = form.formState;
+  const { isValid, isDirty } = form.formState;
 
   // (Re)build the form each time the editor opens on a new target.
   useEffect(() => {
@@ -154,20 +152,23 @@ export function ConnectionEditor() {
   const ready = shown !== null && readyFor === shown;
 
   // On opening a new connection, focus the Name field. Radix would otherwise drop focus on the first
-  // focusable control (the protocol switch); `onOpenAutoFocus` cancels that, and here we focus once the
-  // fields are rendered (`ready`), not with a setTimeout.
+  // focusable control (the protocol switch); `onOpenAutoFocus` cancels that in create mode only, and
+  // here we focus once the fields are rendered (`ready`), not with a setTimeout.
   useEffect(() => {
-    if (ready && shown?.mode === "create") nameRef.current?.focus();
-  }, [ready, shown]);
+    if (ready && shown?.mode === "create") form.setFocus("name");
+  }, [ready, shown, form]);
 
-  // Guards against a double save: a double-click on "Save" (or Ctrl+S tapped twice) could fire while the
-  // previous call still runs, because `isSubmitting` only flips true after zod validation, leaving the
-  // button active in that window. `form.handleSubmit` validates; this ref makes the save itself idempotent.
+  // Guards against a double save: a double-click on "Save" (or Ctrl+S tapped twice) must not start a
+  // second call while the first still runs. `isSubmitting` cannot do it: the second `handleSubmit`
+  // resets it to false while the first save is pending. The ref blocks `save` itself, at once; the
+  // state disables the button for the whole call.
   const savingRef = useRef(false);
+  const [saving, setSaving] = useState(false);
 
   const save = async () => {
     if (savingRef.current) return;
     savingRef.current = true;
+    setSaving(true);
     try {
       if (!target || !isValid || !secretsValid(drafts) || !templates) return;
       const connection =
@@ -196,6 +197,7 @@ export function ConnectionEditor() {
       else notifyError(result.error);
     } finally {
       savingRef.current = false;
+      setSaving(false);
     }
   };
 
@@ -239,7 +241,7 @@ export function ConnectionEditor() {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
       event.preventDefault();
       // Ignore Ctrl+S while a save is running; `save`'s own guard also catches a double tap.
-      if (!isSubmitting) void onSubmit();
+      if (!saving) void onSubmit();
     }
   };
 
@@ -257,7 +259,9 @@ export function ConnectionEditor() {
         >
           <SheetContent
             className="flex h-full flex-col gap-4 data-[side=right]:w-full data-[side=right]:sm:max-w-[520px]"
-            onOpenAutoFocus={(event) => event.preventDefault()}
+            onOpenAutoFocus={(event) => {
+              if (target?.mode === "create") event.preventDefault();
+            }}
           >
             <SheetHeader className="items-start gap-3">
               <SheetTitle>
@@ -284,7 +288,7 @@ export function ConnectionEditor() {
                     <TabsTrigger value="advanced">{t("editor.tabs.advanced")}</TabsTrigger>
                   </TabsList>
                   <TabsContent value="general">
-                    <GeneralTab portTouched={portTouched} nameRef={nameRef} />
+                    <GeneralTab portTouched={portTouched} />
                   </TabsContent>
                   <TabsContent value="authentication">
                     <AuthTab />
@@ -309,10 +313,7 @@ export function ConnectionEditor() {
                 <Button variant="outline" onClick={requestClose}>
                   {t("common.cancel")}
                 </Button>
-                <Button
-                  onClick={onSubmit}
-                  disabled={!isValid || !secretsValid(drafts) || isSubmitting}
-                >
+                <Button onClick={onSubmit} disabled={!isValid || !secretsValid(drafts) || saving}>
                   {t("common.save")}
                 </Button>
               </div>
