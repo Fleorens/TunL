@@ -46,7 +46,7 @@ sudo dnf install ./tunl-*.x86_64.rpm     # Fedora
 chmod +x tunl_*_amd64.AppImage && ./tunl_*_amd64.AppImage
 ```
 
-You can also build a Flatpak for immutable distros (Silverblue, Kinoite, SteamOS…) and Flathub: it builds offline from
+You can also build a Flatpak for immutable distros (Silverblue, Kinoite, SteamOS…) from this repository: it builds offline from
 the two files in `packaging/flatpak/` (regenerate them with `npm run flatpak:sources` after a lockfile changes), with
 `flatpak-builder --user --install --force-clean build packaging/flatpak/io.github.fleorens.TunL.yml`, needing the GNOME 51
 runtime and the `rust-stable`, `node22` Flathub extensions.
@@ -88,7 +88,7 @@ What TunL relies on, beside the package's own dependencies (WebKitGTK 4.1):
 | Connecting card: a tunnel animates around the protocol icon while connecting, a check draws itself as each step finishes, and « Reduce animations » (settings or system) stops every animation (T33) | |
 | Desktop integration: brand icon, `tunl` package, desktop entry (Network menu) and AppStream metainfo with screenshots (T36) | |
 | Packaging without the devbox: a CI runs the whole recipe, both audits and the packaging checks on every push to main and pull request; a `vX.Y.Z` tag builds the deb, rpm and AppImage and attaches them with SHA-256 sums to a draft release (T37) | |
-| Flatpak for immutable distros and Flathub: an offline build, every crate and npm package declared in `packaging/flatpak/`, FreeRDP 3 compiled in the sandbox (T38) | |
+| Flatpak for immutable distros, built from this repository (not published on Flathub): an offline build, every crate and npm package declared in `packaging/flatpak/`, FreeRDP 3 compiled in the sandbox (T38) | |
 | Fedora repository on Copr (`strelok/tunl`): an RPM rebuilt offline from vendored crates and npm packages (T41) | |
 | Optional TunL title bar (Settings › Appearance): window buttons in the top bar, system bar by default or forced with `TUNL_TITLEBAR=native` (T35) | |
 
