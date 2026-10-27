@@ -264,8 +264,15 @@
     "cancel": "Annuler",
     "error": {
       "details": "Détails",
+      "close": "Fermer l'onglet",
+      "edit": "Modifier la connexion",
       "retry": "Réessayer",
-      "edit": "Modifier la connexion"
+      "hints": {
+        "network": "Vérifiez le nom d'hôte, le port et votre réseau.",
+        "timeout": "Le serveur n'a pas répondu à temps. Est-il allumé, et le port est-il le bon ?",
+        "auth": "Vérifiez le nom d'utilisateur et le mot de passe ou la clé.",
+        "cancelled": "La connexion a été interrompue avant la fin."
+      }
     },
     "closed": {
       "withCode": "Session terminée (code {{code}})",
@@ -675,6 +682,7 @@
       "disconnect": "Déconnecter",
       "relaunch": "Relancer",
       "closeTab": "Fermer l'onglet",
+      "editConnection": "Modifier la connexion",
       "code": "(code {{code}})",
       "log": "Journal FreeRDP (filtré)",
       "logEmpty": "Aucun journal pour l'instant."

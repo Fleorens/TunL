@@ -4,6 +4,7 @@ import { Check, Loader2, ShieldAlert, Unplug, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { ErrorKind } from "@/bindings/ErrorKind";
 import { Button } from "@/components/ui/button";
 import { useConnections } from "@/features/connections/store";
 import { HostKeyChangedCard } from "@/features/prompts/HostKeyChangedCard";
@@ -17,6 +18,33 @@ import { type Session, type SessionStepView, stepKey } from "./session-model";
 import { getSessionPort } from "./session-ports";
 import { useSessions } from "./store";
 import { TunnelAnimation } from "./TunnelAnimation";
+
+/** The help phrase of the error card, per error kind, or null when the kind has none. A Record keeps it exhaustive: a new Rust kind breaks the build here until it is listed. */
+type HintKey =
+  | "sessions.error.hints.network"
+  | "sessions.error.hints.timeout"
+  | "sessions.error.hints.auth"
+  | "sessions.error.hints.cancelled";
+
+const ERROR_HINTS: Record<ErrorKind, HintKey | null> = {
+  notFound: null,
+  validation: null,
+  io: null,
+  store: null,
+  secret: null,
+  network: "sessions.error.hints.network",
+  timeout: "sessions.error.hints.timeout",
+  auth: "sessions.error.hints.auth",
+  hostKeyRejected: null,
+  hostKeyChanged: null,
+  cancelled: "sessions.error.hints.cancelled",
+  sftp: null,
+  rdpClientMissing: null,
+  rdp: null,
+  wol: null,
+  inUse: null,
+  internal: null,
+};
 
 /** The tab's terminal, and the overlay matching its status. */
 export function SessionView({ session, active }: { session: Session; active: boolean }) {
@@ -142,7 +170,7 @@ function StepLine({ step }: { step: SessionStepView }) {
   );
 }
 
-/** The error card: what failed, an expandable detail, and Retry (plus Edit connection when saved). */
+/** The error card: which step failed, how to fix it, an expandable detail, and Close / Edit / Retry. */
 function SessionErrorCard({
   session,
   onRetry,
@@ -170,6 +198,7 @@ function SessionErrorCard({
     );
   }
   const hostKey = error.kind === "hostKeyRejected" || error.kind === "hostKeyChanged";
+  const hintKey = ERROR_HINTS[error.kind];
   return (
     <motion.div
       role="alert"
@@ -179,26 +208,35 @@ function SessionErrorCard({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.12 }}
     >
-      <div className="flex w-80 max-w-[calc(100%-2rem)] flex-col rounded-lg glass shadow-elevated p-5">
+      <div className="flex w-80 max-w-[calc(100%-2rem)] flex-col gap-3 rounded-lg glass shadow-elevated p-5">
         <div className="flex items-center gap-2">
           {hostKey ? <ShieldAlert className="size-4" /> : <Unplug className="size-4" />}
           <p className="text-sm font-medium">{describeError(error).title}</p>
         </div>
+        <ul className="max-h-48 overflow-y-auto">
+          {session.steps.map((step) => (
+            <StepLine key={`${step.step}:${step.label}`} step={step} />
+          ))}
+        </ul>
+        {hintKey && <p className="text-sm text-muted-foreground">{t(hintKey)}</p>}
         <Button
           variant="ghost"
           size="sm"
           aria-expanded={open}
           onClick={() => setOpen((current) => !current)}
-          className="mt-3 self-start text-muted-foreground"
+          className="self-start text-muted-foreground"
         >
           {t("sessions.error.details")}
         </Button>
         {open && (
-          <p className="mt-1 font-mono text-xs break-words whitespace-pre-wrap text-muted-foreground">
+          <p className="font-mono text-xs break-words whitespace-pre-wrap text-muted-foreground">
             {error.message}
           </p>
         )}
-        <div className="mt-3 flex justify-end gap-2">
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={onClose}>
+            {t("sessions.error.close")}
+          </Button>
           {onEdit && (
             <Button variant="outline" size="sm" onClick={onEdit}>
               {t("sessions.error.edit")}

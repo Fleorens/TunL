@@ -263,8 +263,15 @@
     "cancel": "Cancel",
     "error": {
       "details": "Details",
+      "close": "Close tab",
+      "edit": "Edit connection",
       "retry": "Retry",
-      "edit": "Edit connection"
+      "hints": {
+        "network": "Check the host name, the port and your network.",
+        "timeout": "The server did not answer in time. Is it on, and is the port right?",
+        "auth": "Check the user name and the password or key.",
+        "cancelled": "The connection was stopped before its end."
+      }
     },
     "closed": {
       "withCode": "Session ended (exit code {{code}})",
@@ -673,6 +680,7 @@
       "disconnect": "Disconnect",
       "relaunch": "Relaunch",
       "closeTab": "Close tab",
+      "editConnection": "Edit connection",
       "code": "(code {{code}})",
       "log": "FreeRDP log (filtered)",
       "logEmpty": "Nothing logged yet."
