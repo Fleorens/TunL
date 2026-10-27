@@ -108,12 +108,12 @@ npm run test-env:rdp       # construit l'image xrdp (une fois), recrée les 2 co
   les audits de S16 (`npm audit --omit=dev --audit-level=high` bloquant, `npm audit` complet en avertissement,
   `cargo audit` dans `src-tauri`) ; `scripts/check-packaging.sh` (entrée de bureau et metainfo, T36).
 - **`.github/workflows/release.yml`**, sur un tag `vX.Y.Z` : vérifie que le tag est la version de l'app
-  (`node scripts/check-version.mjs vX.Y.Z` : `package.json`, `tauri.conf.json`, `Cargo.toml`, metainfo), construit le
+  (`node scripts/check-version.mjs vX.Y.Z` : `package.json`, `tauri.conf.json`, `Cargo.toml`, metainfo, spec RPM), construit le
   `.deb`, le `.rpm` et l'AppImage sur Ubuntu 22.04, et les joint avec `SHA256SUMS` à une publication GitHub
   **brouillon**. La publier est une décision humaine (liste de T40).
 - **Copr** (`strelok/tunl`, Fedora 43 et 44, T41) : pas de webhook, la construction se lance à la main à chaque
   version, une fois le tag poussé sur GitHub. Avant le tag, monter `Version:` et ajouter une entrée `%changelog` dans
-  la spec : `check-version.mjs` ne la vérifie pas. Puis, depuis un poste connecté à Copr (`kinit <compte>@FEDORAPROJECT.ORG`) :
+  la spec (`check-version.mjs` le vérifie depuis T42). Puis, depuis un poste connecté à Copr (`kinit <compte>@FEDORAPROJECT.ORG`) :
   `copr-cli buildscm strelok/tunl --clone-url https://github.com/Fleorens/TunL.git --commit vX.Y.Z --method make_srpm`.
   Copr prépare le SRPM (`.copr/Makefile` → `scripts/copr-srpm.sh`, sur une machine qui peut être aarch64 : le cache
   npm embarqué couvre donc x64 et arm64), puis construit le RPM hors ligne (`packaging/rpm/tunl.spec`), en

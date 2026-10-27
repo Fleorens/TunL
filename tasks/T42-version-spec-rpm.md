@@ -144,7 +144,7 @@ if (wrong.length > 0) {
 - [x] `node scripts/contract-tests.mjs T42 --check` affiche `OK`, et `npm run verify` passe.
 - [x] `node scripts/check-version.mjs v0.1.0` réussit ; `node scripts/check-version.mjs v0.2.0` échoue et cite les
       six endroits, dont les deux de la spec.
-- [ ] Aucun fichier modifié hors de `scripts/check-version.mjs`, du test du contrat, de cette fiche et de
+- [x] Aucun fichier modifié hors de `scripts/check-version.mjs`, du test du contrat, de cette fiche et de
       `tasks/README.md`.
 
 ## À regarder par Florian
