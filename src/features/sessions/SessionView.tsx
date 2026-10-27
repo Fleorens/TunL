@@ -213,7 +213,7 @@ function SessionErrorCard({
           {hostKey ? <ShieldAlert className="size-4" /> : <Unplug className="size-4" />}
           <p className="text-sm font-medium">{describeError(error).title}</p>
         </div>
-        <ul className="max-h-48 overflow-y-auto">
+        <ul className="flex max-h-38 flex-col gap-1.5 overflow-y-auto text-sm">
           {session.steps.map((step) => (
             <StepLine key={`${step.step}:${step.label}`} step={step} />
           ))}
@@ -233,7 +233,7 @@ function SessionErrorCard({
             {error.message}
           </p>
         )}
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
           <Button variant="outline" size="sm" onClick={onClose}>
             {t("sessions.error.close")}
           </Button>

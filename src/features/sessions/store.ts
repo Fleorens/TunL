@@ -182,7 +182,7 @@ function start(id: string, runId: string): void {
     }));
     // When the attempt ends (error or closed), drop this run's pending questions: an answer typed
     // after the backend abandoned its wait (PROMPT_TIMEOUT) would otherwise go into the void.
-    if (next.status === "error" || next.status === "closed") {
+    if (current.status !== next.status && (next.status === "error" || next.status === "closed")) {
       usePrompts.getState().dropSession(runId);
     }
     if (event.type === "connected") {

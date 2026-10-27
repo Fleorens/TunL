@@ -85,7 +85,7 @@ export function RdpCard({ session }: { session: Session }) {
                   size="sm"
                   onClick={() => useUi.getState().openEditor({ mode: "edit", id: connection.id })}
                 >
-                  {t("rdp.card.editConnection")}
+                  {t("sessions.error.edit")}
                 </Button>
               )}
               <Button

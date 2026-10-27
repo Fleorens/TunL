@@ -682,7 +682,6 @@
       "disconnect": "Déconnecter",
       "relaunch": "Relancer",
       "closeTab": "Fermer l'onglet",
-      "editConnection": "Modifier la connexion",
       "code": "(code {{code}})",
       "log": "Journal FreeRDP (filtré)",
       "logEmpty": "Aucun journal pour l'instant."

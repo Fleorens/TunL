@@ -680,7 +680,6 @@
       "disconnect": "Disconnect",
       "relaunch": "Relaunch",
       "closeTab": "Close tab",
-      "editConnection": "Edit connection",
       "code": "(code {{code}})",
       "log": "FreeRDP log (filtered)",
       "logEmpty": "Nothing logged yet."
