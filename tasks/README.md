@@ -175,7 +175,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T43 | Barre latérale : la liste défile seule, Récents toujours affichés, groupes repliés conservés | T34 | faible | Sonnet 5 · medium | prête |
+| T43 | Barre latérale : la liste défile seule, Récents toujours affichés, groupes repliés conservés | T34 | faible | Sonnet 5 · medium | livrée |
 | T44 | Éditeur : un seul enregistrement, focus sur le nom, champs resserrés, plusieurs écrans en plein écran | T43 | faible | Sonnet 5 · medium | prête |
 | T45 | Sessions : carte d'erreur explicite, questions retirées en fin de tentative, « Modifier » sur la carte RDP | T44 | moyen | Sonnet 5 · medium | prête |
 | T46 | SFTP (interface) : un envoi ne ramène plus au dossier de départ, la suppression montre qu'elle travaille | T45 | faible | Sonnet 5 · medium | prête |
