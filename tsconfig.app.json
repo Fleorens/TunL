@@ -5,7 +5,7 @@
     "lib": ["ES2023", "DOM"],
     "paths": { "@/*": ["./src/*"] },
     "module": "esnext",
-    "types": ["vite/client", "node"],
+    "types": ["vite/client"],
     "allowArbitraryExtensions": true,
     "skipLibCheck": true,
 
@@ -23,5 +23,7 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  /** Node types stay out of the app: the one test that spawns a process has its own project. */
+  "exclude": ["src/version-spec.test.ts"]
 }
