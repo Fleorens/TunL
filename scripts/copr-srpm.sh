@@ -53,9 +53,18 @@ mv "$tmp/.cargo-config.toml" "$tmp/.cargo/config.toml"
 
 # npm cache: populate it from package.json and package-lock.json (no node_modules
 # ships). A complete ci on the same lockfile is what makes --offline work later.
+# COPR may build this SRPM on another architecture than the RPM (aarch64 for an
+# x86_64 build): npm only fetches the native optional packages (Tauri CLI,
+# rolldown, lightningcss…) of the target it installs for, so run one ci per
+# target architecture.
 mkdir -p "$tmp/npm-workspace"
 cp package.json package-lock.json "$tmp/npm-workspace/"
-( cd "$tmp/npm-workspace" && npm ci --ignore-scripts --cache "$tmp/npm-cache" )
+for cpu in x64 arm64; do
+  ( cd "$tmp/npm-workspace" \
+    && rm -rf node_modules \
+    && npm ci --ignore-scripts --os=linux --cpu="$cpu" --libc=glibc \
+         --cache "$tmp/npm-cache" )
+done
 
 tar -C "$tmp" -cJf "${outdir}/tunl-${version}-vendor.tar.xz" vendor .cargo npm-cache
 
