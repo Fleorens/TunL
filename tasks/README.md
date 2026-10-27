@@ -164,7 +164,8 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | T39 | README public, CONTRIBUTING, LICENSE, CHANGELOG | T37 | faible | Haiku 4.5 · low | validée |
 | T40a | Revue sécurité, 1ʳᵉ passe sur le code (constats seulement, aucune correction) | T38, T39 | moyen | Cyber Tiel | validée |
 | T40 | Revue sécurité finale + liste de publication (**faite par Claude**) | T40a | — | Opus 5 · xhigh | validée |
-| T41 | Paquet RPM pour COPR (spec, sources hors ligne, construction à chaque tag) | T37, T38 | moyen | Cyber Tiel | livrée |
+| T41 | Paquet RPM pour COPR (spec, sources hors ligne, construction à chaque tag) | T37, T38 | moyen | Cyber Tiel | validée |
+| T42 | Version de la spec RPM vérifiée par `check-version.mjs` | T41 | faible | Cyber Tiel | prête |
 
 ## Chemin critique
 
