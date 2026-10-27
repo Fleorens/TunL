@@ -10,6 +10,7 @@ import { jumpChainNames } from "@/features/connections/jump-hosts";
 import { useConnections } from "@/features/connections/store";
 import type { Session } from "@/features/sessions/session-model";
 import { useSessions } from "@/features/sessions/store";
+import { useUi } from "@/features/shell/ui-store";
 import { exitKey, minutesSince, tunnelAddress } from "./rdp-model";
 
 /** The RDP card: centered, a fixed width, the connection, its status, controls, and the log. */
@@ -78,6 +79,15 @@ export function RdpCard({ session }: { session: Session }) {
             </Button>
           ) : (
             <>
+              {connection && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => useUi.getState().openEditor({ mode: "edit", id: connection.id })}
+                >
+                  {t("sessions.error.edit")}
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"
