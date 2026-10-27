@@ -111,6 +111,13 @@ npm run test-env:rdp       # construit l'image xrdp (une fois), recrée les 2 co
   (`node scripts/check-version.mjs vX.Y.Z` : `package.json`, `tauri.conf.json`, `Cargo.toml`, metainfo), construit le
   `.deb`, le `.rpm` et l'AppImage sur Ubuntu 22.04, et les joint avec `SHA256SUMS` à une publication GitHub
   **brouillon**. La publier est une décision humaine (liste de T40).
+- **Copr** (`strelok/tunl`, Fedora 43 et 44, T41) : pas de webhook, la construction se lance à la main à chaque
+  version, une fois le tag poussé sur GitHub. Avant le tag, monter `Version:` et ajouter une entrée `%changelog` dans
+  la spec : `check-version.mjs` ne la vérifie pas. Puis, depuis un poste connecté à Copr (`kinit <compte>@FEDORAPROJECT.ORG`) :
+  `copr-cli buildscm strelok/tunl --clone-url https://github.com/Fleorens/TunL.git --commit vX.Y.Z --method make_srpm`.
+  Copr prépare le SRPM (`.copr/Makefile` → `scripts/copr-srpm.sh`, sur une machine qui peut être aarch64 : le cache
+  npm embarqué couvre donc x64 et arm64), puis construit le RPM hors ligne (`packaging/rpm/tunl.spec`), en
+  40 minutes environ. Journaux : `https://download.copr.fedorainfracloud.org/results/strelok/tunl/<chroot>/<build>-tunl/`.
 - Les actions sont **épinglées par commit**, leur version en commentaire. Pour en monter une :
   `git ls-remote https://github.com/<action> 'refs/tags/<tag>^{}'`, puis remplacer le SHA et le commentaire.
 - `cargo audit` lit `src-tauri/.cargo/audit.toml` : chaque avis ignoré y dit pourquoi, et se relit à chaque
