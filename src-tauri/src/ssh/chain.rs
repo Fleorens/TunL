@@ -14,7 +14,7 @@ use crate::error::{AppError, AppResult, ErrorKind};
 use crate::model::{Connection, MAX_JUMP_HOSTS, Protocol};
 use crate::ssh::SshContext;
 use crate::ssh::auth::AuthTarget;
-use crate::ssh::connect::{SshStream, client_config_for, handshake, tcp_connect};
+use crate::ssh::connect::{SshStream, client_config_for, handshake_timed, tcp_connect};
 use crate::ssh::handler::{ClientHandler, HostKeyTarget};
 use crate::ssh::session::SshTarget;
 
@@ -123,13 +123,14 @@ pub(crate) async fn dial(
 
 /// Run one bastion's handshake on its stream: russh negotiates the session, checking the bastion's own host
 /// key (its own host and port, so a key learned here is never recorded under the target's name, docs/01 §5).
+/// The delay is the hop's connect timeout (T49).
 pub(crate) async fn handshake_with(
     stream: Box<dyn SshStream>,
     to: &SshTarget,
     id: Uuid,
     ctx: &SshContext,
 ) -> AppResult<Handle<ClientHandler>> {
-    handshake(
+    handshake_timed(
         stream,
         HostKeyTarget {
             host: to.host.clone(),
@@ -141,6 +142,7 @@ pub(crate) async fn handshake_with(
             &ctx.known_hosts.algorithms(&to.host, to.port),
         ),
         ctx,
+        to.connect_timeout,
     )
     .await
 }

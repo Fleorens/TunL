@@ -2,7 +2,8 @@
 //!
 //! `tcp_connect` opens the socket with a timeout; `handshake` runs russh's `connect_stream` on a
 //! generic stream (a plain `TcpStream` here, a `direct-tcpip` channel from T22). The timeout covers
-//! the TCP only, never the handshake: the user may take a while to read a host key (docs/01-architecture.md §5).
+//! the TCP, then, with `handshake_timed`, the handshake until the server presents its host key (T49);
+//! never the question asked to the user, who may take a while to read it (docs/01-architecture.md §5).
 use std::borrow::Cow;
 use std::sync::Arc;
 use std::time::Duration;
@@ -12,6 +13,7 @@ use russh::client::{Config, Handle, connect_stream};
 use russh::keys::Algorithm;
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio::net::TcpStream;
+use tokio::sync::watch;
 
 use crate::error::{AppError, AppResult, ErrorKind};
 use crate::ssh::SshContext;
@@ -122,6 +124,8 @@ pub async fn tcp_connect(host: &str, port: u16, timeout: Duration) -> AppResult<
 
 /// The SSH handshake on an already-open stream: russh negotiates the session, running
 /// `ClientHandler::check_server_key` on the server's key. Not authenticated yet (T18).
+///
+/// The delay does not cover the handshake: the user may take a while to read a host key (T49).
 pub async fn handshake<S>(
     stream: S,
     target: HostKeyTarget,
@@ -131,6 +135,61 @@ pub async fn handshake<S>(
 where
     S: AsyncRead + AsyncWrite + Unpin + Send + 'static,
 {
-    let handle = connect_stream(config, stream, ClientHandler::new(target, ctx.clone())).await?;
+    // `handshake` does not watch the key, so its signal is created and its receiver dropped.
+    let (key_seen, _rx) = watch::channel(false);
+    let handle = connect_stream(
+        config,
+        stream,
+        ClientHandler::new(target, ctx.clone(), key_seen),
+    )
+    .await?;
     Ok(handle)
+}
+
+/// The handshake with a delay that stops once the server presents its key (T49).
+///
+/// Like `handshake`, but if the server shows neither its banner nor its key within `timeout`, it
+/// fails with `ErrorKind::Timeout`. The delay covers the silent part only: `check_server_key` sets
+/// its signal at the start, so once the key arrives the user may still take a while on the question
+/// (docs/01-architecture.md §5, S6). The error copies no data the server sent (S7).
+pub async fn handshake_timed<S>(
+    stream: S,
+    target: HostKeyTarget,
+    config: Arc<Config>,
+    ctx: &SshContext,
+    timeout: Duration,
+) -> AppResult<Handle<ClientHandler>>
+where
+    S: AsyncRead + AsyncWrite + Unpin + Send + 'static,
+{
+    // The host and port, kept after `target` is moved into the handler, for the timeout message.
+    let host = target.host.clone();
+    let port = target.port;
+
+    // The signal `check_server_key` sets: whether the server has presented its key yet.
+    let (key_seen, key_seen_rx) = watch::channel(false);
+    let handler = ClientHandler::new(target, ctx.clone(), key_seen);
+
+    // Race the handshake against "delay elapsed and no key yet" (T49). The future is pinned, not
+    // spawned: a cancelled connection drops this future, and with it the handshake, its socket and a
+    // pending host key question (T17).
+    let handshake = connect_stream(config, stream, handler);
+    tokio::pin!(handshake);
+    tokio::select! {
+        result = &mut handshake => Ok(result?),
+        _ = tokio::time::sleep(timeout) => {
+            if *key_seen_rx.borrow() {
+                // The server showed its key in time: let russh finish the handshake.
+                return Ok(handshake.await?);
+            }
+            // A silent server: the handshake and its socket are dropped on return (S7).
+            Err(AppError::new(
+                ErrorKind::Timeout,
+                format!(
+                    "no SSH answer from {host}:{port} within {:.1} s",
+                    timeout.as_secs_f32()
+                ),
+            ))
+        }
+    }
 }

@@ -4,6 +4,7 @@
 //! (no « continue anyway », S6), unknown → ask the `PromptBroker` and remember the answer for the
 //! session.
 use russh::keys::PublicKeyOrCertificate;
+use tokio::sync::watch;
 
 use crate::error::{AppError, ErrorDetail, ErrorKind};
 use crate::prompts::{PromptAnswer, PromptKind};
@@ -24,11 +25,18 @@ pub struct HostKeyTarget {
 pub struct ClientHandler {
     target: HostKeyTarget,
     ctx: SshContext,
+    /// Set to `true` at the very start of `check_server_key` (T49): a timed handshake watches this
+    /// to tell whether the server presented its key before a delay elapsed.
+    key_seen: watch::Sender<bool>,
 }
 
 impl ClientHandler {
-    pub fn new(target: HostKeyTarget, ctx: SshContext) -> Self {
-        Self { target, ctx }
+    pub fn new(target: HostKeyTarget, ctx: SshContext, key_seen: watch::Sender<bool>) -> Self {
+        Self {
+            target,
+            ctx,
+            key_seen,
+        }
     }
 
     /// The error for a key that differs from the recorded one: refused, no « continue anyway » (S6).
@@ -83,6 +91,8 @@ impl russh::client::Handler for ClientHandler {
     type Error = SshError;
 
     async fn check_server_key(&mut self, key: &PublicKeyOrCertificate) -> Result<bool, SshError> {
+        // The key has arrived: a timed handshake stops counting from here (T49).
+        let _ = self.key_seen.send(true);
         match key {
             // A host certificate is a third party's signature, not the server's own key.
             PublicKeyOrCertificate::Certificate(_) => Err(AppError::new(

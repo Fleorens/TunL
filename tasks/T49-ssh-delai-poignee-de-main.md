@@ -186,9 +186,9 @@ async fn a_slow_answer_to_the_host_key_question_is_not_a_timeout() {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T49 --check` affiche `OK` partout.
-- [ ] `grep -n "to_vec()" src-tauri/src/ssh/shell.rs` ne trouve plus qu'une copie par morceau envoyé.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T49 --check` affiche `OK` partout.
+- [x] `grep -n "to_vec()" src-tauri/src/ssh/shell.rs` ne trouve plus qu'une copie par morceau envoyé.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 

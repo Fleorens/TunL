@@ -5,6 +5,7 @@
 //! when it is taken. `forward` carries each connection accepted there over a `direct-tcpip` channel of
 //! `via` to `host:port`, until `cancel` (docs/01 §8). FreeRDP connects to the local port in T28.
 use std::net::Ipv4Addr;
+use std::time::Duration;
 
 use uuid::Uuid;
 
@@ -89,7 +90,9 @@ pub async fn bind_tunnel(connection_id: Uuid) -> AppResult<TcpListener> {
 ///
 /// Every connection opens its own `direct-tcpip` channel first, so a refused one closes only that
 /// connection and the tunnel keeps listening. `cancel` stops the loop (dropping `listener`, so the port
-/// closes) and ends every in-progress copy. Nothing that passes is logged (S8).
+/// closes) and ends every in-progress copy. An accept error is retried after 100 ms, so a "too many open
+/// files" error does not spin the loop at 100% of a core (T49); the wait is interrupted by `cancel`.
+/// Nothing that passes is logged (S8).
 pub async fn forward(
     listener: TcpListener,
     via: &Handle<ClientHandler>,
@@ -102,7 +105,11 @@ pub async fn forward(
             _ = cancel.cancelled() => break,
             accepted = listener.accept() => {
                 let Ok((local, _)) = accepted else {
-                    // An accept error is ignored: keep listening.
+                    // An accept error is not fatal: wait before retrying, interrupted by `cancel` (T49).
+                    tokio::select! {
+                        _ = cancel.cancelled() => break,
+                        _ = tokio::time::sleep(Duration::from_millis(100)) => {}
+                    }
                     continue;
                 };
                 // Open the channel before copying: each local connection has its own, and a refusal

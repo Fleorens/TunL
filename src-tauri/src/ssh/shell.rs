@@ -71,8 +71,8 @@ pub async fn pump(
             message = read.wait() => {
                 match message {
                     // The shell's output, whether on stdout or stderr (S8: never logged).
-                    Some(ChannelMsg::Data { data }) => emit_output(sink, data.to_vec()),
-                    Some(ChannelMsg::ExtendedData { data, .. }) => emit_output(sink, data.to_vec()),
+                    Some(ChannelMsg::Data { data }) => emit_output(sink, &data),
+                    Some(ChannelMsg::ExtendedData { data, .. }) => emit_output(sink, &data),
                     // The process exited: remember its status. The remote may still report it after
                     // EOF, so keep reading until the channel actually closes.
                     Some(ChannelMsg::ExitStatus { exit_status: code }) => {
@@ -110,7 +110,9 @@ pub async fn pump(
 }
 
 /// Send the shell's bytes to the UI in chunks of at most `OUTPUT_CHUNK`, so no single message is huge.
-fn emit_output(sink: &dyn SessionSink, data: Vec<u8>) {
+/// The received slice is split without copying it first (T49); each chunk is copied once, because
+/// `SessionSink::output` takes an owned buffer.
+fn emit_output(sink: &dyn SessionSink, data: &[u8]) {
     for chunk in data.chunks(OUTPUT_CHUNK) {
         sink.output(chunk.to_vec());
     }
