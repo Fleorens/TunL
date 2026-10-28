@@ -70,21 +70,26 @@ pub fn suffixed(name: &str, n: u32) -> String {
 
 /// One remote entry from its directory, its name and the attributes `read_dir` returned for it (an
 /// entry keeps its own type, even a link; docs/05 §8).
-pub fn entry_from(dir: &str, name: &str, attrs: &Metadata) -> RemoteEntry {
-    let kind = match attrs.file_type() {
+fn kind_from_file_type(file_type: FileType) -> EntryKind {
+    match file_type {
         FileType::Dir => EntryKind::Dir,
         FileType::Symlink => EntryKind::Symlink,
         FileType::File => EntryKind::File,
         FileType::Other => EntryKind::Other,
-    };
+    }
+}
+
+pub fn entry_from(dir: &str, name: &str, attrs: &Metadata) -> RemoteEntry {
     RemoteEntry {
         name: name.to_string(),
         path: join(dir, name),
-        kind,
+        kind: kind_from_file_type(attrs.file_type()),
         size: attrs.size.unwrap_or(0),
         modified_at: attrs.mtime.map(|secs| i64::from(secs) * 1000),
         permissions: attrs.permissions.map(|mode| mode & 0o7777),
         hidden: name.starts_with('.'),
+        // `list` fills this in, following the link, only for symlinks (T48).
+        target_kind: None,
     }
 }
 
@@ -129,6 +134,25 @@ pub async fn list(sftp: &SftpSession, dir: &str) -> AppResult<Vec<RemoteEntry>> 
             }
         })
         .collect();
+
+    // A link's own type is `symlink`; to know whether it is a file or a folder, ask the server what
+    // it points to (T48). One `metadata` call per link, none for any other entry, and an error here
+    // says nothing about the link — it never fails the whole list.
+    for entry in entries.iter_mut() {
+        if entry.kind != EntryKind::Symlink {
+            continue;
+        }
+        match sftp.metadata(&entry.path).await {
+            Ok(target) => entry.target_kind = Some(kind_from_file_type(target.file_type())),
+            Err(error) => log::warn!(
+                "could not read the target of {}/{}: {}",
+                dir,
+                entry.name,
+                error
+            ),
+        }
+    }
+
     entries.sort_by(|a, b| a.name.cmp(&b.name));
     Ok(entries)
 }
