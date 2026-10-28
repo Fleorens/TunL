@@ -48,3 +48,6 @@ mod ipc_exchange_tests;
 
 #[cfg(test)]
 mod ipc_window_tests;
+
+#[cfg(test)]
+mod ipc_ack_tests;

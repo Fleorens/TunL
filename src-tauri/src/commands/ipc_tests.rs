@@ -143,15 +143,6 @@ fn every_command_accepts_the_arguments_sent_by_ipc_ts() {
         json!(false)
     );
 
-    // A shell command, with the exact keys ipc.ts sends (T50): an unknown session is notFound.
-    let unknown = uuid::Uuid::new_v4();
-    let missing = invoke(
-        &webview,
-        "ssh_ack",
-        json!({ "sessionId": unknown, "bytes": 4096 }),
-    );
-    assert_eq!(missing.unwrap_err()["kind"], "notFound");
-
     let snapshot = ok(&webview, "store_load", json!({}));
     assert_eq!(snapshot["connections"].as_array().unwrap().len(), 1);
 }

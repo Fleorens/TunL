@@ -39,16 +39,15 @@ export function registerSessionPort(id: string): void {
   // for the old attempt are dropped (T50).
   let lastRunId: string | null = null;
   const flushAcks = (): void => {
-    if (acked === 0) return;
-    const amount = acked;
-    acked = 0;
-    lastRunId = current(id)?.runId ?? null;
-    if (ackTimer) {
+    if (ackTimer !== null) {
       clearTimeout(ackTimer);
       ackTimer = null;
     }
+    const amount = acked;
+    acked = 0;
     const session = current(id);
-    if (!isLive(session)) return;
+    // Nothing pending, a session no longer live, or acks of an attempt that has since ended.
+    if (amount === 0 || !isLive(session) || session.runId !== lastRunId) return;
     ipc.sshAck(session.runId, amount).catch((error) => handlePortError(error));
   };
   const { port, push } = createTerminalPort({
@@ -70,18 +69,17 @@ export function registerSessionPort(id: string): void {
       // A new attempt (reconnect): the shell restarted on the Rust side, drop the pending acks.
       const runId = current(id)?.runId ?? null;
       if (runId !== lastRunId) {
-        if (ackTimer) {
-          clearTimeout(ackTimer);
-        }
         acked = 0;
         lastRunId = runId;
       }
       acked += bytes;
       if (acked >= ACK_BATCH_BYTES) {
         flushAcks();
-      } else {
-        ackTimer = setTimeout(flushAcks, ACK_BATCH_DELAY_MS);
+        return;
       }
+      // Sent 100 ms after the last ack: each one restarts the delay.
+      if (ackTimer !== null) clearTimeout(ackTimer);
+      ackTimer = setTimeout(flushAcks, ACK_BATCH_DELAY_MS);
     },
   });
   ports.set(id, { port, push });

@@ -152,14 +152,15 @@ export function useXterm(options: UseXtermOptions): UseXterm {
       }
       copyTimer = setTimeout(copy, COPY_DEBOUNCE_MS);
     };
-    const flush = (): void => {
-      if (copyTimer) {
-        clearTimeout(copyTimer);
-        copyTimer = null;
+    // The release ends the drag: copy what a change left pending, and only that (a right or middle
+    // click must not overwrite what was copied elsewhere since).
+    const onRelease = (): void => {
+      if (copyTimer === null) {
+        return;
       }
+      clearTimeout(copyTimer);
       copy();
     };
-    const onRelease = (): void => flush();
     const offSelection = term.onSelectionChange(schedule);
     host.addEventListener("mouseup", onRelease);
     return () => {
