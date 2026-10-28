@@ -63,8 +63,8 @@ function TextField({
 /**
  * The port field. Typing in it marks the port touched, so switching protocol stops overwriting it.
  *
- * A text input, not `type="number"`: the DOM exposes a `spinbutton` role for the latter, which the
- * palette contract test does not expect on a port field. `inputMode` still shows the numeric keyboard.
+ * A text input, not `type="number"`: the form keeps the port as a string, checked by `isValidPort`.
+ * `inputMode` still shows the numeric keyboard.
  */
 function PortField({ portTouched }: { portTouched: RefObject<boolean> }) {
   const { t } = useTranslation();

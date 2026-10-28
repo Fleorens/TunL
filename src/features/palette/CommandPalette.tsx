@@ -69,9 +69,9 @@ export function CommandPalette() {
   const quickTarget = useMemo(() => parseQuickConnect(search), [search]);
   const actionIds = useMemo(() => filterActions(labels, search), [labels, search]);
 
-  // The first visible item, so the highlight can reset to it whenever the list changes. In the quick-connect palette
-  // an RDP target has no « … vers … » row, so the first (and only) row is « Save as a new connection… »; in the
-  // all-actions palette the « … vers … » row is first, whatever the protocol.
+  // The item the highlight resets to whenever the list changes, which is what Enter picks. For an RDP target it is
+  // « Save as a new connection… » in both palettes: the only row in the quick-connect palette, the row after
+  // « RDP to … » in the all-actions palette (see `hideQuickRow`).
   const firstValue = useMemo(() => {
     if (mode === "quickConnect") {
       if (!quickTarget) return "";
@@ -117,9 +117,9 @@ export function CommandPalette() {
 
   if (mode === null) return null;
 
-  // In the quick-connect palette, an RDP address replaces the « … vers … » row with « Save as a new connection…
-  // » (which Enter picks and fills the editor with); in the all-actions palette the « RDP vers … » row stays, as
-  // the RDP card has not opened a tab yet (it shows the coming-soon toast). SSH is unchanged in both palettes.
+  // In the quick-connect palette, an RDP address replaces the « … to … » row with « Save as a new connection… »
+  // (which Enter picks and fills the editor with). The all-actions palette keeps the « RDP to … » row and its
+  // coming-soon toast, which the T13 and T31 contract tests still expect. SSH is unchanged in both palettes.
   const hideQuickRow = mode === "quickConnect" && quickTarget?.protocol === "rdp";
 
   return (
