@@ -401,7 +401,7 @@
       "host": "Hôte",
       "address": "Adresse",
       "key": "Clé",
-      "jump": "Hôte sauteur",
+      "jump": "Bastion",
       "notes": "Notes"
     },
     "done_one": "{{count}} connexion importée",
@@ -530,7 +530,7 @@
       "notes": "Notes",
       "keyPath": "Chemin de la clé",
       "domain": "Domaine",
-      "jumpHost": "Connexion relais",
+      "jumpHost": "Bastion",
       "wol": "Veille prolongée",
       "mac": "Adresse MAC",
       "broadcast": "Adresse de diffusion",

@@ -111,9 +111,9 @@ test("the favorite item of the connection menu is a plain action", async ({ page
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T51 --check` affiche `OK` partout.
-- [ ] `grep -rn "Hôte sauteur\|Connexion relais" src/i18n` ne trouve plus rien.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T51 --check` affiche `OK` partout.
+- [x] `grep -rn "Hôte sauteur\|Connexion relais" src/i18n` ne trouve plus rien.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 
