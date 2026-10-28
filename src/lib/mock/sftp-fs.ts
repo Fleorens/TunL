@@ -10,6 +10,8 @@ export interface MockNode {
   modifiedAt: number;
   /** The permission bits only (`0o7777`). */
   permissions: number;
+  /** For a symlink, the path it points to, so a link to a file can be downloaded (T48). */
+  target?: string;
 }
 
 export type MockFs = ReadonlyMap<string, MockNode>;
@@ -36,8 +38,8 @@ function file(size: number): MockNode {
   return { kind: "file", size, modifiedAt: MTIME, permissions: 0o644 };
 }
 
-function link(): MockNode {
-  return { kind: "symlink", size: 0, modifiedAt: MTIME, permissions: 0o777 };
+function link(target?: string): MockNode {
+  return { kind: "symlink", size: 0, modifiedAt: MTIME, permissions: 0o777, target };
 }
 
 /** Same rule as the backend's `validate_remote_path`: absolute, no NUL (S11). */
@@ -88,6 +90,7 @@ export function demoFs(): MockFs {
     ["/var", dir()],
     ["/var/log", dir()],
     ["/var/log/syslog", file(48_213)],
+    ["/var/log/app.log", file(4096)],
     ["/var/www", dir()],
     ["/var/www/html", dir()],
     ["/var/www/html/index.html", file(1_024)],
@@ -109,7 +112,7 @@ export function withHome(fs: MockFs, user: string): MockFs {
   next.set(`${home}/projects/README.md`, file(2_048));
   next.set(`${home}/projects/app`, dir());
   next.set(`${home}/projects/app/main.rs`, file(640));
-  next.set(`${home}/current`, link());
+  next.set(`${home}/current`, link("/var/log/app.log"));
   return next;
 }
 
@@ -120,6 +123,11 @@ export function realpath(fs: MockFs, path: string, home: string): string {
   const resolved = normalize(absolute);
   existing(fs, resolved);
   return resolved;
+}
+
+/** The kind of `path` (its own type when it is not itself a link), or `undefined` when it is absent — a broken link (T48). */
+function kindOf(fs: MockFs, path: string): EntryKind | undefined {
+  return fs.get(normalize(path))?.kind;
 }
 
 /** A directory's entries, sorted by name. */
@@ -139,6 +147,8 @@ export function list(fs: MockFs, path: string): RemoteEntry[] {
       modifiedAt: node.modifiedAt,
       permissions: node.permissions,
       hidden: name.startsWith("."),
+      // For a link, the kind of what it points to (following it once); absent for a broken link.
+      targetKind: node.kind === "symlink" ? kindOf(fs, node.target ?? "") : undefined,
     });
   }
   return entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));

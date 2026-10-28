@@ -54,9 +54,15 @@ async fn a_link_says_what_it_points_to() {
     let broker = Arc::new(PromptBroker::new());
     respond(&broker, vec![]);
     let ctx = context(&env, dir.path(), broker, secrets);
-    let link = establish(&ctx, &target, Uuid::new_v4(), CancellationToken::new(), &Quiet)
-        .await
-        .expect("a link to the target");
+    let link = establish(
+        &ctx,
+        &target,
+        Uuid::new_v4(),
+        CancellationToken::new(),
+        &Quiet,
+    )
+    .await
+    .expect("a link to the target");
     let sftp = open_sftp(&link.target).await.unwrap();
     let base = format!("/tmp/tunl-links-{}", Uuid::new_v4());
     ops::mkdir(&sftp, &base).await.unwrap();
@@ -68,8 +74,12 @@ async fn a_link_says_what_it_points_to() {
     created.shutdown().await.unwrap();
     ops::mkdir(&sftp, &folder).await.unwrap();
     // OpenSSH reads SSH_FXP_SYMLINK's two paths in reverse: russh-sftp's `symlink` gets the target first.
-    sftp.symlink(file.clone(), format!("{base}/to-file")).await.unwrap();
-    sftp.symlink(folder.clone(), format!("{base}/to-folder")).await.unwrap();
+    sftp.symlink(file.clone(), format!("{base}/to-file"))
+        .await
+        .unwrap();
+    sftp.symlink(folder.clone(), format!("{base}/to-folder"))
+        .await
+        .unwrap();
     sftp.symlink(format!("{base}/missing"), format!("{base}/broken"))
         .await
         .unwrap();
@@ -86,8 +96,16 @@ async fn a_link_says_what_it_points_to() {
             ("broken".to_string(), EntryKind::Symlink, None),
             ("file.txt".to_string(), EntryKind::File, None),
             ("folder".to_string(), EntryKind::Dir, None),
-            ("to-file".to_string(), EntryKind::Symlink, Some(EntryKind::File)),
-            ("to-folder".to_string(), EntryKind::Symlink, Some(EntryKind::Dir)),
+            (
+                "to-file".to_string(),
+                EntryKind::Symlink,
+                Some(EntryKind::File)
+            ),
+            (
+                "to-folder".to_string(),
+                EntryKind::Symlink,
+                Some(EntryKind::Dir)
+            ),
         ]
     );
 

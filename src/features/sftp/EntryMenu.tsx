@@ -18,8 +18,12 @@ interface EntryMenuProps {
 
 export function EntryMenu({ entry, actions }: EntryMenuProps) {
   const { t } = useTranslation();
-  // A download is offered on a file (or an unknown entry), never on a folder or a link: those open in the explorer.
-  const downloadable = entry?.kind === "file" || entry?.kind === "other";
+  // A download is offered on a file (or an unknown entry), on a link to a file (T48), never on a folder or
+  // a link to a folder: those open in the explorer.
+  const downloadable =
+    entry?.kind === "file" ||
+    entry?.kind === "other" ||
+    (entry?.kind === "symlink" && entry.targetKind === "file");
   return (
     // No focus back to the trigger on close: the rename field must keep it (see the T25b traps).
     <ContextMenuContent className="w-52" onCloseAutoFocus={(event) => event.preventDefault()}>
