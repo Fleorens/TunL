@@ -124,9 +124,15 @@ export function SftpExplorer({ sessionId, active }: SftpExplorerProps) {
       .catch(notifyError);
   };
 
-  // A folder or a link goes in (the server follows the link); a file (or an unknown entry) downloads on double-click.
+  // A link behaves like its target (T48): a link to a file downloads, a link to a folder navigates, a
+  // broken link (no target) does nothing. A plain file downloads, a folder or an unknown entry navigates.
   const actions = useEntryActions(sessionId, path, (select) => navigate(path, select));
   const onOpen = (entry: RemoteEntry): void => {
+    if (entry.kind === "symlink") {
+      if (entry.targetKind === "file") actions.download(entry);
+      else if (entry.targetKind !== undefined) navigate(entry.path);
+      return;
+    }
     if (entry.kind === "file" || entry.kind === "other") {
       actions.download(entry);
       return;

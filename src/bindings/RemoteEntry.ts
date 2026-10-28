@@ -24,4 +24,9 @@ permissions: number | null,
 /**
  * True when the name starts with ".", as the shell's `ls` hides them.
  */
-hidden: boolean, };
+hidden: boolean, 
+/**
+ * For a symlink, the kind of what it points to; `None` for any other entry, and for a link the
+ * server will not answer (T48).
+ */
+targetKind?: EntryKind, };

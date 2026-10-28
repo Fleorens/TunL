@@ -52,6 +52,11 @@ pub struct RemoteEntry {
     pub permissions: Option<u32>,
     /// True when the name starts with ".", as the shell's `ls` hides them.
     pub hidden: bool,
+    /// For a symlink, the kind of what it points to; `None` for any other entry, and for a link the
+    /// server will not answer (T48).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub target_kind: Option<EntryKind>,
 }
 
 /// The connected SFTP tabs, by tab id (docs/01 §6).

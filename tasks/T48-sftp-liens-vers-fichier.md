@@ -196,9 +196,9 @@ test("the menu of a link to a file offers Download", async ({ page }) => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T48 --check` affiche `OK` partout.
-- [ ] `src/bindings/RemoteEntry.ts` contient `targetKind?: EntryKind`.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T48 --check` affiche `OK` partout.
+- [x] `src/bindings/RemoteEntry.ts` contient `targetKind?: EntryKind`.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 

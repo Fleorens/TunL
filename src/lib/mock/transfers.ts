@@ -134,8 +134,14 @@ export const transferHandlers: Record<string, Handler<Record<string, unknown>>> 
     }>(args);
     // Throws `notFound` when the tab is not connected (like the other tab commands); `undefined` when
     // the file is absent, which `runDownload` reports as a `failed` event.
+    // A link downloads like its target (T48): follow it once, so a link to a file downloads a file and a
+    // broken link (no target) keeps the symlink node and fails as not found.
     const node = mockRemoteNode(sessionId, remotePath);
-    void runDownload(transferId, remotePath, node, onEvent);
+    const resolved =
+      node?.kind === "symlink" && node.target
+        ? (mockRemoteNode(sessionId, node.target) ?? node)
+        : node;
+    void runDownload(transferId, remotePath, resolved, onEvent);
     return { state, result: null };
   },
   sftp_upload: (state, args) => {
