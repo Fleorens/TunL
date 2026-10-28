@@ -181,7 +181,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | T46 | SFTP (interface) : un envoi ne ramène plus au dossier de départ, la suppression montre qu'elle travaille | T45 | faible | Sonnet 5 · medium | livrée |
 | T47 | SFTP (moteur) : envois simultanés sans collision, dossier refusé, comptage sans un `stat` par entrée | T46 | moyen | Opus 5 · high | livrée |
 | T48 | SFTP : un lien symbolique vers un fichier se télécharge comme un fichier | T47 | moyen | Sonnet 5 · high | livrée |
-| T49 | SSH : délai jusqu'à la clé d'hôte, boucle d'acceptation du tunnel, une copie en moins | T48 | **élevé** | Opus 5 · high | prête |
+| T49 | SSH : délai jusqu'à la clé d'hôte, boucle d'acceptation du tunnel, une copie en moins | T48 | **élevé** | Opus 5 · high | livrée |
 | T50 | Terminal : contrôle de flux des gros affichages, copie à la sélection groupée | T49 | **élevé** | Opus 5 · high | prête |
 | T51 | Palette et menus : pas de groupe vide, connexion rapide RDP, favori sans coche, « bastion » en français | T50 | faible | Sonnet 5 · medium | prête |
 | T52 | Import `~/.ssh/config` : notes et erreurs traduites, avertissements du fichier affichés | T51 | faible | Sonnet 5 · medium | prête |

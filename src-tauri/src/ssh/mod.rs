@@ -21,6 +21,8 @@ mod connect_tests;
 #[cfg(test)]
 mod error_tests;
 #[cfg(test)]
+mod handshake_timeout_tests;
+#[cfg(test)]
 mod known_hosts_format_tests;
 #[cfg(test)]
 mod known_hosts_list_tests;
