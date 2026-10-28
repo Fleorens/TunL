@@ -2,11 +2,16 @@
 //!
 //! The pure helpers (name, path, join, entry, error) are tested without a server. The operations run
 //! on a `russh_sftp` session; `count` and `remove` walk the tree with a stack, never recursing across
-//! an `await` (docs/06 S11, S7).
+//! an `await` (docs/06 S11, S7). The root is examined with `symlink_metadata`; its children take their
+//! type from the `read_dir` attributes, falling back to `symlink_metadata` only when the server reports
+//! none (docs/01 review), so counting a large directory is no longer a `stat` per entry.
 use russh_sftp::client::SftpSession;
 use russh_sftp::client::error::Error as SftpError;
+use russh_sftp::client::fs::DirEntry;
+use russh_sftp::client::fs::File;
 use russh_sftp::client::fs::Metadata;
 use russh_sftp::protocol::FileType;
+use russh_sftp::protocol::OpenFlags;
 use russh_sftp::protocol::StatusCode;
 
 use super::{EntryKind, RemoteEntry};
@@ -38,6 +43,28 @@ pub fn join(dir: &str, name: &str) -> String {
         format!("{dir}{name}")
     } else {
         format!("{dir}/{name}")
+    }
+}
+
+/// `(n)` before the extension: `report (1).pdf`, `archive.tar (2).gz`, `notes (3)`, `.bashrc (1)`.
+///
+/// A leading "." is a hidden-file marker, not an extension separator.
+pub fn suffixed(name: &str, n: u32) -> String {
+    let (stem, ext) = if let Some(rest) = name.strip_prefix('.') {
+        match rest.rfind('.') {
+            Some(i) => (&name[..i + 1], &name[i + 2..]),
+            None => (name, ""),
+        }
+    } else {
+        match name.rfind('.') {
+            Some(i) => (&name[..i], &name[i + 1..]),
+            None => (name, ""),
+        }
+    };
+    if ext.is_empty() {
+        format!("{name} ({n})")
+    } else {
+        format!("{stem} ({n}).{ext}")
     }
 }
 
@@ -141,11 +168,12 @@ pub async fn chmod(sftp: &SftpSession, path: &str, mode: u32) -> AppResult<()> {
 /// for a directory plus its contents (a link counts as one, never entered; S11).
 pub async fn count(sftp: &SftpSession, path: &str) -> AppResult<u64> {
     let mut total: u64 = 0;
-    let mut stack: Vec<String> = vec![path.to_string()];
-    while let Some(current) = stack.pop() {
+    // The root is examined with symlink_metadata; its children carry their type from read_dir (docs/01 review).
+    let mut stack: Vec<(String, bool)> = vec![(path.to_string(), is_dir(sftp, path).await?)];
+    while let Some((current, is_dir)) = stack.pop() {
         total += 1;
         // Descend only into real directories (lstat): a link to a directory is one entry, never entered.
-        if is_dir(sftp, &current).await? {
+        if is_dir {
             for entry in sftp
                 .read_dir(&current)
                 .await
@@ -153,7 +181,9 @@ pub async fn count(sftp: &SftpSession, path: &str) -> AppResult<u64> {
             {
                 let name = entry.file_name();
                 if valid_name(&name) {
-                    stack.push(join(&current, &name));
+                    let child = entry.path();
+                    let is_child = entry_is_dir(sftp, &entry, &child, "count").await?;
+                    stack.push((child, is_child));
                 }
             }
         }
@@ -167,23 +197,21 @@ pub async fn remove(sftp: &SftpSession, path: &str) -> AppResult<()> {
     if resolves_to_root(path) {
         return Err(AppError::validation("path", "cannot remove the root"));
     }
-    // Post-order removal with a stack: a directory is removed only after its children, a file or a
-    // link (lstat) as one, never entered.
-    let mut stack: Vec<(String, bool)> = vec![(path.to_string(), false)];
-    while let Some((current, expanded)) = stack.pop() {
+    // Post-order removal with a stack: the root is examined with symlink_metadata, its children carry their
+    // type from read_dir (docs/01 review). A directory is removed only after its children, a file or a link
+    // (lstat) as one, never entered.
+    let mut stack: Vec<(String, bool, bool)> =
+        vec![(path.to_string(), false, is_dir(sftp, path).await?)];
+    while let Some((current, expanded, is_dir)) = stack.pop() {
         if expanded {
-            // Re-pushed only for directories, after their children are gone.
             sftp.remove_dir(&current)
                 .await
                 .map_err(|error| map_sftp_error("remove", &current, &error))?;
             continue;
         }
-        let meta = sftp
-            .symlink_metadata(&current)
-            .await
-            .map_err(|error| map_sftp_error("remove", &current, &error))?;
-        if meta.file_type().is_dir() {
-            stack.push((current.clone(), true));
+        if is_dir {
+            // Re-pushed only for directories, after their children are gone.
+            stack.push((current.clone(), true, false));
             for entry in sftp
                 .read_dir(&current)
                 .await
@@ -191,7 +219,9 @@ pub async fn remove(sftp: &SftpSession, path: &str) -> AppResult<()> {
             {
                 let name = entry.file_name();
                 if valid_name(&name) {
-                    stack.push((join(&current, &name), false));
+                    let child = entry.path();
+                    let is_child = entry_is_dir(sftp, &entry, &child, "remove").await?;
+                    stack.push((child, false, is_child));
                 }
             }
         } else {
@@ -201,6 +231,26 @@ pub async fn remove(sftp: &SftpSession, path: &str) -> AppResult<()> {
         }
     }
     Ok(())
+}
+
+/// Whether a `read_dir` entry is a directory: its own attributes when the server reports them (so no extra
+/// `stat`, docs/01 review), otherwise symlink_metadata as a fallback.
+async fn entry_is_dir(
+    sftp: &SftpSession,
+    entry: &DirEntry,
+    path: &str,
+    op: &str,
+) -> AppResult<bool> {
+    let file_type = if entry.metadata().permissions.is_some() {
+        entry.metadata().file_type()
+    } else {
+        let meta = sftp
+            .symlink_metadata(path)
+            .await
+            .map_err(|error| map_sftp_error(op, path, &error))?;
+        meta.file_type()
+    };
+    Ok(file_type.is_dir())
 }
 
 /// Whether `path` is a directory (lstat: a link to a directory is not one).
@@ -224,4 +274,58 @@ fn resolves_to_root(path: &str) -> bool {
         }
     }
     depth == 0
+}
+
+/// The `.part` reserved on the server for an upload of `base` in `remote_dir`: an unused name opened with
+/// `CREATE | EXCLUDE | WRITE` (never `TRUNCATE`), so two uploads of the same name never share a file (docs/01
+/// review). A name already listed is skipped; an `O_EXCL` collision (OpenSSH: `SSH_FX_FAILURE`, `FILE_ALREADY_EXISTS`
+/// is a v4 code) is skipped too, up to 100 tries; any other error stops the upload. Returns the final path, the
+/// `.part`, and its file.
+pub async fn reserve_remote(
+    sftp: &SftpSession,
+    remote_dir: &str,
+    base: &str,
+) -> AppResult<(String, String, File)> {
+    let entries = list(sftp, remote_dir).await?;
+    let taken = |name: &str| -> bool {
+        entries
+            .iter()
+            .any(|entry| entry.name == name || entry.name == format!("{name}.part"))
+    };
+    for n in 0..100 {
+        let name = if n == 0 {
+            base.to_string()
+        } else {
+            suffixed(base, n)
+        };
+        if taken(&name) {
+            continue;
+        }
+        let target = join(remote_dir, &name);
+        let part = format!("{target}.part");
+        match sftp
+            .open_with_flags(
+                &part,
+                OpenFlags::CREATE | OpenFlags::EXCLUDE | OpenFlags::WRITE,
+            )
+            .await
+        {
+            Ok(file) => return Ok((target, part, file)),
+            Err(error) if is_taken(&error) => continue,
+            Err(error) => return Err(map_sftp_error("create", &part, &error)),
+        }
+    }
+    Err(AppError::new(
+        ErrorKind::Sftp,
+        "could not reserve a free name for the upload",
+    ))
+}
+
+/// An `O_EXCL` collision: OpenSSH reports it as `SSH_FX_FAILURE` (`FILE_ALREADY_EXISTS` is a v4 code), so the
+/// name is taken and the caller moves on. Anything else stops the upload (docs/01 review).
+fn is_taken(error: &SftpError) -> bool {
+    matches!(
+        error,
+        SftpError::Status(status) if status.status_code == StatusCode::Failure
+    )
 }

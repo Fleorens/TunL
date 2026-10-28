@@ -233,9 +233,9 @@ async fn a_folder_is_refused_before_anything_reaches_the_server() {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T47 --check` affiche `OK` partout.
-- [ ] `grep -n "symlink_metadata" src-tauri/src/sftp/ops.rs` : seulement pour la racine et le repli.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T47 --check` affiche `OK` partout.
+- [x] `grep -n "symlink_metadata" src-tauri/src/sftp/ops.rs` : seulement pour la racine et le repli.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 

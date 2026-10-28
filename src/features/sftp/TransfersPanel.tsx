@@ -6,6 +6,7 @@ import type { TFunction } from "i18next";
 import { ChevronDown, ChevronUp, FolderOpen, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { AppError } from "@/bindings/AppError";
 import { IconButton } from "@/components/IconButton";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -25,7 +26,16 @@ interface TransfersPanelProps {
 function statusText(transfer: Transfer, t: TFunction): string {
   if (transfer.status === "done") return t("sftp.transfers.done");
   if (transfer.status === "cancelled") return t("sftp.transfers.cancelled");
+  // An upload refused because the dropped item is a folder (T47).
+  if (isFolderError(transfer.error)) return t("sftp.transfers.folder");
   return transfer.error ? describeError(transfer.error).title : t("sftp.transfers.failed");
+}
+
+/** An upload refused because the dropped item is a folder, not a file (T47). */
+function isFolderError(error: AppError | null): boolean {
+  return (
+    error != null && error.kind === "validation" && error.message === "localPath: is a directory"
+  );
 }
 
 async function reveal(path: string): Promise<void> {
