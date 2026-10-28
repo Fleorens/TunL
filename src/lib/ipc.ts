@@ -145,6 +145,8 @@ export const ipc = {
   sshWrite: (sessionId: string, data: string) => call<void>("ssh_write", { sessionId, data }),
   sshResize: (sessionId: string, size: TerminalSize) =>
     call<void>("ssh_resize", { sessionId, cols: size.cols, rows: size.rows }),
+  // Ack output the terminal finished rendering, so a huge shell output does not freeze it (T50).
+  sshAck: (sessionId: string, bytes: number) => call<void>("ssh_ack", { sessionId, bytes }),
   sessionClose: (sessionId: string) => call<void>("session_close", { sessionId }),
 
   // SFTP (T24): open a tab (its events come back through one `Channel`, the callback itself with the
