@@ -668,6 +668,7 @@
       "rate": "{{rate}}/s",
       "done": "Terminé",
       "failed": "Échoué",
+      "folder": "Les dossiers ne peuvent pas encore être envoyés",
       "cancelled": "Annulé",
       "cancel": "Annuler {{name}}",
       "reveal": "Afficher dans le dossier de {{name}}"

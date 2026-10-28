@@ -15,6 +15,10 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio_util::sync::CancellationToken;
 use ts_rs::TS;
 
+// `suffixed` lives with the other name helpers in `ops`; re-exported here so the T26 contract test
+// (transfer_tests.rs) keeps importing it from `transfer`.
+pub use crate::sftp::ops::suffixed;
+
 use crate::error::{AppError, AppResult, ErrorKind};
 
 /// The size of one block read from, then written to, the other side.
@@ -55,28 +59,6 @@ pub trait TransferSink: Send + Sync {
 enum Outcome {
     Cancelled,
     Failed(AppError),
-}
-
-/// ` (n)` before the extension: `report (1).pdf`, `archive.tar (2).gz`, `notes (3)`, `.bashrc (1)`.
-///
-/// A leading "." is a hidden-file marker, not an extension separator.
-pub fn suffixed(name: &str, n: u32) -> String {
-    let (stem, ext) = if let Some(rest) = name.strip_prefix('.') {
-        match rest.rfind('.') {
-            Some(i) => (&name[..i + 1], &name[i + 2..]),
-            None => (name, ""),
-        }
-    } else {
-        match name.rfind('.') {
-            Some(i) => (&name[..i], &name[i + 1..]),
-            None => (name, ""),
-        }
-    };
-    if ext.is_empty() {
-        format!("{name} ({n})")
-    } else {
-        format!("{stem} ({n}).{ext}")
-    }
 }
 
 /// `name` when free, else the first `suffixed(name, 1, 2, …)` that is.
@@ -300,6 +282,9 @@ pub async fn download(
 }
 
 /// Upload `local` to an unused name in `remote_dir`, renaming the `.part` into place on success.
+///
+/// A local directory is refused before anything reaches the server; the `.part` is reserved with
+/// `O_EXCL` so two uploads of the same name never share a file (docs/01 review).
 pub async fn upload(
     sftp: &SftpSession,
     local: &Path,
@@ -315,50 +300,41 @@ pub async fn upload(
         );
         return;
     }
+    // A local directory is refused before any action on the server (docs/01 review). The metadata gives
+    // the size too, so it is read once.
+    let size = match tokio::fs::metadata(local).await {
+        Ok(metadata) if !metadata.is_dir() => Some(metadata.len()),
+        Ok(_) => {
+            emit_final(
+                sink,
+                Outcome::Failed(AppError::validation("localPath", "is a directory")),
+            );
+            return;
+        }
+        Err(error) => {
+            emit_final(
+                sink,
+                Outcome::Failed(local_io_error("cannot read the local file", &error)),
+            );
+            return;
+        }
+    };
+    let (target, part, mut dst) =
+        match crate::sftp::ops::reserve_remote(sftp, remote_dir, base).await {
+            Ok(reserved) => reserved,
+            Err(error) => {
+                emit_final(sink, Outcome::Failed(error));
+                return;
+            }
+        };
     let mut src = match tokio::fs::File::open(local).await {
         Ok(file) => file,
         Err(error) => {
+            let _ = sftp.remove_file(&part).await;
             emit_final(
                 sink,
                 Outcome::Failed(local_io_error("cannot read the local file", &error)),
             );
-            return;
-        }
-    };
-    let size = match tokio::fs::metadata(local).await {
-        Ok(metadata) => Some(metadata.len()),
-        Err(error) => {
-            emit_final(
-                sink,
-                Outcome::Failed(local_io_error("cannot read the local file", &error)),
-            );
-            return;
-        }
-    };
-    let entries = match crate::sftp::ops::list(sftp, remote_dir).await {
-        Ok(entries) => entries,
-        Err(error) => {
-            emit_final(sink, Outcome::Failed(error));
-            return;
-        }
-    };
-    let target = crate::sftp::ops::join(
-        remote_dir,
-        &first_free(base, |name| {
-            entries
-                .iter()
-                .any(|entry| entry.name == name || entry.name == format!("{name}.part"))
-        }),
-    );
-    let part = format!("{target}.part");
-    let mut dst = match sftp
-        .create(&part)
-        .await
-        .map_err(|error| crate::sftp::ops::map_sftp_error("create", &part, &error))
-    {
-        Ok(file) => file,
-        Err(error) => {
-            emit_final(sink, Outcome::Failed(error));
             return;
         }
     };

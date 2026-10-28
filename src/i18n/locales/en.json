@@ -666,6 +666,7 @@
       "rate": "{{rate}}/s",
       "done": "Done",
       "failed": "Failed",
+      "folder": "Folders cannot be uploaded yet",
       "cancelled": "Cancelled",
       "cancel": "Cancel {{name}}",
       "reveal": "Show {{name}} in its folder"
