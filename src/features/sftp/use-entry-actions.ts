@@ -1,6 +1,6 @@
 // The explorer's actions on one entry: new folder, rename in place, copy the path, permissions, delete.
 // The open dialog and the entry being renamed live here; every `ipc` call shows a translated toast on failure.
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import type { RemoteEntry } from "@/bindings/RemoteEntry";
 import { i18n } from "@/i18n";
@@ -23,10 +23,24 @@ export type EntryActions = ReturnType<typeof useEntryActions>;
 export function useEntryActions(sessionId: string, dir: string, reload: (select?: string) => void) {
   const [dialog, setDialog] = useState<EntryDialog>(null);
   const [renaming, setRenaming] = useState<string | null>(null);
+  // True from the start of a delete's counting to its end (or its cancel, or an error): while it is,
+  // the delete / new folder / rename actions are ignored and the toolbar shows it is working.
+  const [busy, setBusy] = useState(false);
+  // True while the delete confirmation is open and unanswered. Radix closes it right after its confirm button runs
+  // `remove`, and closing another dialog can happen mid-delete: neither may end the busy window, only a cancel.
+  const confirming = useRef(false);
 
-  const closeDialog = (): void => setDialog(null);
+  const closeDialog = (): void => {
+    setDialog(null);
+    if (!confirming.current) return;
+    confirming.current = false;
+    setBusy(false);
+  };
 
-  const newFolder = (): void => setDialog({ type: "newFolder" });
+  const newFolder = (): void => {
+    if (busy) return;
+    setDialog({ type: "newFolder" });
+  };
 
   const createFolder = async (name: string): Promise<void> => {
     setDialog(null);
@@ -39,7 +53,10 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
     }
   };
 
-  const rename = (entry: RemoteEntry): void => setRenaming(entry.path);
+  const rename = (entry: RemoteEntry): void => {
+    if (busy) return;
+    setRenaming(entry.path);
+  };
 
   const renamed = async (entry: RemoteEntry, name: string | null): Promise<void> => {
     setRenaming(null);
@@ -81,26 +98,34 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
 
   // The server counts what would go before the confirmation opens: never a delete without the number (S11).
   const askDelete = async (entry: RemoteEntry): Promise<void> => {
+    if (busy) return;
+    setBusy(true);
     try {
       const count = await ipc.sftpCount(sessionId, entry.path);
+      confirming.current = true;
       setDialog({ type: "delete", entry, count });
     } catch (error) {
+      setBusy(false);
       notifyError(error);
     }
   };
 
   const remove = async (entry: RemoteEntry): Promise<void> => {
+    confirming.current = false;
     setDialog(null);
     try {
       await ipc.sftpRemove(sessionId, entry.path);
       reload();
     } catch (error) {
       notifyError(error);
+    } finally {
+      setBusy(false);
     }
   };
 
   return {
     dialog,
+    busy,
     renaming,
     closeDialog,
     newFolder,

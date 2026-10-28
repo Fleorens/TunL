@@ -112,8 +112,9 @@ async function runUpload(
 ): Promise<void> {
   const reg: ActiveTransfer = { timers: [], cancelled: false, onEvent };
   active.set(transferId, reg);
-  // The uploaded file's size is fictitious; it only sets the progress total.
-  const size = 1024;
+  // The uploaded file's size is fictitious; it only sets the progress total. A `.iso` is 100 MiB
+  // (five steps): an upload that long gives a test time to browse elsewhere mid-flight.
+  const size = nameOf(localPath).endsWith(".iso") ? 100 * 1024 * 1024 : 1024;
   await runSteps(size, onEvent, reg);
   if (reg.cancelled) return;
   const destName = freeName(nameOf(localPath), (name) => names.includes(name));
