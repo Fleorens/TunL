@@ -150,6 +150,7 @@ pub fn invoke_handler<R: tauri::Runtime>()
         commands::ssh::ssh_open,
         commands::ssh::ssh_write,
         commands::ssh::ssh_resize,
+        commands::ssh::ssh_ack,
         commands::ssh::session_close,
         commands::sftp::sftp_open,
         commands::sftp::sftp_realpath,

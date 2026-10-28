@@ -16,11 +16,18 @@ export interface TerminalPort {
   write(data: string): void;
   /** Forward a new size; unchanged sizes are ignored. */
   resize(cols: number, rows: number): void;
+  /**
+   * Ack that `bytes` of output were displayed, so the shell's flow control can resume (T50). A chunk
+   * dropped here (nobody was listening) is acked at once, exactly like a displayed one would be.
+   */
+  ack(bytes: number): void;
 }
 
 export interface PortSender {
   write(data: string): void;
   resize(cols: number, rows: number): void;
+  /** Ack `bytes` of output the terminal finished with. Optional: T20's tests build a sender without it. */
+  ack?(bytes: number): void;
 }
 
 /** The most output kept before a subscription, at most, before the oldest chunks are dropped. */
@@ -44,6 +51,13 @@ export function createTerminalPort(
     for (let i = buffer.length - 1; i >= 0; i--) {
       total += buffer[i].length;
       if (total > limit) {
+        // The dropped chunks were never shown: ack them at once, so the shell's flow control frees
+        // exactly like a displayed chunk would (T50).
+        let dropped = 0;
+        for (let j = 0; j <= i; j++) {
+          dropped += buffer[j].length;
+        }
+        sender.ack?.(dropped);
         buffer = buffer.slice(i + 1);
         break;
       }
@@ -75,6 +89,9 @@ export function createTerminalPort(
       }
       lastSize = { cols, rows };
       sender.resize(cols, rows);
+    },
+    ack(bytes) {
+      sender.ack?.(bytes);
     },
   };
 

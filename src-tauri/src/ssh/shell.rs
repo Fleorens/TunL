@@ -18,6 +18,11 @@ use crate::ssh::handler::ClientHandler;
 pub const OUTPUT_CHUNK: usize = 64 * 1024;
 /// The terminal type requested on the PTY.
 pub const TERM: &str = "xterm-256color";
+/// Above this many unacked output bytes the shell stops being read: xterm discards what it cannot
+/// show, so the shell is slowed by SSH's own flow control instead (T50, S10).
+pub const ACK_HIGH_WATER: usize = 4 * 1024 * 1024;
+/// Below this many unacked bytes reading resumes, after having paused at the high water mark.
+pub const ACK_LOW_WATER: usize = 1024 * 1024;
 
 /// A terminal is at least one column/row and fits on a screen.
 pub fn validate_size(cols: u32, rows: u32) -> AppResult<()> {
@@ -61,6 +66,10 @@ pub async fn pump(
 ) -> (CloseReason, Option<i32>) {
     let (mut read, write) = channel.split();
     let mut exit_status: Option<i32> = None;
+    // Output bytes pushed to the sink but not yet acked by the terminal. When it reaches the high
+    // water mark, reading the channel pauses (flow control); it resumes below the low water mark.
+    let mut unacked: usize = 0;
+    let mut paused = false;
     loop {
         tokio::select! {
             _ = cancel.cancelled() => {
@@ -68,11 +77,24 @@ pub async fn pump(
                 let _ = write.close().await;
                 return (CloseReason::UserClosed, None);
             }
-            message = read.wait() => {
+            message = read.wait(), if !paused => {
                 match message {
-                    // The shell's output, whether on stdout or stderr (S8: never logged).
-                    Some(ChannelMsg::Data { data }) => emit_output(sink, &data),
-                    Some(ChannelMsg::ExtendedData { data, .. }) => emit_output(sink, &data),
+                    // The shell's output, whether on stdout or stderr (S8: never logged). It raises
+                    // `unacked`; once past the high water mark the channel stops being read below.
+                    Some(ChannelMsg::Data { data }) => {
+                        emit_output(sink, &data);
+                        unacked += data.len();
+                        if unacked >= ACK_HIGH_WATER {
+                            paused = true;
+                        }
+                    }
+                    Some(ChannelMsg::ExtendedData { data, .. }) => {
+                        emit_output(sink, &data);
+                        unacked += data.len();
+                        if unacked >= ACK_HIGH_WATER {
+                            paused = true;
+                        }
+                    }
                     // The process exited: remember its status. The remote may still report it after
                     // EOF, so keep reading until the channel actually closes.
                     Some(ChannelMsg::ExitStatus { exit_status: code }) => {
@@ -97,6 +119,14 @@ pub async fn pump(
                     }
                     Some(ShellInput::Resize { cols, rows }) => {
                         let _ = write.window_change(cols, rows, 0, 0).await;
+                    }
+                    // The terminal finished displaying `bytes`: free that much of the flow control.
+                    // Reading resumes once below the low water mark.
+                    Some(ShellInput::Ack(bytes)) => {
+                        unacked = unacked.saturating_sub(bytes);
+                        if unacked <= ACK_LOW_WATER {
+                            paused = false;
+                        }
                     }
                     // The task dropped its receiver: end like a cancel.
                     None => {

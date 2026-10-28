@@ -126,6 +126,14 @@ pub async fn ssh_resize(
         .send(session_id, ShellInput::Resize { cols, rows })
 }
 
+/// Ack `bytes` of output the terminal finished rendering, so the shell's flow control can resume (T50).
+#[tauri::command]
+pub async fn ssh_ack(state: State<'_, AppState>, session_id: Uuid, bytes: u32) -> AppResult<()> {
+    state
+        .sessions
+        .send(session_id, ShellInput::Ack(bytes as usize))
+}
+
 /// End a session: cancel its task and forget it, then drop its pending prompts. Idempotent.
 #[tauri::command]
 pub async fn session_close(state: State<'_, AppState>, session_id: Uuid) -> AppResult<()> {

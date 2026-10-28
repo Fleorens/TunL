@@ -303,6 +303,17 @@ function resize(
   return { state: _state, result: null };
 }
 
+// Acks are batched and fire-and-forget: the mock ignores them (T50).
+function ack(
+  _state: Parameters<Handler>[0],
+  _args: Record<string, unknown>,
+): {
+  state: Parameters<Handler>[0];
+  result: unknown;
+} {
+  return { state: _state, result: null };
+}
+
 function close(
   _state: Parameters<Handler>[0],
   args: Record<string, unknown>,
@@ -323,6 +334,7 @@ export const sessionHandlers: Record<string, Handler<Record<string, unknown>>> =
   ssh_open: open,
   ssh_write: write,
   ssh_resize: resize,
+  ssh_ack: ack,
   session_close: close,
 };
 

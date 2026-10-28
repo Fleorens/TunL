@@ -85,7 +85,11 @@ export function useXterm(options: UseXtermOptions): UseXterm {
     fitRef.current = fitting.fitNow;
     const pasting = wirePaste(term, port);
     pasteRef.current = pasting.paste;
-    const unsubscribe = port.subscribe((bytes) => term.write(bytes));
+    const unsubscribe = port.subscribe((bytes) =>
+      // Ack only once xterm has parsed the block, so the shell's flow control resumes as the terminal
+      // keeps up (T50).
+      term.write(bytes, () => port.ack(bytes.length)),
+    );
     term.onResize(({ cols, rows }) => port.resize(cols, rows));
     wireKeys(term, onActionRef);
 
@@ -123,19 +127,49 @@ export function useXterm(options: UseXtermOptions): UseXterm {
     requestAnimationFrame(() => fitRef.current());
   }, [term, settings, resolvedTheme, fontSize]);
 
-  // Copy on selection: write the selection when it is not empty.
+  // Copy on selection: write the selection once it is done (on mouse release, or a short time after
+  // the last change), not on every movement of the drag (T50).
   useEffect(() => {
     if (!term || !settings?.copyOnSelect) {
       return;
     }
-    const off = term.onSelectionChange(() => {
+    const host = containerRef.current;
+    if (host === null) {
+      return;
+    }
+    const COPY_DEBOUNCE_MS = 150;
+    let copyTimer: ReturnType<typeof setTimeout> | null = null;
+    const copy = (): void => {
+      copyTimer = null;
       const selection = term.getSelection();
       if (selection.length > 0) {
-        writeClipboardText(selection).catch(notifyError);
+        void writeClipboardText(selection).catch(notifyError);
       }
-    });
-    return () => off.dispose();
-  }, [term, settings?.copyOnSelect]);
+    };
+    const schedule = (): void => {
+      if (copyTimer) {
+        clearTimeout(copyTimer);
+      }
+      copyTimer = setTimeout(copy, COPY_DEBOUNCE_MS);
+    };
+    const flush = (): void => {
+      if (copyTimer) {
+        clearTimeout(copyTimer);
+        copyTimer = null;
+      }
+      copy();
+    };
+    const onRelease = (): void => flush();
+    const offSelection = term.onSelectionChange(schedule);
+    host.addEventListener("mouseup", onRelease);
+    return () => {
+      if (copyTimer) {
+        clearTimeout(copyTimer);
+      }
+      host.removeEventListener("mouseup", onRelease);
+      offSelection.dispose();
+    };
+  }, [term, containerRef, settings?.copyOnSelect]);
 
   // When the tab becomes active, fit (it was hidden) and focus the terminal.
   useEffect(() => {

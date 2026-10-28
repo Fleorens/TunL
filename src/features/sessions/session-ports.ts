@@ -13,6 +13,10 @@ export interface SessionPort {
   push(bytes: Uint8Array): void;
 }
 
+/** A tab's acks are batched: sent once they are big, or a short time after the last, to avoid one IPC per block. */
+const ACK_BATCH_BYTES = 256 * 1024;
+const ACK_BATCH_DELAY_MS = 100;
+
 /** One tab's port at a time; a reconnect reuses the same object. */
 const ports = new Map<string, SessionPort>();
 
@@ -28,6 +32,25 @@ export function getSessionPort(id: string): SessionPort | null {
  */
 export function registerSessionPort(id: string): void {
   if (ports.has(id)) return;
+  // The tab's output acks, batched then sent to the current attempt (T50).
+  let acked = 0;
+  let ackTimer: ReturnType<typeof setTimeout> | null = null;
+  // The attempt the pending acks belong to: a reconnect restarts the shell on the Rust side, so acks
+  // for the old attempt are dropped (T50).
+  let lastRunId: string | null = null;
+  const flushAcks = (): void => {
+    if (acked === 0) return;
+    const amount = acked;
+    acked = 0;
+    lastRunId = current(id)?.runId ?? null;
+    if (ackTimer) {
+      clearTimeout(ackTimer);
+      ackTimer = null;
+    }
+    const session = current(id);
+    if (!isLive(session)) return;
+    ipc.sshAck(session.runId, amount).catch((error) => handlePortError(error));
+  };
   const { port, push } = createTerminalPort({
     write(data) {
       const session = current(id);
@@ -42,6 +65,23 @@ export function registerSessionPort(id: string): void {
       const session = current(id);
       if (!isLive(session)) return;
       ipc.sshResize(session.runId, size).catch((error) => handlePortError(error));
+    },
+    ack(bytes) {
+      // A new attempt (reconnect): the shell restarted on the Rust side, drop the pending acks.
+      const runId = current(id)?.runId ?? null;
+      if (runId !== lastRunId) {
+        if (ackTimer) {
+          clearTimeout(ackTimer);
+        }
+        acked = 0;
+        lastRunId = runId;
+      }
+      acked += bytes;
+      if (acked >= ACK_BATCH_BYTES) {
+        flushAcks();
+      } else {
+        ackTimer = setTimeout(flushAcks, ACK_BATCH_DELAY_MS);
+      }
     },
   });
   ports.set(id, { port, push });

@@ -76,11 +76,17 @@ pub enum SessionEvent {
     },
 }
 
-/// A keystroke or a resize, sent from the UI to the task running one session.
+/// A keystroke, a resize, or an ack: output bytes the UI finished displaying, so the shell's flow
+/// control can resume (T50).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ShellInput {
     Data(Vec<u8>),
-    Resize { cols: u32, rows: u32 },
+    Resize {
+        cols: u32,
+        rows: u32,
+    },
+    /// The number of output bytes the terminal has finished rendering.
+    Ack(usize),
 }
 
 /// Where a running session reports. Tauri: two `Channel`s (commands/ssh.rs). Tests: a recorder.
