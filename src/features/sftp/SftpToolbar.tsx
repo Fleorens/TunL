@@ -103,7 +103,7 @@ export function SftpToolbar({
         <ArrowUp className="size-4" />
       </IconButton>
       {busy ? (
-        <span className="inline-flex h-8 w-8 items-center justify-center">
+        <span className="inline-flex size-7 items-center justify-center">
           <Spinner aria-label={t("sftp.working")} />
         </span>
       ) : (

@@ -1,6 +1,6 @@
 // The explorer's actions on one entry: new folder, rename in place, copy the path, permissions, delete.
 // The open dialog and the entry being renamed live here; every `ipc` call shows a translated toast on failure.
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import type { RemoteEntry } from "@/bindings/RemoteEntry";
 import { i18n } from "@/i18n";
@@ -26,10 +26,14 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
   // True from the start of a delete's counting to its end (or its cancel, or an error): while it is,
   // the delete / new folder / rename actions are ignored and the toolbar shows it is working.
   const [busy, setBusy] = useState(false);
+  // True while the delete confirmation is open and unanswered. Radix closes it right after its confirm button runs
+  // `remove`, and closing another dialog can happen mid-delete: neither may end the busy window, only a cancel.
+  const confirming = useRef(false);
 
   const closeDialog = (): void => {
     setDialog(null);
-    // Cancelling a dialog ends the busy window; a confirmed delete nulls its own dialog and stays busy.
+    if (!confirming.current) return;
+    confirming.current = false;
     setBusy(false);
   };
 
@@ -98,6 +102,7 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
     setBusy(true);
     try {
       const count = await ipc.sftpCount(sessionId, entry.path);
+      confirming.current = true;
       setDialog({ type: "delete", entry, count });
     } catch (error) {
       setBusy(false);
@@ -106,6 +111,7 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
   };
 
   const remove = async (entry: RemoteEntry): Promise<void> => {
+    confirming.current = false;
     setDialog(null);
     try {
       await ipc.sftpRemove(sessionId, entry.path);
