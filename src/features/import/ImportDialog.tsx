@@ -25,6 +25,7 @@ import { i18n } from "@/i18n";
 import { notifyError, toAppError } from "@/lib/errors";
 import { ipc } from "@/lib/ipc";
 import { ImportBody, type ImportPhase } from "./ImportTable";
+import { importNoteText } from "./import-notes";
 import { initialSelection } from "./selection";
 
 const NONE = "__none__";
@@ -91,7 +92,16 @@ export function ImportDialog() {
       <DialogContent className="sm:max-w-5xl">
         <DialogHeader>
           <DialogTitle>{t("import.title")}</DialogTitle>
-          {preview && <DialogDescription>{preview.path}</DialogDescription>}
+          {preview && (
+            <div className="mt-1">
+              <DialogDescription>{preview.path}</DialogDescription>
+              {preview.warnings.length > 0 && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {preview.warnings.map(importNoteText).join("; ")}
+                </p>
+              )}
+            </div>
+          )}
         </DialogHeader>
 
         <div className="max-h-[60vh] flex-1 overflow-y-auto">

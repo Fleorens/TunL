@@ -4,8 +4,8 @@ import { isValidationCode } from "./validation";
 /**
  * The validation message under a field.
  *
- * Client-side validation sends a code from `VALIDATION_CODES`; the backend sends already-translated
- * text. Translate only the codes, and pass anything else through untouched.
+ * Client-side validation sends a code from `VALIDATION_CODES`; the backend sends technical English
+ * (docs/06 S7) that the UI shows as it is. Translate only the codes, and pass anything else through untouched.
  *
  * When there is no message it renders an empty box of the same height, so the message appearing
  * below a field never shifts the rest of the form.

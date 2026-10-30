@@ -25,6 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { importErrorText, importNoteText } from "./import-notes";
 import { candidateAddress, isSelectable, jumpLabel, toggleAlias, toggleAll } from "./selection";
 
 const EMPTY_CELL = "—";
@@ -151,11 +152,11 @@ function NotesCell({ candidate }: { candidate: ImportCandidate }) {
       )}
       {candidate.warnings.map((warning) => (
         <span key={warning} className="text-xs text-muted-foreground">
-          {warning}
+          {importNoteText(warning)}
         </span>
       ))}
       {candidate.error != null && (
-        <span className="text-xs text-destructive">{candidate.error}</span>
+        <span className="text-xs text-destructive">{importErrorText(candidate.error)}</span>
       )}
     </div>
   );

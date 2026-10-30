@@ -402,6 +402,26 @@
       "jump": "Jump host",
       "notes": "Notes"
     },
+    "notes": {
+      "optionIgnored": "{{option}} is ignored",
+      "lastHopOnly": "Only the last ProxyJump hop is used",
+      "matchIgnored": "Match blocks are ignored",
+      "includeTooDeep": "Include nested too deeply: {{path}}",
+      "hostTokens": "Only the %h token is supported in HostName",
+      "invalidPort": "Invalid port: {{value}}",
+      "invalidField": "Invalid {{field}}"
+    },
+    "fields": {
+      "name": "name",
+      "host": "host",
+      "port": "port",
+      "username": "user name",
+      "settings": {
+        "auth": {
+          "path": "key file"
+        }
+      }
+    },
     "submit_one": "Import {{count}} connection",
     "submit_other": "Import {{count}} connections",
     "done_one": "Imported {{count}} connection",
