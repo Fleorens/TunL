@@ -269,9 +269,9 @@ test("the selection survives a sort, not a change of folder", async ({ page }) =
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T54 --check` affiche `OK` partout.
-- [ ] `wc -l src/features/sftp/EntryTable.tsx` : 400 lignes au plus.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T54 --check` affiche `OK` partout.
+- [x] `wc -l src/features/sftp/EntryTable.tsx` : 400 lignes au plus.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 - [ ] Les lignes sélectionnées se distinguent toutes, et la ligne du curseur clavier garde son anneau de focus (à
   l'écran).
 

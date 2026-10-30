@@ -126,6 +126,15 @@ export function joinPath(dir: string, name: string): string {
   return dir === "/" ? `/${name}` : `${dir}/${name}`;
 }
 
+/**
+ * A link behaves like its target (T48): a link to a file downloads, a link to a folder navigates, a broken link does
+ * nothing. A plain file downloads, a folder or an unknown entry navigates.
+ */
+export function isDownloadable(entry: RemoteEntry): boolean {
+  if (entry.kind === "file" || entry.kind === "other") return true;
+  return entry.kind === "symlink" && entry.targetKind === "file";
+}
+
 /** The `drwxr-xr-x` mode: a type char first, then the three permission groups. `null` is an unknown mode. */
 export function formatMode(kind: EntryKind, permissions: number | null): string {
   const typeChar = kind === "dir" ? "d" : kind === "symlink" ? "l" : kind === "file" ? "-" : "?";

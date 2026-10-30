@@ -15,7 +15,8 @@ import { EntryTable } from "./EntryTable";
 import { NewFolderDialog } from "./NewFolderDialog";
 import { PermissionsDialog } from "./PermissionsDialog";
 import { SftpToolbar } from "./SftpToolbar";
-import { DEFAULT_SORT, nextSort, parentPath, visibleEntries } from "./sftp-model";
+import { EMPTY_SELECTION, keepVisible, type Selection, selectOne } from "./selection-model";
+import { DEFAULT_SORT, isDownloadable, nextSort, parentPath, visibleEntries } from "./sftp-model";
 import { TransfersPanel } from "./TransfersPanel";
 import { useTransfers } from "./transfers-store";
 import { type EntryActions, useEntryActions } from "./use-entry-actions";
@@ -41,9 +42,9 @@ function dialogFor(actions: EntryActions) {
     case "delete":
       return (
         <DeleteEntryDialog
-          entry={dialog.entry}
+          entries={dialog.entries}
           count={dialog.count}
-          onConfirm={() => void actions.remove(dialog.entry)}
+          onConfirm={() => void actions.removeMany(dialog.entries)}
           onCancel={actions.closeDialog}
         />
       );
@@ -58,6 +59,16 @@ function dialogFor(actions: EntryActions) {
   }
 }
 
+// Read one folder once, resolving its path first (a newer read supersedes an older one via the counter).
+function readFolder(
+  sessionId: string,
+  target: string,
+): Promise<{ resolved: string; list: RemoteEntry[] }> {
+  return ipc
+    .sftpRealpath(sessionId, target)
+    .then(async (resolved) => ({ resolved, list: await ipc.sftpList(sessionId, resolved) }));
+}
+
 export function SftpExplorer({ sessionId, active }: SftpExplorerProps) {
   const { t } = useTranslation();
   const [path, setPath] = useState("/");
@@ -65,30 +76,28 @@ export function SftpExplorer({ sessionId, active }: SftpExplorerProps) {
   const [loading, setLoading] = useState(true);
   const [showHidden, setShowHidden] = useState(false);
   const [sort, setSort] = useState(DEFAULT_SORT);
-  const [selectedPath, setSelectedPath] = useState<string | null>(null);
+  const [selection, setSelection] = useState<Selection>(EMPTY_SELECTION);
   // The last navigation launched wins: a result older than this counter is dropped.
   const counter = useRef(0);
   // The folder shown right now, updated when a navigation succeeds (not when it starts), so an upload
   // that finishes only re-reads the folder it was dropped in if that folder is still shown.
   const shownPath = useRef("/");
 
+  // A change of folder empties the selection; `navigate(cible, select)` selects `select` instead. An older read is
+  // superseded by a newer one (the counter): its result is dropped.
   const navigate = useCallback(
     (target: string, select?: string): void => {
-      counter.current += 1;
-      const myId = counter.current;
+      const myId = ++counter.current;
       setLoading(true);
-      ipc
-        .sftpRealpath(sessionId, target)
-        .then(async (resolved) => {
-          const list = await ipc.sftpList(sessionId, resolved);
+      readFolder(sessionId, target)
+        .then(({ resolved, list }) => {
           if (myId !== counter.current) return;
           setPath(resolved);
           shownPath.current = resolved;
           setEntries(list);
-          setSelectedPath(select ?? null);
+          setSelection(select ? selectOne(select) : EMPTY_SELECTION);
         })
         .catch((error: unknown) => {
-          // A newer navigation superseded this one: stay put, show nothing.
           if (myId !== counter.current) return;
           notifyError(error);
         })
@@ -98,6 +107,28 @@ export function SftpExplorer({ sessionId, active }: SftpExplorerProps) {
     },
     [sessionId],
   );
+
+  // Re-read the current folder: the selection keeps only what is still shown (a refresh, not a change of folder).
+  const reloadCurrent = useCallback((): void => {
+    const myId = ++counter.current;
+    setLoading(true);
+    readFolder(sessionId, path)
+      .then(({ resolved, list }) => {
+        if (myId !== counter.current) return;
+        setPath(resolved);
+        shownPath.current = resolved;
+        setEntries(list);
+        const order = visibleEntries(list, sort, showHidden).map((entry) => entry.path);
+        setSelection((prev) => keepVisible(prev, order));
+      })
+      .catch((error: unknown) => {
+        if (myId !== counter.current) return;
+        notifyError(error);
+      })
+      .finally(() => {
+        if (myId === counter.current) setLoading(false);
+      });
+  }, [sessionId, path, sort, showHidden]);
 
   useEffect(() => {
     navigate(".");
@@ -141,12 +172,36 @@ export function SftpExplorer({ sessionId, active }: SftpExplorerProps) {
   };
 
   const entriesToShow = visibleEntries(entries, sort, showHidden);
-  const selectedEntry = entriesToShow.find((entry) => entry.path === selectedPath) ?? null;
+  const focusEntry = entriesToShow.find((entry) => entry.path === selection.focus) ?? null;
+  // The selected entries, in the shown order; only the downloadable ones are downloaded at once.
+  const selectedEntries = selection.paths
+    .map((path) => entriesToShow.find((entry) => entry.path === path))
+    .filter((entry): entry is RemoteEntry => entry !== undefined);
+  const downloadableEntries = selectedEntries.filter(isDownloadable);
 
   // A right click off a row empties the selection: the menu then offers "New folder" only.
   const onContextMenu = (event: React.MouseEvent): void => {
     const onRow = event.target instanceof Element && event.target.closest("tbody tr") !== null;
-    if (!onRow) setSelectedPath(null);
+    if (!onRow) setSelection(EMPTY_SELECTION);
+  };
+
+  // A right click on a row selects it alone, unless it is already in the selection, which the menu keeps.
+  const onSelectOnRightClick = (path: string): void => {
+    setSelection((prev) => (prev.paths.includes(path) ? prev : selectOne(path)));
+  };
+
+  // A refresh keeps what is still shown; hiding or showing hidden files keeps the selection too.
+  const onToggleHidden = (): void => {
+    setShowHidden((hidden) => {
+      const next = !hidden;
+      setSelection((prev) =>
+        keepVisible(
+          prev,
+          visibleEntries(entries, sort, next).map((e) => e.path),
+        ),
+      );
+      return next;
+    });
   };
 
   return (
@@ -155,9 +210,9 @@ export function SftpExplorer({ sessionId, active }: SftpExplorerProps) {
         path={path}
         showHidden={showHidden}
         onUp={() => navigate(parentPath(path))}
-        onRefresh={() => navigate(path)}
+        onRefresh={reloadCurrent}
         onNavigate={navigate}
-        onToggleHidden={setShowHidden}
+        onToggleHidden={onToggleHidden}
         onNewFolder={actions.newFolder}
         onUpload={onUpload}
         busy={actions.busy}
@@ -178,19 +233,35 @@ export function SftpExplorer({ sessionId, active }: SftpExplorerProps) {
                 entries={entriesToShow}
                 sort={sort}
                 onSort={(key) => setSort(nextSort(sort, key))}
-                selectedPath={selectedPath}
-                onSelect={setSelectedPath}
+                selection={selection}
+                onSelectionChange={setSelection}
+                onSelectionOnRightClick={onSelectOnRightClick}
                 onOpen={onOpen}
                 onUp={() => navigate(parentPath(path))}
                 renaming={actions.renaming}
                 onRename={actions.rename}
                 onRenameDone={(entry, name) => void actions.renamed(entry, name)}
                 onDelete={(entry) => void actions.askDelete(entry)}
+                onDeleteMany={(paths) =>
+                  void actions.askDeleteMany(
+                    paths
+                      .map((path) => entriesToShow.find((e) => e.path === path))
+                      .filter((entry): entry is RemoteEntry => entry !== undefined),
+                  )
+                }
               />
             )}
           </div>
         </ContextMenuTrigger>
-        <EntryMenu entry={selectedEntry} actions={actions} />
+        <EntryMenu
+          entry={focusEntry}
+          selection={selection}
+          hasMany={selectedEntries.length > 1}
+          downloadableCount={downloadableEntries.length}
+          onDownloadMany={() => actions.downloadMany(downloadableEntries)}
+          onDeleteMany={() => actions.askDeleteMany(selectedEntries)}
+          actions={actions}
+        />
       </ContextMenu>
       {dragging && (
         <div

@@ -1,5 +1,6 @@
 // The entries of one SFTP folder: a virtualized, sortable, keyboard-navigable table (docs/04 §6).
 // A plain `<table>` (no ARIA grid): the rows are absolutely positioned by `useVirtualizer` inside a grid `tbody`.
+// The selection is paths, never indexes; the cursor (keyboard focus) is one of them.
 
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ChevronDown, ChevronUp, File, FileQuestion, Folder, Link2 } from "lucide-react";
@@ -9,6 +10,8 @@ import type { EntryKind } from "@/bindings/EntryKind";
 import type { RemoteEntry } from "@/bindings/RemoteEntry";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import type { Selection } from "./selection-model";
+import { clickRow, extendTo, selectAll, selectOne } from "./selection-model";
 import type { SortKey, SortOrder } from "./sftp-model";
 import { formatMode, formatSize } from "./sftp-model";
 
@@ -21,8 +24,10 @@ interface EntryTableProps {
   entries: readonly RemoteEntry[];
   sort: SortOrder;
   onSort: (key: SortKey) => void;
-  selectedPath: string | null;
-  onSelect: (path: string) => void;
+  selection: Selection;
+  onSelectionChange: (next: Selection) => void;
+  /** Select a line alone on a right click off the selection, or keep it on one of it. */
+  onSelectionOnRightClick: (path: string) => void;
   onOpen: (entry: RemoteEntry) => void;
   onUp: () => void;
   /** The path of the entry being renamed in place, or `null`. */
@@ -31,6 +36,8 @@ interface EntryTableProps {
   /** The new name (Enter), or `null` when the rename is given up (Escape, focus lost). */
   onRenameDone: (entry: RemoteEntry, name: string | null) => void;
   onDelete: (entry: RemoteEntry) => void;
+  /** Delete every selected line at once (several lines with Delete). */
+  onDeleteMany: (paths: readonly string[]) => void;
 }
 
 /** The icon of one entry: a folder, a file, a link, or an unknown kind. */
@@ -143,6 +150,7 @@ function EntryRow({
   renaming,
   onSelect,
   onOpen,
+  onSelectionOnRightClick,
   onRenameDone,
 }: {
   entry: RemoteEntry;
@@ -155,8 +163,9 @@ function EntryRow({
   dateFormat: Intl.DateTimeFormat;
   rowRef: (node: HTMLTableRowElement | null) => void;
   renaming: boolean;
-  onSelect: (path: string) => void;
+  onSelect: (event: React.MouseEvent, path: string) => void;
   onOpen: (entry: RemoteEntry) => void;
+  onSelectionOnRightClick: (path: string) => void;
   onRenameDone: (entry: RemoteEntry, name: string | null) => void;
 }) {
   const sizeText = entry.kind === "dir" ? "—" : formatSize(entry.size, locale);
@@ -170,11 +179,11 @@ function EntryRow({
       style={{ position: "absolute", top: 0, height, transform: `translateY(${top}px)` }}
       tabIndex={tabIndex}
       aria-selected={isSelected}
-      onClick={() => onSelect(entry.path)}
+      onClick={(event) => onSelect(event, entry.path)}
       onDoubleClick={() => {
         if (!renaming) onOpen(entry);
       }}
-      onContextMenu={() => onSelect(entry.path)}
+      onContextMenu={() => onSelectionOnRightClick(entry.path)}
       className={cn(
         ROW_GRID,
         "cursor-default items-center outline-none hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset",
@@ -208,14 +217,16 @@ export function EntryTable({
   entries,
   sort,
   onSort,
-  selectedPath,
-  onSelect,
+  selection,
+  onSelectionChange,
+  onSelectionOnRightClick,
   onOpen,
   onUp,
   renaming,
   onRename,
   onRenameDone,
   onDelete,
+  onDeleteMany,
 }: EntryTableProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -238,28 +249,38 @@ export function EntryTable({
 
   const totalSize = virtualizer.getTotalSize();
   const virtualItems = virtualizer.getVirtualItems();
+  // The shown lines, in order: the order a selection is built on.
+  const order = useMemo(() => entries.map((entry) => entry.path), [entries]);
 
-  // The selected row takes the focus when it is in the table or nowhere (after a rename or a dialog), never while
+  // The cursor row takes the focus when it is in the table or nowhere (after a rename or a dialog), never while
   // renaming.
   useEffect(() => {
     if (renaming !== null) return;
     if (!tableHasFocus.current && document.activeElement !== document.body) return;
-    const index = entries.findIndex((entry) => entry.path === selectedPath);
+    const index = entries.findIndex((entry) => entry.path === selection.focus);
     rowRefs.current[index]?.focus();
-  }, [selectedPath, entries, renaming]);
+  }, [selection.focus, entries, renaming]);
 
-  const focusIndex = (index: number): void => {
-    const entry = entries[index];
-    if (!entry) return;
-    onSelect(entry.path);
-    virtualizer.scrollToIndex(index);
+  const onClick = (event: React.MouseEvent, path: string): void => {
+    onSelectionChange(
+      clickRow(selection, order, path, {
+        ctrl: event.ctrlKey || event.metaKey,
+        shift: event.shiftKey,
+      }),
+    );
   };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLTableSectionElement>): void => {
     const count = entries.length;
     if (count === 0) return;
-    const currentIndex = selectedPath
-      ? entries.findIndex((entry) => entry.path === selectedPath)
+    // Ctrl+A (or Meta+A) only when the focus is in the table: a toolbar field keeps its own Ctrl+A.
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "a") {
+      event.preventDefault();
+      onSelectionChange(selectAll(order));
+      return;
+    }
+    const currentIndex = selection.focus
+      ? entries.findIndex((entry) => entry.path === selection.focus)
       : -1;
     let index = currentIndex;
     switch (event.key) {
@@ -289,6 +310,7 @@ export function EntryTable({
         if (!entry) return;
         event.preventDefault();
         if (event.key === "F2") onRename(entry);
+        else if (selection.paths.length > 1) onDeleteMany(selection.paths);
         else onDelete(entry);
         return;
       }
@@ -296,12 +318,18 @@ export function EntryTable({
         return;
     }
     event.preventDefault();
-    focusIndex(index);
+    // A plain arrow moves the cursor to the neighbour; Shift extends the range from the anchor to it.
+    const entry = entries[index];
+    if (!entry) return;
+    onSelectionChange(
+      event.shiftKey ? extendTo(selection, order, entry.path) : selectOne(entry.path),
+    );
+    virtualizer.scrollToIndex(index);
   };
 
-  // The first row is focusable when nothing is selected, so the table is reachable by Tab.
+  // The cursor row is focusable when it is in the table, so the table is reachable by Tab.
   const tabIndexFor = (index: number): number =>
-    selectedPath === entries[index]?.path ? 0 : selectedPath === null ? (index === 0 ? 0 : -1) : -1;
+    selection.focus === entries[index]?.path ? 0 : -1;
 
   return (
     <div ref={containerRef} className="h-full overflow-auto">
@@ -336,7 +364,7 @@ export function EntryTable({
                 key={virtual.index}
                 entry={entry}
                 index={virtual.index}
-                isSelected={selectedPath === entry.path}
+                isSelected={selection.paths.includes(entry.path)}
                 tabIndex={tabIndexFor(virtual.index)}
                 top={virtual.start}
                 height={virtual.size}
@@ -346,8 +374,9 @@ export function EntryTable({
                   rowRefs.current[virtual.index] = node;
                 }}
                 renaming={renaming === entry.path}
-                onSelect={onSelect}
+                onSelect={onClick}
                 onOpen={onOpen}
+                onSelectionOnRightClick={onSelectionOnRightClick}
                 onRenameDone={onRenameDone}
               />
             );
