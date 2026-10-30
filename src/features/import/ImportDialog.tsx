@@ -92,15 +92,11 @@ export function ImportDialog() {
       <DialogContent className="sm:max-w-5xl">
         <DialogHeader>
           <DialogTitle>{t("import.title")}</DialogTitle>
-          {preview && (
-            <div className="mt-1">
-              <DialogDescription>{preview.path}</DialogDescription>
-              {preview.warnings.length > 0 && (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {preview.warnings.map(importNoteText).join("; ")}
-                </p>
-              )}
-            </div>
+          {preview && <DialogDescription>{preview.path}</DialogDescription>}
+          {preview && preview.warnings.length > 0 && (
+            <p className="text-xs text-muted-foreground">
+              {preview.warnings.map(importNoteText).join("; ")}
+            </p>
           )}
         </DialogHeader>
 
