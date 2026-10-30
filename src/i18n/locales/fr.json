@@ -413,7 +413,6 @@
     "submit_other": "Importer {{count}} connexions"
   },
   "shell": {
-    "notYetAvailable": "Bientôt disponible",
     "sessionPlaceholder": "La session « {{name}} » s'affichera ici."
   },
   "palette": {

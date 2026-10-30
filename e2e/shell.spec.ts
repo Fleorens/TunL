@@ -26,15 +26,6 @@ test("only one connection row is highlighted at a time", async ({ page }) => {
   await expect(current).toContainText("pi-hole");
 });
 
-test("placeholder actions show a translated toast, never a raw key", async ({ page }) => {
-  // T31: Settings is a real tab now; a quick RDP connection is still to come.
-  await page.keyboard.press("Control+Shift+P");
-  await page.getByRole("dialog").getByRole("combobox").fill("rdp://win-02");
-  await page.getByRole("option", { name: "RDP to win-02" }).click();
-  await expect(page.getByText("Coming soon")).toBeVisible();
-  await expect(page.getByText("shell.notYetAvailable")).toHaveCount(0);
-});
-
 test("keyboard shortcuts drive the tabs and the sidebar filter", async ({ page }) => {
   await page.getByRole("button", { name: /^nas/ }).first().dblclick();
   await page

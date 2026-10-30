@@ -44,9 +44,18 @@ test("quick connect can be saved as a new connection", async ({ page }) => {
 });
 
 test("rdp:// switches the quick connect protocol", async ({ page }) => {
+  // T51: an RDP tab opens only on a saved connection, so Enter opens the editor filled in, in RDP.
   await page.keyboard.press("Control+Shift+P");
   await palette(page).getByRole("combobox").fill("rdp://win-02");
-  await expect(palette(page).getByRole("option", { name: "RDP to win-02" })).toBeVisible();
+  await expect(palette(page).getByRole("option", { name: "RDP to win-02" })).toHaveCount(0);
+  await page.keyboard.press("Enter");
+  const editor = page.getByRole("dialog");
+  await expect(editor.getByRole("heading", { name: "New connection" })).toBeVisible();
+  await expect(editor.getByRole("radio", { name: "RDP", exact: true })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
+  await expect(editor.getByLabel("Host", { exact: true })).toHaveValue("win-02");
 });
 
 test("F1 lists the keyboard shortcuts", async ({ page }) => {

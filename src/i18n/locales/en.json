@@ -411,7 +411,6 @@
     "empty": "Nothing to import"
   },
   "shell": {
-    "notYetAvailable": "Coming soon",
     "sessionPlaceholder": "The session “{{name}}” will be displayed here."
   },
   "palette": {

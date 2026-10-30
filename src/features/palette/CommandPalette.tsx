@@ -69,9 +69,8 @@ export function CommandPalette() {
   const quickTarget = useMemo(() => parseQuickConnect(search), [search]);
   const actionIds = useMemo(() => filterActions(labels, search), [labels, search]);
 
-  // The item the highlight resets to whenever the list changes, which is what Enter picks. For an RDP target it is
-  // « Save as a new connection… » in both palettes: the only row in the quick-connect palette, the row after
-  // « RDP to … » in the all-actions palette (see `hideQuickRow`).
+  // The first visible item, so the highlight can reset to it whenever the list changes. An RDP target has no
+  // « RDP to … » row, so its first row is « Save as a new connection… ».
   const firstValue = useMemo(() => {
     if (mode === "quickConnect") {
       if (!quickTarget) return "";
@@ -116,11 +115,6 @@ export function CommandPalette() {
   };
 
   if (mode === null) return null;
-
-  // In the quick-connect palette, an RDP address replaces the « … to … » row with « Save as a new connection… »
-  // (which Enter picks and fills the editor with). The all-actions palette keeps the « RDP to … » row and its
-  // coming-soon toast, which the T13 and T31 contract tests still expect. SSH is unchanged in both palettes.
-  const hideQuickRow = mode === "quickConnect" && quickTarget?.protocol === "rdp";
 
   return (
     <CommandDialog
@@ -171,7 +165,7 @@ export function CommandPalette() {
 
               {quickTarget && (
                 <CommandGroup heading={t("palette.groups.quickConnect")}>
-                  <QuickConnectGroup target={quickTarget} hideQuickRow={hideQuickRow} />
+                  <QuickConnectGroup target={quickTarget} />
                 </CommandGroup>
               )}
 
@@ -197,9 +191,7 @@ export function CommandPalette() {
 
           {mode === "quickConnect" && (
             <CommandGroup heading={t("palette.groups.quickConnect")}>
-              {quickTarget && (
-                <QuickConnectGroup target={quickTarget} hideQuickRow={hideQuickRow} />
-              )}
+              {quickTarget && <QuickConnectGroup target={quickTarget} />}
             </CommandGroup>
           )}
 
@@ -211,24 +203,17 @@ export function CommandPalette() {
 }
 
 /**
- * The quick-connect rows. For SSH: the « … vers … » row, then « Save as a new connection… » (so Enter opens the
- * session). When `hideQuickRow` (an RDP address in the quick-connect palette): only « Save as a new connection… »,
- * which is what Enter picks and fills the editor with.
+ * The quick-connect rows. For SSH: the « SSH to … » row, then « Save as a new connection… » (so Enter opens the
+ * session). For RDP, which opens a tab only on a saved connection: only « Save as a new connection… », which is what
+ * Enter picks and fills the editor with.
  */
-function QuickConnectGroup({
-  target,
-  hideQuickRow,
-}: {
-  target: QuickTarget;
-  hideQuickRow: boolean;
-}) {
+function QuickConnectGroup({ target }: { target: QuickTarget }) {
   const { t } = useTranslation();
   const closePalette = useUi((state) => state.closePalette);
-  const protocolLabel = target.protocol === "rdp" ? t("protocols.rdp") : t("protocols.ssh");
 
   return (
     <>
-      {!hideQuickRow && (
+      {target.protocol === "ssh" && (
         <CommandItem
           value={QUICK_CONNECT}
           onSelect={() => {
@@ -236,10 +221,10 @@ function QuickConnectGroup({
             openQuickSession(target);
           }}
         >
-          <ProtocolIcon protocol={target.protocol} className="size-4" />
+          <ProtocolIcon protocol="ssh" className="size-4" />
           <span className="flex-1 truncate">
             {t("palette.quickConnectTo", {
-              protocol: protocolLabel,
+              protocol: t("protocols.ssh"),
               target: formatQuickTarget(target),
             })}
           </span>
