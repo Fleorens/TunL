@@ -69,11 +69,15 @@ export function CommandPalette() {
   const quickTarget = useMemo(() => parseQuickConnect(search), [search]);
   const actionIds = useMemo(() => filterActions(labels, search), [labels, search]);
 
-  // The first visible item, so the highlight can reset to it whenever the list changes.
+  // The first visible item, so the highlight can reset to it whenever the list changes. An RDP target has no
+  // « RDP to … » row, so its first row is « Save as a new connection… ».
   const firstValue = useMemo(() => {
-    if (mode === "quickConnect") return quickTarget ? QUICK_CONNECT : "";
+    if (mode === "quickConnect") {
+      if (!quickTarget) return "";
+      return quickTarget.protocol === "rdp" ? SAVE : QUICK_CONNECT;
+    }
     if (matched.length > 0) return matched[0].id;
-    if (quickTarget) return QUICK_CONNECT;
+    if (quickTarget) return quickTarget.protocol === "rdp" ? SAVE : QUICK_CONNECT;
     return actionIds.length > 0 ? actionValue(actionIds[0]) : "";
   }, [mode, quickTarget, matched, actionIds]);
 
@@ -136,26 +140,28 @@ export function CommandPalette() {
         <CommandList>
           {mode === "all" && (
             <>
-              <CommandGroup heading={t("palette.groups.connections")}>
-                {matched.map((connection) => (
-                  <CommandItem
-                    key={connection.id}
-                    value={connection.id}
-                    onSelect={() => {
-                      closePalette();
-                      openSession(connection);
-                    }}
-                  >
-                    <ProtocolIcon protocol={connection.settings.protocol} className="size-4" />
-                    <span className="flex-1 truncate">{connection.name}</span>
-                    <span className="truncate text-muted-foreground">
-                      {connection.username
-                        ? `${connection.username}@${connection.host}`
-                        : connection.host}
-                    </span>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
+              {matched.length > 0 && (
+                <CommandGroup heading={t("palette.groups.connections")}>
+                  {matched.map((connection) => (
+                    <CommandItem
+                      key={connection.id}
+                      value={connection.id}
+                      onSelect={() => {
+                        closePalette();
+                        openSession(connection);
+                      }}
+                    >
+                      <ProtocolIcon protocol={connection.settings.protocol} className="size-4" />
+                      <span className="flex-1 truncate">{connection.name}</span>
+                      <span className="truncate text-muted-foreground">
+                        {connection.username
+                          ? `${connection.username}@${connection.host}`
+                          : connection.host}
+                      </span>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
 
               {quickTarget && (
                 <CommandGroup heading={t("palette.groups.quickConnect")}>
@@ -163,21 +169,23 @@ export function CommandPalette() {
                 </CommandGroup>
               )}
 
-              <CommandGroup heading={t("palette.groups.actions")}>
-                {actionIds.map((id) => (
-                  <CommandItem
-                    key={actionValue(id)}
-                    value={actionValue(id)}
-                    onSelect={() => {
-                      closePalette();
-                      runAction(id);
-                    }}
-                  >
-                    <span className="flex-1 truncate">{labels[id]}</span>
-                    <ActionShortcut id={id} />
-                  </CommandItem>
-                ))}
-              </CommandGroup>
+              {actionIds.length > 0 && (
+                <CommandGroup heading={t("palette.groups.actions")}>
+                  {actionIds.map((id) => (
+                    <CommandItem
+                      key={actionValue(id)}
+                      value={actionValue(id)}
+                      onSelect={() => {
+                        closePalette();
+                        runAction(id);
+                      }}
+                    >
+                      <span className="flex-1 truncate">{labels[id]}</span>
+                      <ActionShortcut id={id} />
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
             </>
           )}
 
@@ -194,29 +202,34 @@ export function CommandPalette() {
   );
 }
 
-/** The two quick-connect rows: the parsed address, then « Save as a new connection… ». */
+/**
+ * The quick-connect rows. For SSH: the « SSH to … » row, then « Save as a new connection… » (so Enter opens the
+ * session). For RDP, which opens a tab only on a saved connection: only « Save as a new connection… », which is what
+ * Enter picks and fills the editor with.
+ */
 function QuickConnectGroup({ target }: { target: QuickTarget }) {
   const { t } = useTranslation();
   const closePalette = useUi((state) => state.closePalette);
-  const protocolLabel = target.protocol === "rdp" ? t("protocols.rdp") : t("protocols.ssh");
 
   return (
     <>
-      <CommandItem
-        value={QUICK_CONNECT}
-        onSelect={() => {
-          closePalette();
-          openQuickSession(target);
-        }}
-      >
-        <ProtocolIcon protocol={target.protocol} className="size-4" />
-        <span className="flex-1 truncate">
-          {t("palette.quickConnectTo", {
-            protocol: protocolLabel,
-            target: formatQuickTarget(target),
-          })}
-        </span>
-      </CommandItem>
+      {target.protocol === "ssh" && (
+        <CommandItem
+          value={QUICK_CONNECT}
+          onSelect={() => {
+            closePalette();
+            openQuickSession(target);
+          }}
+        >
+          <ProtocolIcon protocol="ssh" className="size-4" />
+          <span className="flex-1 truncate">
+            {t("palette.quickConnectTo", {
+              protocol: t("protocols.ssh"),
+              target: formatQuickTarget(target),
+            })}
+          </span>
+        </CommandItem>
+      )}
       <CommandItem
         value={SAVE}
         onSelect={() => {

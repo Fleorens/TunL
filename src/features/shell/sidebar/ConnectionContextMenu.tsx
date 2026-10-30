@@ -16,7 +16,6 @@ import type { Connection } from "@/bindings/Connection";
 import type { Group } from "@/bindings/Group";
 import {
   ContextMenu,
-  ContextMenuCheckboxItem,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
@@ -107,15 +106,12 @@ export function ConnectionContextMenu({
           {t("connectionMenu.duplicate")}
         </ContextMenuItem>
 
-        <ContextMenuCheckboxItem
-          checked={connection.favorite}
-          onCheckedChange={() => setFavorite(!connection.favorite)}
-        >
+        <ContextMenuItem onClick={() => setFavorite(!connection.favorite)}>
           <Star className="size-3.5" fill={connection.favorite ? "currentColor" : "none"} />
           {connection.favorite
             ? t("connectionMenu.removeFavorite")
             : t("connectionMenu.addFavorite")}
-        </ContextMenuCheckboxItem>
+        </ContextMenuItem>
 
         <ContextMenuSub>
           <ContextMenuSubTrigger>

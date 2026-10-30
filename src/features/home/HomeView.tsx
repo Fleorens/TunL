@@ -107,7 +107,16 @@ function Dashboard({ connections }: DashboardProps) {
   function submit() {
     const target = parseQuickConnect(value);
     if (target) {
-      openQuickSession(target);
+      // An RDP tab opens only on a saved connection: an RDP address opens the editor filled in, as in the palette.
+      if (target.protocol === "rdp") {
+        useUi.getState().openEditor({
+          mode: "create",
+          protocol: "rdp",
+          prefill: { host: target.host, port: target.port, username: target.username },
+        });
+      } else {
+        openQuickSession(target);
+      }
       setValue("");
       setInvalid(false);
     } else {

@@ -401,7 +401,7 @@
       "host": "Hôte",
       "address": "Adresse",
       "key": "Clé",
-      "jump": "Hôte sauteur",
+      "jump": "Bastion",
       "notes": "Notes"
     },
     "done_one": "{{count}} connexion importée",
@@ -413,7 +413,6 @@
     "submit_other": "Importer {{count}} connexions"
   },
   "shell": {
-    "notYetAvailable": "Bientôt disponible",
     "sessionPlaceholder": "La session « {{name}} » s'affichera ici."
   },
   "palette": {
@@ -530,7 +529,7 @@
       "notes": "Notes",
       "keyPath": "Chemin de la clé",
       "domain": "Domaine",
-      "jumpHost": "Connexion relais",
+      "jumpHost": "Bastion",
       "wol": "Veille prolongée",
       "mac": "Adresse MAC",
       "broadcast": "Adresse de diffusion",

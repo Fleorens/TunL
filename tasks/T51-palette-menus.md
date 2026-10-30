@@ -101,6 +101,149 @@ test("the favorite item of the connection menu is a plain action", async ({ page
 });
 ```
 
+Amendement validé par Florian le 2026-10-30 : la ligne « RDP vers … » disparaît aussi de la palette complète, et le toast « Bientôt disponible » avec elle. Les deux fichiers suivants remplacent les versions de T21 (`e2e/palette.spec.ts` : `rdp://` ouvre l'éditeur) et de T31 (`e2e/shell.spec.ts` : le test du toast provisoire est retiré, plus aucune action provisoire).
+
+### `e2e/palette.spec.ts` (remplace la version de T21)
+
+```ts
+import { expectSaneUi } from "./support/sanity.ts";
+import { expect, type Page, test } from "./support/test.ts";
+
+test.beforeEach(async ({ page }) => {
+  await page.goto("/");
+});
+
+function palette(page: Page) {
+  return page.getByRole("dialog");
+}
+
+test("the palette finds a connection by host, and Alt+Enter edits it", async ({ page }) => {
+  await page.keyboard.press("Control+Shift+P");
+  await palette(page).getByRole("combobox").fill("10.0.0.12");
+  await expect(palette(page).getByRole("option", { name: /web-01/ })).toBeVisible();
+  await expectSaneUi(page);
+  await page.keyboard.press("Alt+Enter");
+  await expect(
+    page.getByRole("dialog").getByRole("heading", { name: "Edit web-01" }),
+  ).toBeVisible();
+});
+
+test("Enter on a connection opens it in a new tab", async ({ page }) => {
+  await page.getByRole("button", { name: /Search or connect/ }).click();
+  await palette(page).getByRole("combobox").fill("pi-hole");
+  await page.keyboard.press("Enter");
+  await expect(palette(page)).toHaveCount(0);
+  await expect(page.getByRole("tab", { selected: true })).toContainText("pi-hole");
+});
+
+test("quick connect can be saved as a new connection", async ({ page }) => {
+  await page.keyboard.press("Control+Shift+T");
+  await palette(page).getByRole("combobox").fill("deploy@10.5.5.5:2222");
+  await expect(
+    palette(page).getByRole("option", { name: "SSH to deploy@10.5.5.5:2222" }),
+  ).toBeVisible();
+  await palette(page).getByRole("option", { name: "Save as a new connection…" }).click();
+  const editor = page.getByRole("dialog");
+  await expect(editor.getByRole("heading", { name: "New connection" })).toBeVisible();
+  await expect(editor.getByLabel("Host", { exact: true })).toHaveValue("10.5.5.5");
+  await expect(editor.getByLabel("Port", { exact: true })).toHaveValue("2222");
+  await expect(editor.getByLabel("Username", { exact: true })).toHaveValue("deploy");
+  await expect(editor.getByRole("button", { name: "Save", exact: true })).toBeEnabled();
+});
+
+test("rdp:// switches the quick connect protocol", async ({ page }) => {
+  // T51: an RDP tab opens only on a saved connection, so Enter opens the editor filled in, in RDP.
+  await page.keyboard.press("Control+Shift+P");
+  await palette(page).getByRole("combobox").fill("rdp://win-02");
+  await expect(palette(page).getByRole("option", { name: "RDP to win-02" })).toHaveCount(0);
+  await page.keyboard.press("Enter");
+  const editor = page.getByRole("dialog");
+  await expect(editor.getByRole("heading", { name: "New connection" })).toBeVisible();
+  await expect(editor.getByRole("radio", { name: "RDP", exact: true })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
+  await expect(editor.getByLabel("Host", { exact: true })).toHaveValue("win-02");
+});
+
+test("F1 lists the keyboard shortcuts", async ({ page }) => {
+  await page.keyboard.press("F1");
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByRole("heading", { name: "Keyboard shortcuts" })).toBeVisible();
+  await expect(dialog.getByText("Command palette")).toBeVisible();
+  await expect(dialog.getByText("Go to tab 1…8")).toBeVisible();
+  await expectSaneUi(page);
+});
+```
+
+### `e2e/shell.spec.ts` (remplace la version de T31)
+
+```ts
+import { expect, test } from "./support/test.ts";
+
+test.beforeEach(async ({ page }) => {
+  await page.goto("/");
+});
+
+test("right-clicking a connection opens its menu, with the groups submenu", async ({ page }) => {
+  await page
+    .getByRole("button", { name: /^web-01/ })
+    .first()
+    .click({ button: "right" });
+  const menu = page.getByRole("menu");
+  await expect(menu.getByRole("menuitem", { name: "Connect" })).toBeVisible();
+  await menu.getByRole("menuitem", { name: "Move to group" }).hover();
+  await expect(page.getByRole("menuitem", { name: "Homelab" })).toBeVisible();
+});
+
+test("only one connection row is highlighted at a time", async ({ page }) => {
+  await page.getByRole("button", { name: /^nas/ }).first().click();
+  await page
+    .getByRole("button", { name: /^pi-hole/ })
+    .first()
+    .click();
+  const current = page.locator('[aria-current="true"]');
+  await expect(current).toHaveCount(1);
+  await expect(current).toContainText("pi-hole");
+});
+
+test("keyboard shortcuts drive the tabs and the sidebar filter", async ({ page }) => {
+  await page.getByRole("button", { name: /^nas/ }).first().dblclick();
+  await page
+    .getByRole("button", { name: /^pi-hole/ })
+    .first()
+    .dblclick();
+  await expect(page.getByRole("tab", { selected: true })).toContainText("pi-hole");
+  await page.keyboard.press("Alt+Digit1");
+  await expect(page.getByRole("tab", { selected: true })).toContainText("nas");
+  await page.keyboard.press("Control+PageDown");
+  await expect(page.getByRole("tab", { selected: true })).toContainText("pi-hole");
+
+  await page.keyboard.press("Control+Shift+E");
+  await expect(page.locator("#sidebar-filter")).toBeFocused();
+  await page.keyboard.type("pg");
+  await expect(page.getByRole("button", { name: /^db-prod/ })).toHaveCount(1);
+});
+
+test("the app starts on the home screen, and closing the last tab returns to it", async ({
+  page,
+}) => {
+  await expect(page.getByRole("tab")).toHaveCount(0);
+  const quickConnect = page.getByPlaceholder("user@host[:port] — quick connect");
+  await quickConnect.fill("root@unreachable.test");
+  await quickConnect.press("Enter");
+  await expect(page.getByRole("tab")).toHaveCount(1);
+  await page.keyboard.press("Control+Shift+W");
+  await expect(page.getByRole("tab")).toHaveCount(0);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+});
+
+test("outside Tauri, the status bar flags the mock backend", async ({ page }) => {
+  await expect(page.getByText("Mock backend")).toBeVisible();
+  await expect(page.getByText("v0.1.0-mock")).toBeVisible();
+});
+```
+
 ## Étapes
 
 1. Les tests : `node scripts/contract-tests.mjs T51`.
@@ -111,9 +254,9 @@ test("the favorite item of the connection menu is a plain action", async ({ page
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T51 --check` affiche `OK` partout.
-- [ ] `grep -rn "Hôte sauteur\|Connexion relais" src/i18n` ne trouve plus rien.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T51 --check` affiche `OK` partout.
+- [x] `grep -rn "Hôte sauteur\|Connexion relais" src/i18n` ne trouve plus rien.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 

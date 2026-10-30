@@ -2,7 +2,6 @@
 // SFTP opens a real explorer tab; a saved RDP connection opens an RDP tab (T28b); everything else opens a real SSH tab.
 import type { Connection } from "@/bindings/Connection";
 import type { QuickTarget } from "@/features/palette/quick-connect";
-import { notifyComingSoon } from "@/features/shell/coming-soon";
 import { quickTitle } from "./session-model";
 import { useSessions } from "./store";
 
@@ -23,12 +22,11 @@ export function openSession(connection: Connection, kind?: "terminal" | "sftp"):
   useSessions.getState().open({ type: "saved", connectionId: connection.id }, connection.name);
 }
 
-/** Opening an address typed on the fly: RDP is not there yet, SSH opens a real tab titled like the command line. */
+/**
+ * Opening an SSH address typed on the fly: a real tab titled like the command line. Only SSH targets come here: an RDP
+ * tab opens only on a saved connection, so an RDP address opens the editor filled in instead.
+ */
 export function openQuickSession(target: QuickTarget): void {
-  if (target.protocol === "rdp") {
-    notifyComingSoon();
-    return;
-  }
   useSessions
     .getState()
     .open(
