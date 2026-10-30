@@ -19,14 +19,15 @@ les onglets, le terminal et la palette, et une fiche qui cite du code pas encore
 - Un transfert de dossier est **une** ligne du panneau : progression cumulée, nombre de fichiers, une annulation qui
   arrête tout et retire les `.part`.
 - Nom déjà pris : ` (1)` sur le dossier de tête, comme pour un fichier.
-- T56 **reprend le contrat** de T47 sur les dossiers (le refus devient un envoi) : la fiche T56 met à jour le test de
-  T47 concerné.
+- T56 : la commande `sftp_upload` envoie un dossier par `upload_dir` ; `upload` reste réservé aux fichiers et refuse
+  toujours un dossier, si bien que le test de T47 reste vrai (choix fait à l'écriture des fiches, 2026-10-30).
 
 ### SFTP : éditer un fichier distant (T57 moteur, T57b interface)
 - « Modifier » télécharge le fichier dans un dossier privé (`$XDG_RUNTIME_DIR/tunl/edit/…`, 0700, effacé à la
   fermeture de l'onglet et au démarrage), puis l'ouvre avec l'application par défaut (plugin `opener`).
-- À chaque enregistrement local, le fichier est renvoyé (envoi par `.part`, comme T47). Si le fichier distant a
-  changé entre-temps (taille ou date), on ne l'écrase pas : on demande.
+- À chaque enregistrement local, le fichier est renvoyé, **réécrit en place** (décision D17 de `docs/02` : pas de
+  `.part`, qui ferait perdre droits et propriétaire). Si le fichier distant a changé entre-temps (taille ou date), on
+  ne l'écrase pas : on demande.
 - Fichiers de plus de 10 Mio : avertissement avant l'ouverture.
 - À relire avec `docs/06-securite.md` : contenu jamais journalisé, dossier privé, rien hors du dossier d'édition.
 
@@ -47,6 +48,13 @@ les onglets, le terminal et la palette, et une fiche qui cite du code pas encore
   jamais un secret).
 - Au démarrage, l'accueil propose « Rouvrir 3 onglets ». Réglage : Jamais / Demander (défaut) / Toujours.
 - Une connexion supprimée depuis est ignorée sans erreur.
+
+### Laissé de côté à l'écriture du lot 8
+
+- **Liste SFTP et liens symboliques** (relevé à la revue du lot 7, supposé, non mesuré) : depuis T48, `ops::list` fait
+  un `metadata` par lien, l'un après l'autre. Un dossier plein de liens (`/usr/lib64`) à forte latence peut mettre
+  plusieurs secondes à s'afficher. Paralléliser ces appels demande `futures-util` (déjà dans `Cargo.lock`) ou une
+  `Arc<SftpSession>` dans `list` : décision de Florian attendue avant d'en faire une fiche.
 
 ## Lot 9 — SSH, RDP, volets (écrit à la revue du lot 8)
 

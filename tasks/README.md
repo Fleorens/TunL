@@ -13,8 +13,9 @@ le modèle a réellement livré. Une fiche qui cite des signatures de code pas e
 - Lot 7 : **validé** (T43 → T53), issu de la revue globale du 2026-10-27 (`docs/09-revue-globale.md`). Revue du
   2026-10-30 : le focus sur « Nom » de T44 ne marchait qu'au démarrage de l'app (son test passait par chance de
   timing, et la file de `dev` ne lance pas les e2e), corrigé et figé (`e2e/review-lot7.spec.ts`).
-- Lots 8 et 9 (M10, nouvelles fonctions) : **cadrés** dans `docs/10-fonctions-a-venir.md`, fiches à écrire à la
-  revue du lot précédent.
+- Lot 8 : **prêt** (T54 → T60, M10 : SFTP et onglets), écrit le 2026-10-30 à la revue du lot 7. Ordre conseillé :
+  celui du tableau M10 (chaque fiche dépend de la précédente).
+- Lot 9 (T61 → T64c) : **cadré** dans `docs/10-fonctions-a-venir.md`, fiches à écrire à la revue du lot 8.
 - À partir de T17b, `npm run review` démarre aussi les conteneurs SSH de test (podman, `npm run test:ssh`).
 - En attente de Florian, dans la vraie app (`npm run tauri dev`) :
   - T10 et T11 : créer, modifier et supprimer une connexion, avec un bastion (voir « À regarder » des deux fiches) ;
@@ -194,14 +195,14 @@ Périmètre et décisions : `docs/10-fonctions-a-venir.md`.
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T54 | SFTP : sélection multiple, téléchargement et suppression en lot | T53 | moyen | Sonnet 5 · medium | à écrire |
-| T55 | SFTP : téléchargement récursif d'un dossier | T54 | moyen | Opus 5 · high | à écrire |
-| T56 | SFTP : envoi récursif d'un dossier (reprend le contrat de T47 sur les dossiers) | T55 | moyen | Opus 5 · high | à écrire |
-| T57 | SFTP : éditer un fichier distant — moteur (dossier privé, surveillance, renvoi, conflit) | T56 | **élevé** | Opus 5 · high | à écrire |
-| T57b | SFTP : éditer un fichier distant — interface | T57 | moyen | Sonnet 5 · medium | à écrire |
-| T58 | SSH ↔ SFTP en un clic (ouvrir en SFTP, terminal dans le dossier) | T57b | faible | Sonnet 5 · medium | à écrire |
-| T59 | Onglets : glisser pour réordonner, menu d'onglet (dupliquer, fermer les autres) | T58 | moyen | Sonnet 5 · medium | à écrire |
-| T60 | Rouvrir les onglets de la dernière fois (réglage Jamais / Demander / Toujours) | T59 | faible | Sonnet 5 · medium | à écrire |
+| T54 | SFTP : sélection multiple, téléchargement et suppression en lot | T53 | moyen | Sonnet 5 · medium | prête |
+| T55 | SFTP : téléchargement récursif d'un dossier | T54 | moyen | Opus 5 · high | prête |
+| T56 | SFTP : envoi récursif d'un dossier | T55 | moyen | Opus 5 · high | prête |
+| T57 | SFTP : éditer un fichier distant — moteur (dossier privé, surveillance, renvoi, conflit) | T56 | **élevé** | Opus 5 · high | prête |
+| T57b | SFTP : éditer un fichier distant — interface | T57 | moyen | Sonnet 5 · medium | prête |
+| T58 | SSH ↔ SFTP en un clic (ouvrir en SFTP, terminal dans le dossier) | T57b | faible | Sonnet 5 · medium | prête |
+| T59 | Onglets : glisser pour réordonner, menu d'onglet (dupliquer, fermer les autres) | T58 | moyen | Sonnet 5 · medium | prête |
+| T60 | Rouvrir les onglets de la dernière fois (réglage Jamais / Demander / Toujours) | T59 | faible | Sonnet 5 · medium | prête |
 | T61 | Commandes enregistrées : modèle, `snippets.json`, commandes, ipc et mock | T60 | moyen | Sonnet 5 · high | à écrire |
 | T61b | Commandes enregistrées : palette, menu du terminal, Paramètres | T61 | moyen | Sonnet 5 · medium | à écrire |
 | T62 | Clés SSH : générer une paire ed25519 | T61b | moyen | Opus 5 · high | à écrire |
@@ -233,6 +234,6 @@ local qui écrit le code (voir `AGENTS.md`).
 | 4 | T17 → T21b | **validé** à la revue du 2026-10-18 (T19b ajoutée le 2026-10-11 après une revue de T17 → T19) |
 | 5 | T22 → T30 (+ T25b, T26b, T26c, T26d, T28b) | **validé** à la revue du 2026-10-20 |
 | 6 | T31 → T40 (+ T28c, T30b) | **validé** à la revue du 2026-10-22, T40 le 2026-10-25 |
-| 7 | T43 → T53 | écrit le 2026-10-27, après la revue globale (`docs/09-revue-globale.md`) |
-| 8 | T54 → T60 (+ T57b) | cadré (`docs/10-fonctions-a-venir.md`), à écrire à la revue du lot 7 |
+| 7 | T43 → T53 | **validé** à la revue du 2026-10-30 (écrit le 2026-10-27, `docs/09-revue-globale.md`) |
+| 8 | T54 → T60 (+ T57b) | écrit le 2026-10-30, à la revue du lot 7 |
 | 9 | T61 → T64 (+ T61b, T62b, T64b, T64c) | cadré, à écrire à la revue du lot 8 |

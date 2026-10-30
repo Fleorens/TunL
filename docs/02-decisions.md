@@ -133,3 +133,13 @@ Les manifestes (`package.json`, `Cargo.toml`, `tauri.conf.json`) la déclarent d
 Tauri passe de 2.11 à 2.12 (runtime, `tauri-build` 2.7, `@tauri-apps/api` 2.12), validé par Florian le 2026-10-11.
 Les plugins `opener` et `clipboard-manager` ajoutés en T20 l'imposent (`@tauri-apps/plugin-clipboard-manager` exige
 `@tauri-apps/api` ^2.12). La stack d'`AGENTS.md` et `docs/01-architecture.md` §2 sont alignées.
+
+## D17 — Un fichier distant édité est réécrit en place
+
+Retenu le 2026-10-30, à l'écriture de T57. À chaque enregistrement local, le fichier distant est ouvert en écriture
+avec troncature et réécrit, après vérification que sa taille et sa date n'ont pas changé depuis la dernière lecture.
+Pas de `.part` renommé par-dessus : en SFTP v3, OpenSSH refuse un `rename` vers un fichier existant (il faudrait
+l'extension `posix-rename@openssh.com`, que russh-sftp n'expose pas), et supprimer puis remplacer le fichier perdrait
+ses droits, son propriétaire, ses liens physiques et son contexte SELinux (un fichier de configuration en `0600`
+finirait en `0644`). Le prix : une coupure en pleine écriture laisse un fichier tronqué sur le serveur. La copie
+locale reste intacte, et l'enregistrement suivant renvoie le fichier entier.
