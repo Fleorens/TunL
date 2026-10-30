@@ -12,18 +12,24 @@ interface ReachabilityState {
   refresh: (ids: string[]) => Promise<void>;
   /** Forget every result (probes disabled, or the first render). */
   clear: () => void;
+  /** Whether the next failure warns. A success re-arms it, so a probe that keeps failing warns once. */
+  alertArmed: boolean;
 }
 
-export const useReachability = create<ReachabilityState>()((set) => ({
+export const useReachability = create<ReachabilityState>()((set, get) => ({
   results: {},
+  alertArmed: true,
 
   async refresh(ids) {
     if (ids.length === 0) return;
     try {
       const batch = await ipc.probeCheck(ids);
-      set((state) => ({ results: mergeResults(state.results, batch) }));
+      set((state) => ({ results: mergeResults(state.results, batch), alertArmed: true }));
     } catch (error) {
+      // Warn once per run of failures: toast and disarm, stay silent until the next success re-arms.
+      if (!get().alertArmed) return;
       notifyError(error);
+      set({ alertArmed: false });
     }
   },
 

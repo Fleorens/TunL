@@ -124,8 +124,8 @@ test("repeated failures warn once until a success", async () => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T53 --check` affiche `OK` partout.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T53 --check` affiche `OK` partout.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 - [ ] Apparence : les quatre listes déroulantes sont alignées et de même largeur (à l'écran).
 
 ## À regarder par Florian
