@@ -225,8 +225,8 @@ describe("acks", () => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T50 --check` affiche `OK` partout.
-- [ ] `grep -n "ssh_ack" src-tauri/src/lib.rs src-tauri/src/commands/ipc_tests.rs` trouve la commande aux deux endroits.
+- [x] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T50 --check` affiche `OK` partout.
+- [x] `grep -n "ssh_ack" src-tauri/src/lib.rs src-tauri/src/commands/ipc_tests.rs` trouve la commande aux deux endroits.
 - [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian

@@ -139,10 +139,10 @@ test("a folded group stays folded after a search", async ({ page }) => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T43 --check` affiche `OK` partout.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T43 --check` affiche `OK` partout.
 - [x] `grep -rn "showRecents" src` ne trouve plus rien.
 - [x] Aucune nouvelle exception `project-rules: allow`.
-- [ ] La barre de défilement de la liste est visible au survol quand la liste dépasse (à l'écran).
+- [x] La barre de défilement de la liste est visible au survol quand la liste dépasse (à l'écran).
 
 ## À regarder par Florian
 

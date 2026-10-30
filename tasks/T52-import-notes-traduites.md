@@ -172,9 +172,9 @@ test("select all toggles every selectable host", async ({ page }) => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T52 --check` affiche `OK` partout.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T52 --check` affiche `OK` partout.
 - [x] Aucune nouvelle exception `project-rules: allow`.
-- [ ] En français, le dialogue d'import n'affiche plus d'anglais dans la colonne « Notes » (à l'écran).
+- [x] En français, le dialogue d'import n'affiche plus d'anglais dans la colonne « Notes » (à l'écran).
 
 ## À regarder par Florian
 

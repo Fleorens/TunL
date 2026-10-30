@@ -153,7 +153,9 @@ export function ConnectionEditor() {
 
   // On opening a new connection, focus the Name field. Radix would otherwise drop focus on the first
   // focusable control (the protocol switch); `onOpenAutoFocus` cancels that in create mode only, and
-  // here we focus once the fields are rendered (`ready`), not with a setTimeout.
+  // focuses Name when the fields are already there. When they come later (`ready`), this effect does it.
+  // The effect alone is not enough: the sheet's portal mounts its content one render after `ready`, so
+  // once the app has loaded, the field did not exist yet when it ran (lot 7 review).
   useEffect(() => {
     if (ready && shown?.mode === "create") form.setFocus("name");
   }, [ready, shown, form]);
@@ -260,7 +262,9 @@ export function ConnectionEditor() {
           <SheetContent
             className="flex h-full flex-col gap-4 data-[side=right]:w-full data-[side=right]:sm:max-w-[520px]"
             onOpenAutoFocus={(event) => {
-              if (target?.mode === "create") event.preventDefault();
+              if (target?.mode !== "create") return;
+              event.preventDefault();
+              if (ready) form.setFocus("name");
             }}
           >
             <SheetHeader className="items-start gap-3">

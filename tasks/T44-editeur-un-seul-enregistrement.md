@@ -109,7 +109,7 @@ test("Multiple monitors is only offered in full screen", async ({ page }) => {
 
 - [x] `npm run review` passe, et `node scripts/contract-tests.mjs T44 --check` affiche `OK` partout.
 - [x] Aucune nouvelle exception `project-rules: allow`.
-- [ ] Onglet Général : écarts réguliers entre les champs, « Couleur » visible sans défiler en 1280 × 800 (à l'écran).
+- [x] Onglet Général : écarts réguliers entre les champs, « Couleur » visible sans défiler en 1280 × 800 (à l'écran).
 
 ## À regarder par Florian
 

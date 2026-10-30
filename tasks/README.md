@@ -4,14 +4,15 @@
 L'orchestrateur (Claude) écrit les fiches détaillées **par lots** : chaque lot est ajusté après relecture de ce que
 le modèle a réellement livré. Une fiche qui cite des signatures de code pas encore écrit finirait par mentir.
 
-## Où on en est (2026-10-27)
+## Où on en est (2026-10-30)
 
 - Lots 1 à 5 : **validés** (T01 → T30). Revue du lot 5 le 2026-10-20 : quatre défauts corrigés et figés
   (`e2e/review-lot5.spec.ts`, `src-tauri/src/sftp/transfer_reserve_tests.rs`), voir le commit de revue.
 - Lot 6 : **validé** (T28c, T30b, T31 → T39). Revue du 2026-10-22 : deux défauts figés (`e2e/review-lot6.spec.ts`,
   `src-tauri/src/model/review_lot6_tests.rs`). T40 (revue de sécurité, faite par Claude) validée le 2026-10-25 : paquets du brouillon `v0.1.0` vérifiés, `.rpm` testé par Florian.
-- Lot 7 : **prêt** (T43 → T53), issu de la revue globale du 2026-10-27 (`docs/09-revue-globale.md`) : interface,
-  ergonomie, défauts et performances. Ordre conseillé : celui du tableau M9 (chaque fiche dépend de la précédente).
+- Lot 7 : **validé** (T43 → T53), issu de la revue globale du 2026-10-27 (`docs/09-revue-globale.md`). Revue du
+  2026-10-30 : le focus sur « Nom » de T44 ne marchait qu'au démarrage de l'app (son test passait par chance de
+  timing, et la file de `dev` ne lance pas les e2e), corrigé et figé (`e2e/review-lot7.spec.ts`).
 - Lots 8 et 9 (M10, nouvelles fonctions) : **cadrés** dans `docs/10-fonctions-a-venir.md`, fiches à écrire à la
   revue du lot précédent.
 - À partir de T17b, `npm run review` démarre aussi les conteneurs SSH de test (podman, `npm run test:ssh`).
@@ -175,17 +176,17 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
-| T43 | Barre latérale : la liste défile seule, Récents toujours affichés, groupes repliés conservés | T34 | faible | Sonnet 5 · medium | livrée |
-| T44 | Éditeur : un seul enregistrement, focus sur le nom, champs resserrés, plusieurs écrans en plein écran | T43 | faible | Sonnet 5 · medium | livrée |
-| T45 | Sessions : carte d'erreur explicite, questions retirées en fin de tentative, « Modifier » sur la carte RDP | T44 | moyen | Sonnet 5 · medium | livrée |
-| T46 | SFTP (interface) : un envoi ne ramène plus au dossier de départ, la suppression montre qu'elle travaille | T45 | faible | Sonnet 5 · medium | livrée |
-| T47 | SFTP (moteur) : envois simultanés sans collision, dossier refusé, comptage sans un `stat` par entrée | T46 | moyen | Opus 5 · high | livrée |
-| T48 | SFTP : un lien symbolique vers un fichier se télécharge comme un fichier | T47 | moyen | Sonnet 5 · high | livrée |
-| T49 | SSH : délai jusqu'à la clé d'hôte, boucle d'acceptation du tunnel, une copie en moins | T48 | **élevé** | Opus 5 · high | livrée |
-| T50 | Terminal : contrôle de flux des gros affichages, copie à la sélection groupée | T49 | **élevé** | Opus 5 · high | livrée |
-| T51 | Palette et menus : pas de groupe vide, connexion rapide RDP, favori sans coche, « bastion » en français | T50 | faible | Sonnet 5 · medium | livrée |
-| T52 | Import `~/.ssh/config` : notes et erreurs traduites, avertissements du fichier affichés | T51 | faible | Sonnet 5 · medium | livrée |
-| T53 | Réglages et sondes : deux changements rapprochés gardés, une seule alerte de sonde | T52 | faible | Sonnet 5 · medium | livrée |
+| T43 | Barre latérale : la liste défile seule, Récents toujours affichés, groupes repliés conservés | T34 | faible | Sonnet 5 · medium | validée |
+| T44 | Éditeur : un seul enregistrement, focus sur le nom, champs resserrés, plusieurs écrans en plein écran | T43 | faible | Sonnet 5 · medium | validée |
+| T45 | Sessions : carte d'erreur explicite, questions retirées en fin de tentative, « Modifier » sur la carte RDP | T44 | moyen | Sonnet 5 · medium | validée |
+| T46 | SFTP (interface) : un envoi ne ramène plus au dossier de départ, la suppression montre qu'elle travaille | T45 | faible | Sonnet 5 · medium | validée |
+| T47 | SFTP (moteur) : envois simultanés sans collision, dossier refusé, comptage sans un `stat` par entrée | T46 | moyen | Opus 5 · high | validée |
+| T48 | SFTP : un lien symbolique vers un fichier se télécharge comme un fichier | T47 | moyen | Sonnet 5 · high | validée |
+| T49 | SSH : délai jusqu'à la clé d'hôte, boucle d'acceptation du tunnel, une copie en moins | T48 | **élevé** | Opus 5 · high | validée |
+| T50 | Terminal : contrôle de flux des gros affichages, copie à la sélection groupée | T49 | **élevé** | Opus 5 · high | validée |
+| T51 | Palette et menus : pas de groupe vide, connexion rapide RDP, favori sans coche, « bastion » en français | T50 | faible | Sonnet 5 · medium | validée |
+| T52 | Import `~/.ssh/config` : notes et erreurs traduites, avertissements du fichier affichés | T51 | faible | Sonnet 5 · medium | validée |
+| T53 | Réglages et sondes : deux changements rapprochés gardés, une seule alerte de sonde | T52 | faible | Sonnet 5 · medium | validée |
 
 ### M10 — Nouvelles fonctions (lots 8 et 9)
 
