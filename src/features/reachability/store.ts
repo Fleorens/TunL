@@ -16,7 +16,7 @@ interface ReachabilityState {
   alertArmed: boolean;
 }
 
-export const useReachability = create<ReachabilityState>()((set) => ({
+export const useReachability = create<ReachabilityState>()((set, get) => ({
   results: {},
   alertArmed: true,
 
@@ -27,7 +27,7 @@ export const useReachability = create<ReachabilityState>()((set) => ({
       set((state) => ({ results: mergeResults(state.results, batch), alertArmed: true }));
     } catch (error) {
       // Warn once per run of failures: toast and disarm, stay silent until the next success re-arms.
-      if (!useReachability.getState().alertArmed) return;
+      if (!get().alertArmed) return;
       notifyError(error);
       set({ alertArmed: false });
     }

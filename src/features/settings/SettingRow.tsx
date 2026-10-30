@@ -44,7 +44,7 @@ function SettingRow({
           <span className="text-xs wrap-anywhere text-muted-foreground">{description}</span>
         )}
       </div>
-      <div className="flex-shrink-0">{children}</div>
+      {children && <div className="shrink-0">{children}</div>}
     </div>
   );
 }
