@@ -34,9 +34,7 @@ test("importing selected hosts into a group", async ({ page }) => {
 test("a host with an error cannot be selected", async ({ page }) => {
   await openImport(page);
   await expect(dialog(page).getByRole("checkbox", { name: "Select broken" })).toBeDisabled();
-  await expect(
-    dialog(page).getByText("host: must be a valid IPv4, IPv6 address or host name"),
-  ).toBeVisible();
+  await expect(dialog(page).getByText("Invalid host")).toBeVisible();
   await expect(dialog(page).getByText("ProxyCommand is ignored")).toBeVisible();
   await expectSaneUi(page);
 });

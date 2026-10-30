@@ -404,6 +404,26 @@
       "jump": "Bastion",
       "notes": "Notes"
     },
+    "notes": {
+      "optionIgnored": "{{option}} est ignoré",
+      "lastHopOnly": "Seul le dernier saut de ProxyJump est repris",
+      "matchIgnored": "Les blocs Match sont ignorés",
+      "includeTooDeep": "Include trop imbriqué : {{path}}",
+      "hostTokens": "Seul le jeton %h est pris en charge dans HostName",
+      "invalidPort": "Port invalide : {{value}}",
+      "invalidField": "{{field}} invalide"
+    },
+    "fields": {
+      "name": "Nom",
+      "host": "Hôte",
+      "port": "Port",
+      "username": "Utilisateur",
+      "settings": {
+        "auth": {
+          "path": "Fichier de clé"
+        }
+      }
+    },
     "done_one": "{{count}} connexion importée",
     "done_other": "{{count}} connexions importées",
     "empty": "Rien à importer",

@@ -184,7 +184,7 @@ Noter au fil de l'eau ce qui cloche à l'écran (texte, alignement, couleur) : C
 | T49 | SSH : délai jusqu'à la clé d'hôte, boucle d'acceptation du tunnel, une copie en moins | T48 | **élevé** | Opus 5 · high | livrée |
 | T50 | Terminal : contrôle de flux des gros affichages, copie à la sélection groupée | T49 | **élevé** | Opus 5 · high | livrée |
 | T51 | Palette et menus : pas de groupe vide, connexion rapide RDP, favori sans coche, « bastion » en français | T50 | faible | Sonnet 5 · medium | livrée |
-| T52 | Import `~/.ssh/config` : notes et erreurs traduites, avertissements du fichier affichés | T51 | faible | Sonnet 5 · medium | prête |
+| T52 | Import `~/.ssh/config` : notes et erreurs traduites, avertissements du fichier affichés | T51 | faible | Sonnet 5 · medium | livrée |
 | T53 | Réglages et sondes : deux changements rapprochés gardés, une seule alerte de sonde | T52 | faible | Sonnet 5 · medium | prête |
 
 ### M10 — Nouvelles fonctions (lots 8 et 9)
