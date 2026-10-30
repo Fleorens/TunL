@@ -37,7 +37,7 @@ interface EntryTableProps {
   onRenameDone: (entry: RemoteEntry, name: string | null) => void;
   onDelete: (entry: RemoteEntry) => void;
   /** Delete every selected line at once (several lines with Delete). */
-  onDeleteMany: (paths: readonly string[]) => void;
+  onDeleteMany: () => void;
 }
 
 /** The icon of one entry: a folder, a file, a link, or an unknown kind. */
@@ -310,8 +310,9 @@ export function EntryTable({
         if (!entry) return;
         event.preventDefault();
         if (event.key === "F2") onRename(entry);
-        else if (selection.paths.length > 1) onDeleteMany(selection.paths);
-        else onDelete(entry);
+        else if (selection.paths.length > 1) onDeleteMany();
+        // A cursor just unselected (Ctrl+click) is not deleted.
+        else if (selection.paths.includes(entry.path)) onDelete(entry);
         return;
       }
       default:
@@ -327,9 +328,12 @@ export function EntryTable({
     virtualizer.scrollToIndex(index);
   };
 
-  // The cursor row is focusable when it is in the table, so the table is reachable by Tab.
-  const tabIndexFor = (index: number): number =>
-    selection.focus === entries[index]?.path ? 0 : -1;
+  // The cursor row is focusable, or the first row when the cursor is not shown, so the table is reachable by Tab.
+  const cursorShown = entries.some((entry) => entry.path === selection.focus);
+  const tabIndexFor = (index: number): number => {
+    if (!cursorShown) return index === 0 ? 0 : -1;
+    return selection.focus === entries[index]?.path ? 0 : -1;
+  };
 
   return (
     <div ref={containerRef} className="h-full overflow-auto">
