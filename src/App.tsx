@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Gallery } from "@/dev/Gallery";
 import { useConnections } from "@/features/connections/store";
+import { useRestoreTabs } from "@/features/sessions/use-restore-tabs";
 import { useSettings } from "@/features/settings/store";
 import { useApplySettings } from "@/features/settings/use-apply-settings";
 import { AppLayout } from "@/features/shell/AppLayout";
@@ -15,6 +16,9 @@ const showGallery = import.meta.env.DEV && window.location.hash === "#gallery";
 export function App() {
   // Applies theme, language and animation settings as they load; returns the MotionConfig value.
   const reduceMotion = useApplySettings();
+
+  // Reopen last time's tabs at startup (T60): load, save on change, and restore per the setting.
+  useRestoreTabs();
 
   // One-shot load of the two stores on first render.
   useEffect(() => {

@@ -10,21 +10,17 @@ import { quickTitle, type Session } from "./session-model";
 import { hasControlChar } from "./shell-quote";
 import { useSessions } from "./store";
 
-/** Opening a saved connection: SFTP opens a real explorer tab, RDP opens a real tab, SSH opens a real tab. */
-export function openSession(connection: Connection, kind?: "terminal" | "sftp"): void {
-  if (kind === "sftp") {
-    useSessions
-      .getState()
-      .open({ type: "saved", connectionId: connection.id }, connection.name, "sftp");
-    return;
-  }
+/**
+ * Opening a saved connection: SFTP opens a real explorer tab, RDP opens a real tab, SSH opens a real tab. Returns
+ * the new tab's id.
+ */
+export function openSession(connection: Connection, kind?: "terminal" | "sftp"): string {
+  const target: SessionTarget = { type: "saved", connectionId: connection.id };
+  if (kind === "sftp") return useSessions.getState().open(target, connection.name, "sftp");
   if (connection.settings.protocol === "rdp") {
-    useSessions
-      .getState()
-      .open({ type: "saved", connectionId: connection.id }, connection.name, "rdp");
-    return;
+    return useSessions.getState().open(target, connection.name, "rdp");
   }
-  useSessions.getState().open({ type: "saved", connectionId: connection.id }, connection.name);
+  return useSessions.getState().open(target, connection.name);
 }
 
 /**

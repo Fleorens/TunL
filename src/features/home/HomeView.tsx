@@ -33,6 +33,7 @@ import {
   greetingFor,
   recentConnections,
 } from "./home-model";
+import { RestoreOffer } from "./RestoreOffer";
 
 /** The first-launch screen, shown when there is no connection yet. */
 function EmptyWelcome() {
@@ -155,6 +156,8 @@ function Dashboard({ connections }: DashboardProps) {
         <Kbd className="absolute top-1/2 right-3 -translate-y-1/2">⏎</Kbd>
       </div>
       {invalid && <p className="text-sm text-muted-foreground">{t("home.quickInvalid")}</p>}
+
+      <RestoreOffer />
 
       {favorites.length > 0 && (
         <section>

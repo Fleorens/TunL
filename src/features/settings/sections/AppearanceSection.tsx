@@ -1,5 +1,6 @@
-// The Settings tab — Appearance: theme, language, reduce animations, confirm before closing a tab.
+// The Settings tab — Appearance: theme, language, reduce animations, confirm before closing a tab, reopen tabs.
 import { useTranslation } from "react-i18next";
+import type { RestoreTabs } from "@/bindings/RestoreTabs";
 import { SettingGroup, SettingSelect, SettingSwitch } from "@/features/settings/SettingRow";
 import { saveSettings } from "@/features/settings/save-settings";
 import { useSettings } from "@/features/settings/store";
@@ -16,6 +17,7 @@ export function AppearanceSection() {
   const reduceMotion = useSettings((s) => s.settings?.reduceMotion);
   const confirmClose = useSettings((s) => s.settings?.ui.confirmCloseActiveSession);
   const titleBar = useSettings((s) => s.settings?.ui.titleBar);
+  const restoreTabs = useSettings((s) => s.settings?.ui.restoreTabs);
   const forced = useUi((s) => s.windowChrome.forced);
 
   const themeOptions = THEMES.map((value) => ({ value, label: t(`theme.${value}`) }));
@@ -28,6 +30,11 @@ export function AppearanceSection() {
     { value: "native" as const, label: t("settings.appearance.titleBarOption.native") },
     { value: "custom" as const, label: t("settings.appearance.titleBarOption.custom") },
   ] as const;
+  const restoreOptions: readonly { value: RestoreTabs; label: string }[] = [
+    { value: "never", label: t("settings.appearance.restoreTabsOption.never") },
+    { value: "ask", label: t("settings.appearance.restoreTabsOption.ask") },
+    { value: "always", label: t("settings.appearance.restoreTabsOption.always") },
+  ];
 
   return (
     <SettingGroup>
@@ -69,6 +76,13 @@ export function AppearanceSection() {
         onChange={(next) =>
           saveSettings((s) => ({ ...s, ui: { ...s.ui, confirmCloseActiveSession: next } }))
         }
+      />
+      <SettingSelect
+        id="settings-restore-tabs"
+        label={t("settings.appearance.restoreTabs")}
+        value={restoreTabs ?? "ask"}
+        options={restoreOptions}
+        onChange={(next) => saveSettings((s) => ({ ...s, ui: { ...s.ui, restoreTabs: next } }))}
       />
     </SettingGroup>
   );

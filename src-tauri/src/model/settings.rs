@@ -153,6 +153,20 @@ pub enum TitleBarMode {
     Custom,
 }
 
+/// Whether to reopen the tabs of last time at startup.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, TS)]
+#[serde(rename_all = "lowercase")]
+#[ts(export)]
+pub enum RestoreTabs {
+    /// Ask on the home screen whether to reopen them (the default).
+    #[default]
+    Ask,
+    /// Never reopen them.
+    Never,
+    /// Reopen them at startup, without asking.
+    Always,
+}
+
 /// UI layout settings.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -167,6 +181,8 @@ pub struct UiSettings {
     pub download_dir: Option<String>,
     /// Which title bar to draw (T35). A `settings.json` written before T35 falls back to the system bar.
     pub title_bar: TitleBarMode,
+    /// Reopen the tabs of last time at startup (T60). A `settings.json` written before T60 falls back to asking.
+    pub restore_tabs: RestoreTabs,
 }
 
 impl Default for UiSettings {
@@ -177,6 +193,7 @@ impl Default for UiSettings {
             confirm_close_active_session: true,
             download_dir: None,
             title_bar: TitleBarMode::default(),
+            restore_tabs: RestoreTabs::default(),
         }
     }
 }

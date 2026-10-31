@@ -11,6 +11,7 @@ pub mod exchange;
 pub mod file;
 mod migrate;
 pub mod ops;
+pub mod tabs;
 
 pub use migrate::migrate_to_current;
 
@@ -20,6 +21,8 @@ mod exchange_tests;
 mod exchange_untrusted_tests;
 #[cfg(test)]
 mod ops_tests;
+#[cfg(test)]
+mod tabs_tests;
 
 /// File name of the connections store, inside the config directory (docs/01-architecture.md §9).
 pub const STORE_FILE: &str = "connections.json";

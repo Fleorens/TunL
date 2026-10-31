@@ -312,6 +312,7 @@ export const MOCK_SETTINGS: Settings = {
     confirmCloseActiveSession: true,
     downloadDir: null,
     titleBar: "native",
+    restoreTabs: "ask",
   },
 };
 
