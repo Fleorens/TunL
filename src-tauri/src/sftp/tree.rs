@@ -6,6 +6,7 @@
 //! a local path. Each file goes through its own `.part`, renamed at the end; none is ever left behind.
 use std::io;
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 use std::time::Instant;
 
 use russh_sftp::client::SftpSession;
@@ -16,8 +17,8 @@ use tokio_util::sync::CancellationToken;
 use crate::error::AppError;
 use crate::sftp::ops::{entry_metadata, map_sftp_error, valid_name};
 use crate::sftp::transfer::{
-    Outcome, TransferEvent, TransferSink, copy, emit_final, emit_progress, finish_local,
-    first_free, local_io_error, remote_base_name,
+    Outcome, PROGRESS_INTERVAL, TransferEvent, TransferSink, copy, emit_final, emit_progress,
+    finish_local, first_free, local_io_error, remote_base_name,
 };
 
 /// One remote file to copy: its remote path, its path under the local top folder, its size.
@@ -38,22 +39,47 @@ struct Scan {
 
 /// Shifts the `Progress` of one file's `copy` onto the whole folder: `transferred` counts the bytes of the
 /// files already copied, `total` is the folder's, and the rate is measured from the start of the folder.
+/// The final `Progress` of each file is held back unless `PROGRESS_INTERVAL` has passed since the last one
+/// sent (`last`, shared by the files of the folder), so many small files do not flood the UI; the very last
+/// one (the whole folder copied) always goes through.
 struct Cumulative<'a> {
     sink: &'a dyn TransferSink,
     offset: u64,
     total: u64,
     start: Instant,
+    last: &'a Mutex<Option<Instant>>,
+}
+
+impl Cumulative<'_> {
+    /// Whether a `Progress` for `transferred` bytes of the folder goes out now (and marks the time if so).
+    fn due(&self, transferred: u64) -> bool {
+        let now = Instant::now();
+        let Ok(mut last) = self.last.lock() else {
+            return true;
+        };
+        let due = transferred >= self.total
+            || last.is_none_or(|sent| now.duration_since(sent) >= PROGRESS_INTERVAL);
+        if due {
+            *last = Some(now);
+        }
+        due
+    }
 }
 
 impl TransferSink for Cumulative<'_> {
     fn event(&self, event: TransferEvent) {
         match event {
-            TransferEvent::Progress { transferred, .. } => emit_progress(
-                self.sink,
-                self.offset + transferred,
-                Some(self.total),
-                self.start.elapsed(),
-            ),
+            TransferEvent::Progress { transferred, .. } => {
+                let transferred = self.offset + transferred;
+                if self.due(transferred) {
+                    emit_progress(
+                        self.sink,
+                        transferred,
+                        Some(self.total),
+                        self.start.elapsed(),
+                    );
+                }
+            }
             other => self.sink.event(other),
         }
     }
@@ -113,7 +139,8 @@ async fn scan(
 /// The local top folder: a free name in `local_dir`, created with `create_dir`; a name taken in the
 /// meantime (a race) moves on to the next one, like `reserve_local`.
 async fn create_top(local_dir: &Path, remote: &str) -> Result<PathBuf, Outcome> {
-    let base = remote_base_name(remote);
+    // A trailing "/" (`/home/me/photos/`) still names the folder.
+    let base = remote_base_name(remote.trim_end_matches('/'));
     if !valid_name(base) {
         return Err(Outcome::Failed(AppError::validation(
             "remotePath",
@@ -135,7 +162,36 @@ async fn create_top(local_dir: &Path, remote: &str) -> Result<PathBuf, Outcome> 
     }
 }
 
-/// Copy one remote file to `target` through `<target>.part`; the `.part` is removed on any failure.
+/// A free `.part` next to `target`, created with `create_new`: `<name>.part`, or `<name> (1).part`… when the
+/// folder already holds a file of that name (a remote `x.part` copied before `x`).
+async fn reserve_part(target: &Path) -> Result<(PathBuf, tokio::fs::File), Outcome> {
+    let name = target
+        .file_name()
+        .map(|name| format!("{}.part", name.to_string_lossy()))
+        .unwrap_or_default();
+    loop {
+        let part = target.with_file_name(first_free(&name, |candidate| {
+            target.with_file_name(candidate).exists()
+        }));
+        match tokio::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&part)
+            .await
+        {
+            Ok(file) => return Ok((part, file)),
+            Err(error) if error.kind() == io::ErrorKind::AlreadyExists => continue,
+            Err(error) => {
+                return Err(Outcome::Failed(local_io_error(
+                    "cannot create the local file",
+                    &error,
+                )));
+            }
+        }
+    }
+}
+
+/// Copy one remote file to `target` through a free `.part`; the `.part` is removed on any failure.
 async fn copy_file(
     sftp: &SftpSession,
     file: &RemoteFile,
@@ -150,13 +206,7 @@ async fn copy_file(
         .open(&file.remote)
         .await
         .map_err(|error| Outcome::Failed(map_sftp_error("open", &file.remote, &error)))?;
-    let part = format!("{}.part", target.display());
-    let mut dst = tokio::fs::OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .open(&part)
-        .await
-        .map_err(|error| Outcome::Failed(local_io_error("cannot create the local file", &error)))?;
+    let (part, mut dst) = reserve_part(target).await?;
     let copied = copy(
         &mut src,
         &mut dst,
@@ -202,6 +252,7 @@ async fn download_scanned(
             })?;
     }
     let start = Instant::now();
+    let last = Mutex::new(None);
     let mut offset: u64 = 0;
     for file in &found.files {
         let shifted = Cumulative {
@@ -209,6 +260,7 @@ async fn download_scanned(
             offset,
             total: found.bytes,
             start,
+            last: &last,
         };
         copy_file(sftp, file, &top.join(&file.relative), cancel, &shifted).await?;
         offset += file.size;

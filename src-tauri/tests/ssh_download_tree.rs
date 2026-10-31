@@ -9,6 +9,7 @@ use std::time::Duration;
 
 use russh_sftp::client::SftpSession;
 use support::{TestEnv, context, respond};
+use tokio::io::AsyncWriteExt;
 use tokio_util::sync::CancellationToken;
 use tunl_lib::prompts::PromptBroker;
 use tunl_lib::secrets::{SecretKind, SecretStore, SecretValue};
@@ -42,6 +43,13 @@ impl Events {
     fn all(&self) -> Vec<TransferEvent> {
         self.0.lock().unwrap().clone()
     }
+}
+
+/// Create a remote file with `bytes`. `SftpSession::write` only opens an existing file (no `CREATE`).
+async fn put(sftp: &SftpSession, path: &str, bytes: &[u8]) {
+    let mut file = sftp.create(path).await.unwrap();
+    file.write_all(bytes).await.unwrap();
+    file.shutdown().await.unwrap();
 }
 
 /// A link to the target, its SFTP session, and a remote tree:
@@ -85,12 +93,8 @@ async fn tree(env: &TestEnv, dir: &std::path::Path) -> (SshLink, SftpSession, St
     for folder in ["", "/photos", "/photos/sub", "/photos/empty"] {
         ops::mkdir(&sftp, &format!("{base}{folder}")).await.unwrap();
     }
-    sftp.write(format!("{base}/photos/a.txt"), b"aaa")
-        .await
-        .unwrap();
-    sftp.write(format!("{base}/photos/sub/b.txt"), b"bbbbb")
-        .await
-        .unwrap();
+    put(&sftp, &format!("{base}/photos/a.txt"), b"aaa").await;
+    put(&sftp, &format!("{base}/photos/sub/b.txt"), b"bbbbb").await;
     // OpenSSH reads SSH_FXP_SYMLINK's two paths in reverse: russh-sftp's `symlink` gets the target first.
     sftp.symlink("/etc/hostname", format!("{base}/photos/to-hostname"))
         .await
@@ -174,12 +178,12 @@ async fn a_cancelled_folder_download_leaves_no_part_file() {
     let env = TestEnv::load();
     let dir = tempfile::tempdir().unwrap();
     let (link, sftp, base) = tree(&env, dir.path()).await;
-    sftp.write(
-        format!("{base}/photos/big.bin"),
+    put(
+        &sftp,
+        &format!("{base}/photos/big.bin"),
         &vec![7u8; 8 * 1024 * 1024],
     )
-    .await
-    .unwrap();
+    .await;
     let local = tempfile::tempdir().unwrap();
 
     let cancel = CancellationToken::new();

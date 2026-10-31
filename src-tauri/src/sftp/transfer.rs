@@ -232,7 +232,7 @@ where
 /// Flush the local `.part` (tokio writes in the background), then rename it into place.
 pub(crate) async fn finish_local(
     dst: &mut tokio::fs::File,
-    part: &str,
+    part: &Path,
     target: &Path,
 ) -> io::Result<()> {
     dst.flush().await?;
@@ -277,7 +277,7 @@ pub async fn download(
     )
     .await
     {
-        Ok(()) => match finish_local(&mut dst, &part, &target).await {
+        Ok(()) => match finish_local(&mut dst, Path::new(&part), &target).await {
             Ok(()) => sink.event(TransferEvent::Done {
                 path: target.to_string_lossy().into_owned(),
             }),
