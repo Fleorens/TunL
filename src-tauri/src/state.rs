@@ -9,6 +9,7 @@ use crate::paths::AppPaths;
 use crate::prompts::PromptBroker;
 use crate::secrets::SecretStore;
 use crate::sessions::SessionRegistry;
+use crate::sftp::edit_registry::EditRegistry;
 use crate::sftp::{SftpRegistry, TransferRegistry};
 use crate::ssh::known_hosts::KnownHosts;
 use crate::store::{Store, load_settings, load_store, save_settings, save_store};
@@ -38,6 +39,8 @@ pub struct AppState {
     pub sftp: Arc<SftpRegistry>,
     /// The transfers in progress, with the token that cancels each one (T26).
     pub transfers: Arc<TransferRegistry>,
+    /// The remote-file edits in progress, by edit id (T57).
+    pub edits: Arc<EditRegistry>,
 }
 
 impl AppState {
@@ -87,6 +90,7 @@ impl AppState {
             sessions: Arc::new(SessionRegistry::new()),
             sftp: Arc::new(SftpRegistry::default()),
             transfers: Arc::new(TransferRegistry::default()),
+            edits: Arc::new(EditRegistry::default()),
         })
     }
 
@@ -107,6 +111,7 @@ impl AppState {
             sessions: Arc::new(SessionRegistry::new()),
             sftp: Arc::new(SftpRegistry::default()),
             transfers: Arc::new(TransferRegistry::default()),
+            edits: Arc::new(EditRegistry::default()),
         }
     }
 

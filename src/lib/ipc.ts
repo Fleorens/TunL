@@ -4,6 +4,7 @@ import type { AppInfo } from "@/bindings/AppInfo";
 import type { Connection } from "@/bindings/Connection";
 import type { ConnectionInput } from "@/bindings/ConnectionInput";
 import type { ConnectionTemplates } from "@/bindings/ConnectionTemplates";
+import type { EditEvent } from "@/bindings/EditEvent";
 import type { Group } from "@/bindings/Group";
 import type { GroupInput } from "@/bindings/GroupInput";
 import type { ImportPreview } from "@/bindings/ImportPreview";
@@ -68,6 +69,11 @@ function sessionChannels(callbacks: SessionCallbacks) {
 /** A transfer's events back to the UI: the callback for the mock, one `Channel` in Tauri. */
 function transferChannel(onEvent: (event: TransferEvent) => void) {
   return isMockBackend ? onEvent : new Channel<TransferEvent>(onEvent);
+}
+
+/** An edit's events back to the UI: the callback for the mock, one `Channel` in Tauri. */
+function editChannel(onEvent: (event: EditEvent) => void) {
+  return isMockBackend ? onEvent : new Channel<EditEvent>(onEvent);
 }
 
 /**
@@ -198,6 +204,23 @@ export const ipc = {
       onEvent: transferChannel(onEvent),
     }),
   transferCancel: (transferId: string) => call<void>("transfer_cancel", { transferId }),
+
+  // Edits (T57): open a remote file locally, then push each local save back in place. The steps come
+  // back through one `Channel` (built by `editChannel`), the callback itself with the mock.
+  sftpEdit: (
+    sessionId: string,
+    editId: string,
+    remotePath: string,
+    onEvent: (event: EditEvent) => void,
+  ) =>
+    call<void>("sftp_edit", {
+      sessionId,
+      editId,
+      remotePath,
+      onEvent: editChannel(onEvent),
+    }),
+  sftpEditResolve: (editId: string, overwrite: boolean) =>
+    call<void>("sftp_edit_resolve", { editId, overwrite }),
 
   // Prompts (T17): answer the question the backend posed, and forget a known host.
   promptAnswer: (id: string, answer: PromptAnswer) => call<void>("prompt_answer", { id, answer }),

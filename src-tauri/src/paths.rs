@@ -12,6 +12,10 @@ pub struct AppPaths {
     pub config_dir: PathBuf,
     pub data_dir: PathBuf,
     pub log_dir: PathBuf,
+    /// The private folder for remote-file edits (`<runtime_dir>/tunl/edit`), when a runtime directory
+    /// is available (T57). `None` refuses every edit (docs/06-securite.md, S9): never fall back to a
+    /// shared temp directory.
+    pub edit_dir: Option<PathBuf>,
 }
 
 impl AppPaths {
@@ -29,6 +33,7 @@ impl AppPaths {
                 .map_err(|e| unresolved("config", e))?,
             data_dir: resolver.app_data_dir().map_err(|e| unresolved("data", e))?,
             log_dir: resolver.app_log_dir().map_err(|e| unresolved("log", e))?,
+            edit_dir: edit_dir_in(resolver.runtime_dir().ok()),
         })
     }
 
@@ -38,6 +43,12 @@ impl AppPaths {
         }
         Ok(())
     }
+}
+
+/// TunL's own edit folder inside the user's runtime directory: never the runtime directory itself, which
+/// the app clears at start-up (T57).
+fn edit_dir_in(runtime_dir: Option<PathBuf>) -> Option<PathBuf> {
+    runtime_dir.map(|dir| dir.join("tunl").join("edit"))
 }
 
 /// Creates `dir` (and its parents) if needed, then forces mode 0700 on it (docs/06-securite.md, S9).
@@ -65,6 +76,15 @@ mod tests {
         ensure_private_dir(&dir).unwrap();
         assert!(dir.is_dir());
         assert_eq!(mode_of(&dir), 0o700);
+    }
+
+    #[test]
+    fn the_edit_dir_is_a_subfolder_of_the_runtime_dir() {
+        assert_eq!(
+            edit_dir_in(Some(PathBuf::from("/run/user/1000"))),
+            Some(PathBuf::from("/run/user/1000/tunl/edit"))
+        );
+        assert_eq!(edit_dir_in(None), None);
     }
 
     #[test]

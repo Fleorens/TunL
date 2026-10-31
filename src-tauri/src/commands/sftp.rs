@@ -67,6 +67,7 @@ pub async fn sftp_open(
     let sessions = state.sessions.clone();
     let prompts = state.prompts.clone();
     let sftp = state.sftp.clone();
+    let edits = state.edits.clone();
     let ctx = state.ssh_context();
     let sink: Arc<dyn SessionSink> = Arc::new(EventSink { on_event });
 
@@ -91,6 +92,8 @@ pub async fn sftp_open(
             .await;
         }
         sftp.remove(session_id);
+        // Cancel the tab's remote-file edits, clear their folders, and emit Closed (T57).
+        edits.close_session(session_id);
         sessions.remove(session_id);
         prompts.cancel_session(session_id);
     });

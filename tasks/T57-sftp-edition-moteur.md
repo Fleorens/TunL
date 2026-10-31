@@ -169,6 +169,7 @@ use std::time::Duration;
 
 use russh_sftp::client::SftpSession;
 use support::{TestEnv, context, respond};
+use tokio::io::AsyncWriteExt;
 use tokio_util::sync::CancellationToken;
 use tunl_lib::prompts::PromptBroker;
 use tunl_lib::secrets::{SecretKind, SecretStore, SecretValue};
@@ -220,7 +221,9 @@ async fn sftp(env: &TestEnv, dir: &std::path::Path) -> (SshLink, SftpSession, St
     let sftp = open_sftp(&link.target).await.unwrap();
     let base = format!("/tmp/tunl-edit-{}", Uuid::new_v4());
     ops::mkdir(&sftp, &base).await.unwrap();
-    sftp.write(format!("{base}/app.conf"), b"port = 80\n").await.unwrap();
+    let mut file = sftp.create(format!("{base}/app.conf")).await.unwrap();
+    file.write_all(b"port = 80\n").await.unwrap();
+    file.shutdown().await.unwrap();
     ops::chmod(&sftp, &format!("{base}/app.conf"), 0o640).await.unwrap();
     (link, sftp, base)
 }
@@ -331,6 +334,334 @@ fn edit_commands_accept_the_arguments_sent_by_ipc_ts() {
 }
 ```
 
+### `src-tauri/src/commands/ipc_tests.rs` (remplace la version de T12 : champ `edit_dir` d'AppPaths en plus)
+
+```rust
+//! Drives every command through Tauri's real IPC layer (`tauri::test`, `MockRuntime`), with **exactly** the
+//! argument objects that `src/lib/ipc.ts` sends. The browser mock cannot catch a mismatch between a JS key and
+//! a Rust parameter name: this test does. Any command added to `ipc.ts` gets a line here, or in an
+//! `ipc_<domain>_tests.rs` beside this file that reuses these `pub(crate)` helpers.
+use std::path::Path;
+
+use serde_json::{Value, json};
+use tauri::ipc::{CallbackFn, InvokeBody};
+use tauri::test::{
+    INVOKE_KEY, MockRuntime, get_ipc_response, mock_builder, mock_context, noop_assets,
+};
+use tauri::webview::InvokeRequest;
+use tauri::{Manager, WebviewWindow, WebviewWindowBuilder};
+
+use crate::paths::AppPaths;
+use crate::secrets::SecretStore;
+use crate::state::AppState;
+
+pub(crate) fn mock_app(dir: &Path) -> (tauri::App<MockRuntime>, WebviewWindow<MockRuntime>) {
+    let paths = AppPaths {
+        config_dir: dir.join("config"),
+        data_dir: dir.join("data"),
+        log_dir: dir.join("logs"),
+        edit_dir: None,
+    };
+    paths.ensure_created().unwrap();
+    let state = AppState::from_disk(&paths, 1_700_000_000_000, SecretStore::memory()).unwrap();
+    let app = mock_builder()
+        .invoke_handler(crate::invoke_handler())
+        .build(mock_context(noop_assets()))
+        .unwrap();
+    app.manage(state);
+    let webview = WebviewWindowBuilder::new(&app, "main", Default::default())
+        .build()
+        .unwrap();
+    (app, webview)
+}
+
+/// `invoke(cmd, args)` as the frontend does it; the error is the serialized `AppError` (or Tauri's own message).
+pub(crate) fn invoke(
+    webview: &WebviewWindow<MockRuntime>,
+    cmd: &str,
+    args: Value,
+) -> Result<Value, Value> {
+    get_ipc_response(
+        webview,
+        InvokeRequest {
+            cmd: cmd.into(),
+            callback: CallbackFn(0),
+            error: CallbackFn(1),
+            url: "tauri://localhost".parse().unwrap(),
+            body: InvokeBody::Json(args),
+            headers: Default::default(),
+            invoke_key: INVOKE_KEY.to_string(),
+        },
+    )
+    .map(|body| body.deserialize::<Value>().unwrap())
+}
+
+pub(crate) fn ok(webview: &WebviewWindow<MockRuntime>, cmd: &str, args: Value) -> Value {
+    invoke(webview, cmd, args).unwrap_or_else(|error| panic!("{cmd} failed: {error}"))
+}
+
+pub(crate) fn create_connection(webview: &WebviewWindow<MockRuntime>, name: &str) -> Value {
+    let templates = ok(webview, "connection_templates", json!({}));
+    let mut input = templates["ssh"].clone();
+    input["name"] = json!(name);
+    input["host"] = json!("10.0.0.1");
+    ok(webview, "connection_create", json!({ "input": input }))
+}
+
+#[test]
+fn every_command_accepts_the_arguments_sent_by_ipc_ts() {
+    let dir = tempfile::tempdir().unwrap();
+    let (_app, webview) = mock_app(dir.path());
+
+    ok(&webview, "app_info", json!({}));
+    ok(&webview, "store_load", json!({}));
+    let templates = ok(&webview, "connection_templates", json!({}));
+
+    let mut input = templates["ssh"].clone();
+    input["name"] = json!("web-01");
+    input["host"] = json!("10.0.0.1");
+    let created = ok(&webview, "connection_create", json!({ "input": input }));
+    let id = created["id"].clone();
+
+    input["name"] = json!("web-01b");
+    let updated = ok(
+        &webview,
+        "connection_update",
+        json!({ "id": id, "input": input }),
+    );
+    assert_eq!(updated["name"], "web-01b");
+    ok(
+        &webview,
+        "connection_set_favorite",
+        json!({ "id": id, "favorite": true }),
+    );
+    ok(&webview, "connection_touch", json!({ "id": id }));
+    let copy = ok(&webview, "connection_duplicate", json!({ "id": id }));
+    ok(&webview, "connection_delete", json!({ "id": copy["id"] }));
+
+    let group = ok(
+        &webview,
+        "group_create",
+        json!({ "input": { "name": "Prod", "color": null } }),
+    );
+    let group_id = group["id"].clone();
+    ok(
+        &webview,
+        "group_update",
+        json!({ "id": group_id, "input": { "name": "Production", "color": "teal" } }),
+    );
+    ok(&webview, "group_reorder", json!({ "ids": [group_id] }));
+    ok(&webview, "group_delete", json!({ "id": group_id }));
+
+    let settings = ok(&webview, "settings_get", json!({}));
+    ok(&webview, "settings_update", json!({ "settings": settings }));
+
+    ok(
+        &webview,
+        "secret_set",
+        json!({ "connectionId": id, "kind": "password", "value": "hunter2" }),
+    );
+    assert_eq!(
+        ok(
+            &webview,
+            "secret_has",
+            json!({ "connectionId": id, "kind": "password" })
+        ),
+        json!(true)
+    );
+    ok(
+        &webview,
+        "secret_delete",
+        json!({ "connectionId": id, "kind": "password" }),
+    );
+    assert_eq!(
+        ok(
+            &webview,
+            "secret_has",
+            json!({ "connectionId": id, "kind": "password" })
+        ),
+        json!(false)
+    );
+
+    let snapshot = ok(&webview, "store_load", json!({}));
+    assert_eq!(snapshot["connections"].as_array().unwrap().len(), 1);
+}
+
+#[test]
+fn a_backend_error_reaches_the_frontend_as_an_app_error() {
+    let dir = tempfile::tempdir().unwrap();
+    let (_app, webview) = mock_app(dir.path());
+    let error = invoke(
+        &webview,
+        "connection_delete",
+        json!({ "id": uuid::Uuid::new_v4() }),
+    )
+    .unwrap_err();
+    assert_eq!(error["kind"], "notFound");
+}
+
+#[test]
+fn secrets_follow_their_connection_and_never_reach_the_store() {
+    let dir = tempfile::tempdir().unwrap();
+    let (_app, webview) = mock_app(dir.path());
+    let id = create_connection(&webview, "db")["id"].clone();
+
+    let unknown = uuid::Uuid::new_v4();
+    let missing = invoke(
+        &webview,
+        "secret_set",
+        json!({ "connectionId": unknown, "kind": "password", "value": "x" }),
+    );
+    assert_eq!(missing.unwrap_err()["kind"], "notFound");
+    let empty = invoke(
+        &webview,
+        "secret_set",
+        json!({ "connectionId": id, "kind": "password", "value": "" }),
+    );
+    assert_eq!(empty.unwrap_err()["kind"], "validation");
+
+    ok(
+        &webview,
+        "secret_set",
+        json!({ "connectionId": id, "kind": "passphrase", "value": "hunter2" }),
+    );
+    let copy = ok(&webview, "connection_duplicate", json!({ "id": id }));
+    assert_eq!(
+        ok(
+            &webview,
+            "secret_has",
+            json!({ "connectionId": copy["id"], "kind": "passphrase" })
+        ),
+        json!(false)
+    );
+
+    let on_disk =
+        std::fs::read_to_string(dir.path().join("config").join("connections.json")).unwrap();
+    assert!(!on_disk.contains("hunter2"));
+    assert!(
+        !ok(&webview, "store_load", json!({}))
+            .to_string()
+            .contains("hunter2")
+    );
+
+    ok(&webview, "connection_delete", json!({ "id": id }));
+    assert_eq!(
+        ok(
+            &webview,
+            "secret_has",
+            json!({ "connectionId": id, "kind": "passphrase" })
+        ),
+        json!(false)
+    );
+}
+```
+### `src-tauri/src/reload_tests.rs` (remplace la version de T30b : champ `edit_dir` d'AppPaths en plus)
+
+```rust
+//! T30b: reloading the page ends what the old page was running (sessions, transfers, prompts).
+use std::sync::Arc;
+use std::time::Duration;
+
+use tokio::sync::mpsc;
+use tokio_util::sync::CancellationToken;
+use uuid::Uuid;
+
+use crate::error::ErrorKind;
+use crate::paths::AppPaths;
+use crate::prompts::{PromptBroker, PromptKind};
+use crate::secrets::SecretStore;
+use crate::sessions::{SessionHandle, SessionRegistry};
+use crate::sftp::TransferRegistry;
+use crate::state::AppState;
+
+fn handle() -> SessionHandle {
+    let (input, _receiver) = mpsc::unbounded_channel();
+    SessionHandle {
+        cancel: CancellationToken::new(),
+        input,
+    }
+}
+
+fn host_key() -> PromptKind {
+    PromptKind::HostKeyUnknown {
+        host: "db.internal".into(),
+        port: 22,
+        key_type: "ssh-ed25519".into(),
+        fingerprint: "SHA256:abc".into(),
+    }
+}
+
+#[test]
+fn close_all_cancels_and_forgets_every_session() {
+    let registry = SessionRegistry::new();
+    let (first, second) = (handle(), handle());
+    let tokens = [first.cancel.clone(), second.cancel.clone()];
+    registry.insert(Uuid::new_v4(), first).unwrap();
+    registry.insert(Uuid::new_v4(), second).unwrap();
+
+    assert_eq!(registry.close_all(), 2);
+    assert!(registry.is_empty());
+    assert!(tokens.iter().all(CancellationToken::is_cancelled));
+    assert_eq!(registry.close_all(), 0);
+}
+
+#[test]
+fn cancel_all_cancels_every_transfer() {
+    let transfers = TransferRegistry::default();
+    let tokens = [CancellationToken::new(), CancellationToken::new()];
+    for token in &tokens {
+        transfers.insert(Uuid::new_v4(), token.clone()).unwrap();
+    }
+    transfers.cancel_all();
+    assert!(tokens.iter().all(CancellationToken::is_cancelled));
+}
+
+#[tokio::test]
+async fn cancel_all_ends_every_pending_prompt_as_cancelled() {
+    let broker = Arc::new(PromptBroker::with_timeout(Duration::from_secs(5)));
+    broker.set_emitter(Box::new(|_| {}));
+    let asks: Vec<_> = [Some(Uuid::new_v4()), None]
+        .into_iter()
+        .map(|session| {
+            let broker = broker.clone();
+            tokio::spawn(async move { broker.ask(session, host_key()).await })
+        })
+        .collect();
+    for _ in 0..400 {
+        if broker.pending_count() == 2 {
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(5)).await;
+    }
+    assert_eq!(broker.pending_count(), 2);
+
+    broker.cancel_all();
+    for ask in asks {
+        assert_eq!(ask.await.unwrap().unwrap_err().kind, ErrorKind::Cancelled);
+    }
+    assert_eq!(broker.pending_count(), 0);
+}
+
+#[test]
+fn end_all_sessions_reports_how_many_were_open() {
+    let dir = tempfile::tempdir().unwrap();
+    let paths = AppPaths {
+        config_dir: dir.path().join("config"),
+        data_dir: dir.path().join("data"),
+        log_dir: dir.path().join("logs"),
+        edit_dir: None,
+    };
+    paths.ensure_created().unwrap();
+    let state = AppState::from_disk(&paths, 1_000, SecretStore::memory()).unwrap();
+    let session = handle();
+    let token = session.cancel.clone();
+    state.sessions.insert(Uuid::new_v4(), session).unwrap();
+
+    assert_eq!(state.end_all_sessions(), 1);
+    assert!(token.is_cancelled());
+    assert_eq!(state.end_all_sessions(), 0);
+}
+```
 ## Étapes
 
 1. Les tests : `node scripts/contract-tests.mjs T57`.
@@ -343,10 +674,10 @@ fn edit_commands_accept_the_arguments_sent_by_ipc_ts() {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T57 --check` affiche `OK` partout.
-- [ ] `grep -rn "/tmp" src-tauri/src/sftp/edit*.rs src-tauri/src/paths.rs` ne trouve rien.
-- [ ] `grep -n "sftp_edit" src-tauri/src/lib.rs` trouve les deux commandes.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T57 --check` affiche `OK` partout.
+- [x] `grep -rn "/tmp" src-tauri/src/sftp/edit*.rs src-tauri/src/paths.rs` ne trouve rien.
+- [x] `grep -n "sftp_edit" src-tauri/src/lib.rs` trouve les deux commandes.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 
 ## À regarder par Florian
 

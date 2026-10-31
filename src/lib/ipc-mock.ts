@@ -3,6 +3,7 @@ import type { AppInfo } from "@/bindings/AppInfo";
 import { connectionHandlers } from "./mock/connections";
 import type { Handler, MockState } from "./mock/data";
 import { freshState, TEMPLATES } from "./mock/data";
+import { editHandlers, resetMockEdits } from "./mock/edit";
 import { exchangeHandlers } from "./mock/exchange";
 import { groupHandlers } from "./mock/groups";
 import { importHandlers } from "./mock/import";
@@ -52,6 +53,7 @@ const HANDLERS: Record<string, Handler> = {
   connection_templates: (current) => ({ state: current, result: structuredClone(TEMPLATES) }),
   ...connectionHandlers,
   ...exchangeHandlers,
+  ...editHandlers,
   ...groupHandlers,
   ...importHandlers,
   ...probeHandlers,
@@ -86,6 +88,7 @@ export function resetMockBackend(): void {
   resetMockSessions();
   resetMockSftp();
   resetMockTransfers();
+  resetMockEdits();
   resetMockPrompts();
   resetMockWindow();
 }
