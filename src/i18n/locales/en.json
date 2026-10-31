@@ -37,6 +37,12 @@
       "titleBarOption": {
         "custom": "TunL",
         "native": "System"
+      },
+      "restoreTabs": "Reopen tabs at startup",
+      "restoreTabsOption": {
+        "never": "Never",
+        "ask": "Ask",
+        "always": "Always"
       }
     },
     "terminal": {
@@ -378,6 +384,9 @@
     "count_other": "{{count}} connections",
     "quickPlaceholder": "user@host[:port] — quick connect",
     "quickInvalid": "Enter an address like deploy@10.0.0.5:22",
+    "restoreTabs_one": "Reopen 1 tab",
+    "restoreTabs_other": "Reopen {{count}} tabs",
+    "restoreDismiss": "Dismiss",
     "favorites": "Favorites",
     "recent": "Recent",
     "hints": {

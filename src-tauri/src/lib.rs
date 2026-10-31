@@ -147,6 +147,8 @@ pub fn invoke_handler<R: tauri::Runtime>()
         commands::groups::group_reorder,
         commands::settings::settings_get,
         commands::settings::settings_update,
+        commands::tabs::tabs_load,
+        commands::tabs::tabs_save,
         commands::import::import_ssh_config_preview,
         commands::import::import_ssh_config_apply,
         commands::prompts::prompt_answer,

@@ -37,6 +37,12 @@
       "titleBarOption": {
         "custom": "TunL",
         "native": "Système"
+      },
+      "restoreTabs": "Rouvrir les onglets au démarrage",
+      "restoreTabsOption": {
+        "never": "Jamais",
+        "ask": "Demander",
+        "always": "Toujours"
       }
     },
     "terminal": {
@@ -380,6 +386,9 @@
     "count_other": "{{count}} connexions",
     "quickPlaceholder": "user@host[:port] — connexion rapide",
     "quickInvalid": "Saisissez une adresse comme deploy@10.0.0.5:22",
+    "restoreTabs_one": "Rouvrir 1 onglet",
+    "restoreTabs_other": "Rouvrir {{count}} onglets",
+    "restoreDismiss": "Ignorer",
     "favorites": "Favoris",
     "recent": "Récents",
     "hints": {

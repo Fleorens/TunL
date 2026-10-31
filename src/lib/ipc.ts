@@ -14,6 +14,7 @@ import type { ProbeResult } from "@/bindings/ProbeResult";
 import type { PromptAnswer } from "@/bindings/PromptAnswer";
 import type { RdpClient } from "@/bindings/RdpClient";
 import type { RemoteEntry } from "@/bindings/RemoteEntry";
+import type { SavedTab } from "@/bindings/SavedTab";
 import type { SecretKind } from "@/bindings/SecretKind";
 import type { SessionEvent } from "@/bindings/SessionEvent";
 import type { SessionTarget } from "@/bindings/SessionTarget";
@@ -110,6 +111,10 @@ export const ipc = {
   // Settings
   settingsGet: () => call<Settings>("settings_get"),
   settingsUpdate: (settings: Settings) => call<Settings>("settings_update", { settings }),
+
+  // Tabs (T60): the tabs of the last run, to offer reopening at startup, and the saved set.
+  tabsLoad: () => call<SavedTab[]>("tabs_load"),
+  tabsSave: (tabs: SavedTab[]) => call<void>("tabs_save", { tabs }),
 
   // Window (T35): drop (or keep) the decorations for the chosen title bar, and the window buttons.
   windowApplyTitleBar: (mode: TitleBarMode) =>

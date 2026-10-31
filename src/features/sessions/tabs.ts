@@ -35,3 +35,25 @@ export function neighbourTab(ids: readonly string[], removedId: string): string 
   if (index === -1) return null;
   return ids[index + 1] ?? ids[index - 1] ?? null;
 }
+
+/**
+ * `ids` with `id` moved to `toIndex` (clamped to the row, negatives from the end), a new array. An unknown
+ * `id` gives `ids` itself (the drag was already gone).
+ */
+export function moveTab(ids: readonly string[], id: string, toIndex: number): readonly string[] {
+  const from = ids.indexOf(id);
+  if (from === -1) return ids;
+  const without = ids.filter((_, index) => index !== from);
+  const to = Math.max(
+    0,
+    Math.min(toIndex < 0 ? toIndex + without.length : toIndex, without.length),
+  );
+  return [...without.slice(0, to), id, ...without.slice(to)];
+}
+
+/** The tabs after `id` in `ids` (none when `id` is unknown or last). */
+export function tabsRightOf(ids: readonly string[], id: string): string[] {
+  const index = ids.indexOf(id);
+  if (index === -1) return [];
+  return ids.slice(index + 1);
+}

@@ -15,6 +15,7 @@ import { secretHandlers } from "./mock/secrets";
 import { resetMockSessions, sessionHandlers } from "./mock/sessions";
 import { settingsHandlers } from "./mock/settings";
 import { resetMockSftp, sftpHandlers } from "./mock/sftp";
+import { resetMockTabs, tabsHandlers } from "./mock/tabs";
 import { resetMockTransfers, transferHandlers } from "./mock/transfers";
 import { resetMockWindow, windowHandlers } from "./mock/window";
 import { wolHandlers } from "./mock/wol";
@@ -64,6 +65,7 @@ const HANDLERS: Record<string, Handler> = {
   ...settingsHandlers,
   ...sessionHandlers,
   ...sftpHandlers,
+  ...tabsHandlers,
   ...transferHandlers,
   ...windowHandlers,
   ...wolHandlers,
@@ -87,6 +89,7 @@ export function resetMockBackend(): void {
   pendingFailure = null;
   resetMockSessions();
   resetMockSftp();
+  resetMockTabs();
   resetMockTransfers();
   resetMockEdits();
   resetMockPrompts();

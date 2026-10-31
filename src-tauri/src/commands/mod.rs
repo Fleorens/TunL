@@ -12,6 +12,7 @@ pub mod settings;
 pub mod sftp;
 pub mod ssh;
 pub mod store;
+pub mod tabs;
 pub mod transfer;
 pub mod wol;
 
@@ -19,6 +20,8 @@ pub mod wol;
 mod ipc_known_hosts_tests;
 #[cfg(test)]
 mod ipc_prompts_tests;
+#[cfg(test)]
+mod ipc_tabs_tests;
 
 #[cfg(test)]
 mod ipc_probe_tests;
