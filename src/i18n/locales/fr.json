@@ -681,10 +681,22 @@
       "newFolder": "Nouveau dossier",
       "delete": "Supprimer…",
       "download": "Télécharger",
+      "edit": "Modifier",
       "downloadMany_one": "Télécharger {{count}} élément",
       "downloadMany_other": "Télécharger {{count}} éléments",
       "deleteMany_one": "Supprimer {{count}} élément…",
       "deleteMany_other": "Supprimer {{count}} éléments…"
+    },
+    "edit": {
+      "opened": "{{name}} est ouvert : chaque enregistrement part sur le serveur",
+      "saved": "{{name}} enregistré sur le serveur",
+      "bigTitle": "Ouvrir un gros fichier ?",
+      "big": "{{name}} fait {{size}} : il sera téléchargé en entier avant de s'ouvrir.",
+      "open": "Ouvrir",
+      "conflictTitle": "{{name}} a changé sur le serveur",
+      "conflict": "Il a été modifié depuis son ouverture. Remplacer la version du serveur par la vôtre ?",
+      "keep": "Ne pas envoyer",
+      "replace": "Remplacer"
     },
     "transfers": {
       "title_one": "Transferts ({{count}})",

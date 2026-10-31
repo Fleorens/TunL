@@ -1,4 +1,4 @@
-// The explorer's actions on one entry: new folder, rename in place, copy the path, permissions, delete.
+// The explorer's actions on one entry: new folder, rename in place, copy the path, permissions, delete, edit.
 // The open dialog and the entry being renamed live here; every `ipc` call shows a translated toast on failure.
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -7,6 +7,7 @@ import { i18n } from "@/i18n";
 import { copyText } from "@/lib/clipboard";
 import { notifyError } from "@/lib/errors";
 import { ipc } from "@/lib/ipc";
+import { EDIT_WARN_BYTES, useEdits } from "./edits-store";
 import { isDownloadable, isValidName, joinPath } from "./sftp-model";
 import { useTransfers } from "./transfers-store";
 
@@ -15,6 +16,7 @@ export type EntryDialog =
   | { type: "newFolder" }
   | { type: "delete"; entries: RemoteEntry[]; count: number }
   | { type: "permissions"; entry: RemoteEntry }
+  | { type: "editLarge"; entry: RemoteEntry }
   | null;
 
 export type EntryActions = ReturnType<typeof useEntryActions>;
@@ -90,6 +92,28 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
     }
   };
 
+  // Edit a remote file in its application (T57b): over the warn size, confirm first with the large dialog,
+  // else start the edit at once. The store drives the rest (toasts, conflict dialog).
+  const edit = (entry: RemoteEntry): void => {
+    if (busy) return;
+    if (entry.size > EDIT_WARN_BYTES) {
+      setDialog({ type: "editLarge", entry });
+      return;
+    }
+    void startEdit(entry);
+  };
+
+  const startEdit = async (entry: RemoteEntry): Promise<void> => {
+    await useEdits.getState().edit(sessionId, entry);
+  };
+
+  // The large-file dialog's "Open": close it, then start the edit it was opened for.
+  const openLarge = async (): Promise<void> => {
+    if (dialog?.type !== "editLarge") return;
+    setDialog(null);
+    await startEdit(dialog.entry);
+  };
+
   const permissions = (entry: RemoteEntry): void => setDialog({ type: "permissions", entry });
 
   const chmod = async (entry: RemoteEntry, mode: number): Promise<void> => {
@@ -158,5 +182,7 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
     removeMany,
     download,
     downloadMany,
+    edit,
+    openLarge,
   };
 }

@@ -3,6 +3,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { RemoteEntry } from "@/bindings/RemoteEntry";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { Empty, EmptyTitle } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
@@ -10,13 +20,22 @@ import { notifyError } from "@/lib/errors";
 import { pickFiles, pickFolder } from "@/lib/files";
 import { ipc } from "@/lib/ipc";
 import { DeleteEntryDialog } from "./DeleteEntryDialog";
+import { EditConflictDialog } from "./EditConflictDialog";
 import { EntryMenu } from "./EntryMenu";
 import { EntryTable } from "./EntryTable";
+import { useEdits } from "./edits-store";
 import { NewFolderDialog } from "./NewFolderDialog";
 import { PermissionsDialog } from "./PermissionsDialog";
 import { SftpToolbar } from "./SftpToolbar";
 import { EMPTY_SELECTION, keepVisible, type Selection, selectOne } from "./selection-model";
-import { DEFAULT_SORT, isDownloadable, nextSort, parentPath, visibleEntries } from "./sftp-model";
+import {
+  DEFAULT_SORT,
+  formatSize,
+  isDownloadable,
+  nextSort,
+  parentPath,
+  visibleEntries,
+} from "./sftp-model";
 import { TransfersPanel } from "./TransfersPanel";
 import { useTransfers } from "./transfers-store";
 import { type EntryActions, useEntryActions } from "./use-entry-actions";
@@ -27,10 +46,12 @@ interface SftpExplorerProps {
   active: boolean;
 }
 
-/** The dialog open over the explorer, if any: a function, not a component, so it never remounts on a render. */
-function dialogFor(actions: EntryActions) {
+/** The dialog open over the explorer, if any: a hook, so it can translate; rendered inline, so it never remounts. */
+function useDialogFor(actions: EntryActions) {
+  const { t, i18n } = useTranslation();
   const { dialog } = actions;
   if (dialog === null) return null;
+  const locale = i18n.language;
   switch (dialog.type) {
     case "newFolder":
       return (
@@ -55,6 +76,28 @@ function dialogFor(actions: EntryActions) {
           onApply={(mode) => void actions.chmod(dialog.entry, mode)}
           onCancel={actions.closeDialog}
         />
+      );
+    case "editLarge":
+      return (
+        <AlertDialog open onOpenChange={(open) => !open && actions.closeDialog()}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("sftp.edit.bigTitle")}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("sftp.edit.big", {
+                  name: dialog.entry.name,
+                  size: formatSize(dialog.entry.size, locale),
+                })}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+              <AlertDialogAction onClick={actions.openLarge}>
+                {t("sftp.edit.open")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       );
   }
 }
@@ -165,6 +208,13 @@ export function SftpExplorer({ sessionId, active }: SftpExplorerProps) {
   // A link behaves like its target (T48): a link to a file downloads, a link to a folder navigates, a
   // broken link (no target) does nothing. A plain file downloads, a folder or an unknown entry navigates.
   const actions = useEntryActions(sessionId, path, (select) => navigate(path, select));
+  // The first edit in conflict on this tab, so the dialog mounts once and unmounts when it resolves or closes.
+  const conflict = useEdits((s) => {
+    for (const e of Object.values(s.edits)) {
+      if (e.sessionId === sessionId && e.status === "conflict") return e;
+    }
+    return null;
+  });
   const onOpen = (entry: RemoteEntry): void => {
     if (entry.kind === "symlink") {
       if (entry.targetKind === "file") actions.download(entry);
@@ -275,7 +325,14 @@ export function SftpExplorer({ sessionId, active }: SftpExplorerProps) {
         </div>
       )}
       <TransfersPanel sessionId={sessionId} />
-      {dialogFor(actions)}
+      {useDialogFor(actions)}
+      {conflict && (
+        <EditConflictDialog
+          name={conflict.name}
+          onKeep={() => void useEdits.getState().resolve(conflict.id, false)}
+          onReplace={() => void useEdits.getState().resolve(conflict.id, true)}
+        />
+      )}
     </div>
   );
 }
