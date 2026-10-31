@@ -653,9 +653,11 @@
     },
     "delete": {
       "title": "Supprimer « {{name}} » ?",
+      "titleMany": "Supprimer {{count}} éléments ?",
       "folder_one": "Ce dossier et son contenu seront supprimés : {{count}} élément en tout. Cette action est irréversible.",
       "folder_other": "Ce dossier et son contenu seront supprimés : {{count}} éléments en tout. Cette action est irréversible.",
       "file": "Cette action est irréversible.",
+      "many": "{{count}} éléments en tout seront supprimés. Cette action est irréversible.",
       "confirm": "Supprimer"
     },
     "permissions": {
@@ -677,7 +679,11 @@
       "permissions": "Droits…",
       "newFolder": "Nouveau dossier",
       "delete": "Supprimer…",
-      "download": "Télécharger"
+      "download": "Télécharger",
+      "downloadMany_one": "Télécharger {{count}} élément",
+      "downloadMany_other": "Télécharger {{count}} éléments",
+      "deleteMany_one": "Supprimer {{count}} élément…",
+      "deleteMany_other": "Supprimer {{count}} éléments…"
     },
     "transfers": {
       "title_one": "Transferts ({{count}})",

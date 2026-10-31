@@ -7,13 +7,13 @@ import { i18n } from "@/i18n";
 import { copyText } from "@/lib/clipboard";
 import { notifyError } from "@/lib/errors";
 import { ipc } from "@/lib/ipc";
-import { isValidName, joinPath } from "./sftp-model";
+import { isDownloadable, isValidName, joinPath } from "./sftp-model";
 import { useTransfers } from "./transfers-store";
 
 /** The dialog open over the explorer, if any. */
 export type EntryDialog =
   | { type: "newFolder" }
-  | { type: "delete"; entry: RemoteEntry; count: number }
+  | { type: "delete"; entries: RemoteEntry[]; count: number }
   | { type: "permissions"; entry: RemoteEntry }
   | null;
 
@@ -84,6 +84,12 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
     void useTransfers.getState().download(sessionId, entry);
   };
 
+  const downloadMany = (entries: RemoteEntry[]): void => {
+    for (const entry of entries) {
+      if (isDownloadable(entry)) download(entry);
+    }
+  };
+
   const permissions = (entry: RemoteEntry): void => setDialog({ type: "permissions", entry });
 
   const chmod = async (entry: RemoteEntry, mode: number): Promise<void> => {
@@ -97,31 +103,42 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
   };
 
   // The server counts what would go before the confirmation opens: never a delete without the number (S11).
-  const askDelete = async (entry: RemoteEntry): Promise<void> => {
+  const askDeleteMany = async (entries: RemoteEntry[]): Promise<void> => {
     if (busy) return;
+    if (entries.length === 0) return;
     setBusy(true);
     try {
-      const count = await ipc.sftpCount(sessionId, entry.path);
+      const count = await Promise.all(
+        entries.map((entry) => ipc.sftpCount(sessionId, entry.path)),
+      ).then((counts) => counts.reduce((sum, count) => sum + count, 0));
       confirming.current = true;
-      setDialog({ type: "delete", entry, count });
+      setDialog({ type: "delete", entries, count });
     } catch (error) {
       setBusy(false);
       notifyError(error);
     }
   };
 
-  const remove = async (entry: RemoteEntry): Promise<void> => {
+  const askDelete = (entry: RemoteEntry): Promise<void> => askDeleteMany([entry]);
+
+  const removeMany = async (entries: RemoteEntry[]): Promise<void> => {
     confirming.current = false;
     setDialog(null);
-    try {
-      await ipc.sftpRemove(sessionId, entry.path);
-      reload();
-    } catch (error) {
-      notifyError(error);
-    } finally {
-      setBusy(false);
+    setBusy(true);
+    // Remove one after the other, stop at the first error, reload whatever happened.
+    for (const entry of entries) {
+      try {
+        await ipc.sftpRemove(sessionId, entry.path);
+      } catch (error) {
+        notifyError(error);
+        break;
+      }
     }
+    reload();
+    setBusy(false);
   };
+
+  const remove = (entry: RemoteEntry): Promise<void> => removeMany([entry]);
 
   return {
     dialog,
@@ -136,7 +153,10 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
     permissions,
     chmod,
     askDelete,
+    askDeleteMany,
     remove,
+    removeMany,
     download,
+    downloadMany,
   };
 }

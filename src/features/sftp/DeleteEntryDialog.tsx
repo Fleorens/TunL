@@ -1,4 +1,5 @@
 // The delete confirmation: a folder says how many entries go with it, counted by the server beforehand (S11).
+// One entry keeps the T25b dialog; several show a single confirmation with the total counted first.
 import { useTranslation } from "react-i18next";
 import type { RemoteEntry } from "@/bindings/RemoteEntry";
 import {
@@ -13,14 +14,17 @@ import {
 } from "@/components/ui/alert-dialog";
 
 interface DeleteEntryDialogProps {
-  entry: RemoteEntry;
+  entries: readonly RemoteEntry[];
   count: number;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-export function DeleteEntryDialog({ entry, count, onConfirm, onCancel }: DeleteEntryDialogProps) {
+export function DeleteEntryDialog({ entries, count, onConfirm, onCancel }: DeleteEntryDialogProps) {
   const { t } = useTranslation();
+  if (entries.length === 0) return null;
+  const entry = entries[0];
+  const many = entries.length > 1;
   return (
     <AlertDialog
       open
@@ -30,9 +34,17 @@ export function DeleteEntryDialog({ entry, count, onConfirm, onCancel }: DeleteE
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{t("sftp.delete.title", { name: entry.name })}</AlertDialogTitle>
+          <AlertDialogTitle>
+            {many
+              ? t("sftp.delete.titleMany", { count: entries.length })
+              : t("sftp.delete.title", { name: entry.name })}
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            {entry.kind === "dir" ? t("sftp.delete.folder", { count }) : t("sftp.delete.file")}
+            {many
+              ? t("sftp.delete.many", { count })
+              : entry.kind === "dir"
+                ? t("sftp.delete.folder", { count })
+                : t("sftp.delete.file")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

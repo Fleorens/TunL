@@ -651,9 +651,11 @@
     },
     "delete": {
       "title": "Delete “{{name}}”?",
+      "titleMany": "Delete {{count}} items?",
       "folder_one": "This folder and its content will be deleted: {{count}} item in all. This cannot be undone.",
       "folder_other": "This folder and its content will be deleted: {{count}} items in all. This cannot be undone.",
       "file": "This cannot be undone.",
+      "many": "{{count}} items in all will be deleted. This cannot be undone.",
       "confirm": "Delete"
     },
     "permissions": {
@@ -675,7 +677,11 @@
       "permissions": "Permissions…",
       "newFolder": "New folder",
       "delete": "Delete…",
-      "download": "Download"
+      "download": "Download",
+      "downloadMany_one": "Download {{count}} item",
+      "downloadMany_other": "Download {{count}} items",
+      "deleteMany_one": "Delete {{count}} item…",
+      "deleteMany_other": "Delete {{count}} items…"
     },
     "transfers": {
       "title_one": "Transfers ({{count}})",
