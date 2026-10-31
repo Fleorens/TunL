@@ -26,6 +26,8 @@ export interface LiveSession {
   prompt: string;
   /** The line being typed, run when a `\r` is received. */
   line: string;
+  /** Set once the banner and prompt are printed: the shell can echo a line only then (T58). SFTP and RDP shells have none. */
+  ready?: boolean;
   cols: number;
   rows: number;
   /** Every scheduled timer, so closing a session cancels them all. */
@@ -72,7 +74,7 @@ export function scheduler(session: LiveSession) {
     await wait();
     if (sessions.has(session.id)) session.callbacks.onOutput(new TextEncoder().encode(text));
   };
-  return { event, output };
+  return { event, output, wait };
 }
 
 /** Turn a `SessionTarget` into what the mock connects to, throwing the same refusals as the backend. */
@@ -196,6 +198,10 @@ async function runSession(session: LiveSession, target: ResolvedTarget): Promise
   await event({ type: "connected" });
   await output(`Welcome to ${target.name} — TunL mock shell\r\n`);
   await output(session.prompt);
+  // The shell is ready to echo a line only once it has shown its banner and prompt. A `cd` the UI
+  // sends on `connected` (T58) arrives before them; `feed` waits for this flag so the line lands
+  // after the prompt, not between the banner and the prompt.
+  session.ready = true;
 }
 
 /** Run one line when a `\r` is received, then print the next prompt (unless the session closes). */
@@ -226,6 +232,9 @@ async function runLine(session: LiveSession, s: ReturnType<typeof scheduler>): P
 /** Feed typed characters: echo them, erase with backspace, run a line on Enter. */
 async function feed(session: LiveSession, input: string): Promise<void> {
   const s = scheduler(session);
+  // A `cd` the UI sends on `connected` (T58) arrives before the shell prints its banner and prompt;
+  // wait until ready so the line echoes after the prompt, not in between.
+  while (!session.ready) await s.wait();
   for (const ch of input) {
     if (ch === "\r") {
       await runLine(session, s);
@@ -268,6 +277,7 @@ function open(
     callbacks: { onEvent, onOutput },
     prompt: `${resolved.user}@${resolved.host}:~$ `,
     line: "",
+    ready: false,
     cols,
     rows,
     timers: [],

@@ -22,6 +22,7 @@ import {
   removeSessionPort,
   sendSessionSize,
 } from "./session-ports";
+import { cdCommand } from "./shell-quote";
 import { neighbourTab, relativeTab, SETTINGS_TAB, tabIds } from "./tabs";
 
 const DEFAULT_SIZE: TerminalSize = { cols: 80, rows: 24 };
@@ -33,8 +34,15 @@ interface SessionsState {
   closing: string | null;
   /** The Settings tab is open (a virtual tab, never a session id). */
   settingsOpen: boolean;
+  /** The folder a freshly opened SSH tab should `cd` into, keyed by tab id, removed on close. */
+  startDirs: Record<string, string>;
   /** Open a tab on a target, make it active, and start the attempt. Returns the tab id. */
-  open: (target: SessionTarget, name: string, kind?: SessionKind) => string;
+  open: (
+    target: SessionTarget,
+    name: string,
+    kind?: SessionKind,
+    options?: { dir?: string },
+  ) => string;
   activate: (id: string) => void;
   /** Alt+1…8, Alt+9 = last. */
   activateIndex: (index: number) => void;
@@ -57,18 +65,22 @@ export const useSessions = create<SessionsState>()((set, get) => ({
   activeId: null,
   closing: null,
   settingsOpen: false,
+  startDirs: {},
 
-  open(target, name, kind = "ssh") {
+  open(target, name, kind = "ssh", options) {
     const id = crypto.randomUUID();
     const title = uniqueTitle(
       name,
       get().sessions.map((session) => session.title),
     );
+    // A folder to land in lives on the store, not on the `Session` (its shape is fixed by its test).
+    const startDir = kind === "ssh" && options?.dir ? options.dir : undefined;
     // An SFTP tab has no terminal port; only SSH registers one.
     if (kind === "ssh") registerSessionPort(id);
     set((state) => ({
       sessions: [...state.sessions, newSession(id, title, target, kind)],
       activeId: id,
+      ...(startDir ? { startDirs: { ...state.startDirs, [id]: startDir } } : {}),
     }));
     start(id, id);
     return id;
@@ -142,9 +154,13 @@ export const useSessions = create<SessionsState>()((set, get) => ({
     removeSessionPort(id);
     set((state) => {
       const remaining = state.sessions.filter((s) => s.id !== id);
-      if (state.activeId !== id) return { sessions: remaining };
+      const startDirs = Object.fromEntries(
+        Object.entries(state.startDirs).filter(([key]) => key !== id),
+      );
+      if (state.activeId !== id) return { sessions: remaining, startDirs };
       return {
         sessions: remaining,
+        startDirs,
         activeId: neighbourTab(tabIds(state.sessions, state.settingsOpen), id) ?? null,
       };
     });
@@ -188,6 +204,11 @@ function start(id: string, runId: string): void {
     if (event.type === "connected") {
       // An SFTP tab has no terminal to size; only SSH does.
       if (session.kind === "ssh") sendSessionSize(id);
+      // A folder kept for this tab goes out on every connect, so a reconnect lands in it again.
+      const startDir = useSessions.getState().startDirs[id];
+      if (session.kind === "ssh" && startDir) {
+        getSessionPort(id)?.port.write(cdCommand(startDir));
+      }
       if (current.connectionId) void useConnections.getState().touch(current.connectionId);
     }
   };

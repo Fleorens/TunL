@@ -248,6 +248,10 @@
     "close": "Fermer {{name}}",
     "closeSettings": "Fermer les paramètres"
   },
+  "tabMenu": {
+    "openSftp": "Ouvrir en SFTP",
+    "close": "Fermer l'onglet"
+  },
   "sessions": {
     "connecting": "Connexion à {{name}}…",
     "steps": {
@@ -442,6 +446,7 @@
     "quickPlaceholder": "user@host[:port]",
     "groups": {
       "connections": "Connexions",
+      "tab": "Onglet actif",
       "quickConnect": "Connexion rapide",
       "actions": "Actions"
     },
@@ -632,6 +637,7 @@
     "files": "Fichiers",
     "up": "Dossier parent",
     "refresh": "Actualiser",
+    "openTerminal": "Ouvrir un terminal ici",
     "working": "En cours…",
     "upload": "Envoyer des fichiers",
     "uploadFolder": "Envoyer un dossier",

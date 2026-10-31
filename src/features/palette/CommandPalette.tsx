@@ -1,4 +1,4 @@
-import { Save } from "lucide-react";
+import { FolderTree, Save } from "lucide-react";
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ProtocolIcon } from "@/components/ProtocolIcon";
@@ -13,7 +13,7 @@ import {
   CommandList,
   CommandShortcut,
 } from "@/components/ui/command";
-import { filterConnections } from "@/features/connections/filter";
+import { filterConnections, normalizeForSearch } from "@/features/connections/filter";
 import { openImport } from "@/features/connections/open-import";
 import { compareNames } from "@/features/connections/sections";
 import { useConnections } from "@/features/connections/store";
@@ -28,7 +28,7 @@ import {
   parseQuickConnect,
   type QuickTarget,
 } from "@/features/palette/quick-connect";
-import { openQuickSession, openSession } from "@/features/sessions/open-session";
+import { openQuickSession, openSession, openSftpFrom } from "@/features/sessions/open-session";
 import { useSessions } from "@/features/sessions/store";
 import { useSettings } from "@/features/settings/store";
 import { SHORTCUTS, type ShortcutId } from "@/features/shell/shortcuts";
@@ -38,6 +38,7 @@ import { notifyError } from "@/lib/errors";
 /** Unique cmdk values, so the highlighted one can be matched back to what it opened. */
 const QUICK_CONNECT = "quick-connect";
 const SAVE = "save";
+const TAB_SFTP = "tab-open-sftp";
 const actionValue = (id: PaletteActionId) => `action:${id}`;
 
 export function CommandPalette() {
@@ -69,6 +70,19 @@ export function CommandPalette() {
   const quickTarget = useMemo(() => parseQuickConnect(search), [search]);
   const actionIds = useMemo(() => filterActions(labels, search), [labels, search]);
 
+  // "Open in SFTP" for the active terminal tab: shown only when the active tab is SSH, and filtered like the
+  // actions. It is not an action (not in `PALETTE_ACTIONS`), so it lives in its own group.
+  const activeSession = useSessions((s) => s.sessions.find((x) => x.id === s.activeId));
+  const tabAction = useMemo(() => {
+    if (activeSession?.kind !== "ssh") return null;
+    const label = t("tabMenu.openSftp");
+    const terms = normalizeForSearch(search).split(/\s+/).filter(Boolean);
+    if (terms.length === 0 || terms.every((term) => normalizeForSearch(label).includes(term))) {
+      return label;
+    }
+    return null;
+  }, [activeSession, search, t]);
+
   // The first visible item, so the highlight can reset to it whenever the list changes. An RDP target has no
   // « RDP to … » row, so its first row is « Save as a new connection… ».
   const firstValue = useMemo(() => {
@@ -77,9 +91,10 @@ export function CommandPalette() {
       return quickTarget.protocol === "rdp" ? SAVE : QUICK_CONNECT;
     }
     if (matched.length > 0) return matched[0].id;
+    if (tabAction) return TAB_SFTP;
     if (quickTarget) return quickTarget.protocol === "rdp" ? SAVE : QUICK_CONNECT;
     return actionIds.length > 0 ? actionValue(actionIds[0]) : "";
-  }, [mode, quickTarget, matched, actionIds]);
+  }, [mode, quickTarget, matched, actionIds, tabAction]);
 
   // Reset the search each time the palette opens: a mode switch or a reopen.
   const prevMode = useRef<PaletteMode | null>(null);
@@ -160,6 +175,21 @@ export function CommandPalette() {
                       </span>
                     </CommandItem>
                   ))}
+                </CommandGroup>
+              )}
+
+              {tabAction && (
+                <CommandGroup heading={t("palette.groups.tab")}>
+                  <CommandItem
+                    value={TAB_SFTP}
+                    onSelect={() => {
+                      closePalette();
+                      if (activeSession) openSftpFrom(activeSession);
+                    }}
+                  >
+                    <FolderTree className="size-4" />
+                    <span className="flex-1 truncate">{tabAction}</span>
+                  </CommandItem>
                 </CommandGroup>
               )}
 
