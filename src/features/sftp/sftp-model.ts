@@ -127,11 +127,11 @@ export function joinPath(dir: string, name: string): string {
 }
 
 /**
- * A link behaves like its target (T48): a link to a file downloads, a link to a folder navigates, a broken link does
- * nothing. A plain file downloads, a folder or an unknown entry navigates.
+ * What the menu can download. A link behaves like its target (T48): a link to a file downloads, a link to a folder or a
+ * broken link does not. A file, an unknown entry, or a folder (whole, T55) downloads.
  */
 export function isDownloadable(entry: RemoteEntry): boolean {
-  if (entry.kind === "file" || entry.kind === "other") return true;
+  if (entry.kind === "file" || entry.kind === "other" || entry.kind === "dir") return true;
   return entry.kind === "symlink" && entry.targetKind === "file";
 }
 

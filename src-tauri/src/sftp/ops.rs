@@ -257,28 +257,38 @@ pub async fn remove(sftp: &SftpSession, path: &str) -> AppResult<()> {
     Ok(())
 }
 
-/// Whether a `read_dir` entry is a directory: its own attributes when the server reports them (so no extra
-/// `stat`, docs/01 review), otherwise symlink_metadata as a fallback.
+/// A `read_dir` entry's attributes: its own when the server reports them (so no extra `stat`, docs/01
+/// review), otherwise symlink_metadata as a fallback (a link keeps its own type).
+pub async fn entry_metadata(
+    sftp: &SftpSession,
+    entry: &DirEntry,
+    path: &str,
+    op: &str,
+) -> AppResult<Metadata> {
+    let own = entry.metadata();
+    if own.permissions.is_some() {
+        return Ok(own);
+    }
+    sftp.symlink_metadata(path)
+        .await
+        .map_err(|error| map_sftp_error(op, path, &error))
+}
+
+/// Whether a `read_dir` entry is a directory, from `entry_metadata`.
 async fn entry_is_dir(
     sftp: &SftpSession,
     entry: &DirEntry,
     path: &str,
     op: &str,
 ) -> AppResult<bool> {
-    let file_type = if entry.metadata().permissions.is_some() {
-        entry.metadata().file_type()
-    } else {
-        let meta = sftp
-            .symlink_metadata(path)
-            .await
-            .map_err(|error| map_sftp_error(op, path, &error))?;
-        meta.file_type()
-    };
-    Ok(file_type.is_dir())
+    Ok(entry_metadata(sftp, entry, path, op)
+        .await?
+        .file_type()
+        .is_dir())
 }
 
 /// Whether `path` is a directory (lstat: a link to a directory is not one).
-async fn is_dir(sftp: &SftpSession, path: &str) -> AppResult<bool> {
+pub async fn is_dir(sftp: &SftpSession, path: &str) -> AppResult<bool> {
     let meta = sftp
         .symlink_metadata(path)
         .await

@@ -48,6 +48,12 @@ pub enum TransferEvent {
         error: AppError,
     },
     Cancelled,
+    /// What a folder transfer will copy, sent once after the scan, before the first byte (T55).
+    Counted {
+        files: u32,
+        bytes: u64,
+        skipped: u32,
+    },
 }
 
 /// Something that receives a transfer's events (the UI, or a test).
@@ -56,7 +62,7 @@ pub trait TransferSink: Send + Sync {
 }
 
 /// The outcome of the copy: cancelled by the token, or failed with an error.
-enum Outcome {
+pub(crate) enum Outcome {
     Cancelled,
     Failed(AppError),
 }
@@ -127,7 +133,7 @@ async fn open_remote(
 }
 
 /// The base name of a remote path: its last segment (a trailing "/" gives "").
-fn remote_base_name(remote: &str) -> &str {
+pub(crate) fn remote_base_name(remote: &str) -> &str {
     remote.rsplit('/').next().unwrap_or("")
 }
 
@@ -140,13 +146,18 @@ fn local_base_name(local: &Path) -> &str {
 }
 
 /// A local `io::Error` into an `Io` `AppError`, logging the system error (S8: no file content).
-fn local_io_error(message: &str, error: &io::Error) -> AppError {
+pub(crate) fn local_io_error(message: &str, error: &io::Error) -> AppError {
     log::warn!("{message}: {error}");
     AppError::new(ErrorKind::Io, message)
 }
 
 /// One `Progress` event, `bytes_per_sec` derived from the elapsed time.
-fn emit_progress(sink: &dyn TransferSink, transferred: u64, total: Option<u64>, elapsed: Duration) {
+pub(crate) fn emit_progress(
+    sink: &dyn TransferSink,
+    transferred: u64,
+    total: Option<u64>,
+    elapsed: Duration,
+) {
     let bytes_per_sec = if elapsed.as_secs_f64() > 0.0 {
         (transferred as f64 / elapsed.as_secs_f64()) as u64
     } else {
@@ -160,7 +171,7 @@ fn emit_progress(sink: &dyn TransferSink, transferred: u64, total: Option<u64>, 
 }
 
 /// The single final event, emitted last, from the copy's outcome.
-fn emit_final(sink: &dyn TransferSink, outcome: Outcome) {
+pub(crate) fn emit_final(sink: &dyn TransferSink, outcome: Outcome) {
     match outcome {
         Outcome::Cancelled => sink.event(TransferEvent::Cancelled),
         Outcome::Failed(error) => sink.event(TransferEvent::Failed { error }),
@@ -171,7 +182,7 @@ fn emit_final(sink: &dyn TransferSink, outcome: Outcome) {
 ///
 /// A `Progress` is emitted at most every `PROGRESS_INTERVAL`, plus one final (transferred == total).
 /// `read_err` / `write_err` map the local `io::Error` of each side into an `AppError`.
-async fn copy<R, W>(
+pub(crate) async fn copy<R, W>(
     src: &mut R,
     dst: &mut W,
     total: Option<u64>,
@@ -219,7 +230,11 @@ where
 }
 
 /// Flush the local `.part` (tokio writes in the background), then rename it into place.
-async fn finish_local(dst: &mut tokio::fs::File, part: &str, target: &Path) -> io::Result<()> {
+pub(crate) async fn finish_local(
+    dst: &mut tokio::fs::File,
+    part: &Path,
+    target: &Path,
+) -> io::Result<()> {
     dst.flush().await?;
     tokio::fs::rename(part, target).await
 }
@@ -262,7 +277,7 @@ pub async fn download(
     )
     .await
     {
-        Ok(()) => match finish_local(&mut dst, &part, &target).await {
+        Ok(()) => match finish_local(&mut dst, Path::new(&part), &target).await {
             Ok(()) => sink.event(TransferEvent::Done {
                 path: target.to_string_lossy().into_owned(),
             }),

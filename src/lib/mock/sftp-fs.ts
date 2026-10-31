@@ -188,6 +188,14 @@ export function count(fs: MockFs, path: string): number {
   return [...fs.keys()].filter((entry) => within(entry, target)).length;
 }
 
+/** The nodes under the directory `path`, itself left out (a folder download, T55). */
+export function under(fs: MockFs, path: string): MockNode[] {
+  const target = normalize(path);
+  return [...fs]
+    .filter(([entry]) => entry !== target && within(entry, target))
+    .map(([, node]) => node);
+}
+
 /** Remove `path` and everything under it; the root is refused. */
 export function remove(fs: MockFs, path: string): MockFs {
   validatePath("path", path);

@@ -120,6 +120,11 @@ export function mockRemoteNode(sessionId: string, path: string): sftpFs.MockNode
   }
 }
 
+/** The nodes under a remote directory, for a folder download (T55). */
+export function mockRemoteTree(sessionId: string, path: string): sftpFs.MockNode[] {
+  return sftpFs.under(fs, sftpFs.realpath(fs, path, homeOf(sessionId)));
+}
+
 /** The names of a remote directory's entries, for choosing a free destination name. */
 export function mockRemoteNames(sessionId: string, dir: string): string[] {
   homeOf(sessionId);

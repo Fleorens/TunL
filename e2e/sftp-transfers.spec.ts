@@ -32,9 +32,10 @@ test("double-clicking a file downloads it; the panel says when it is done", asyn
   await expectSaneUi(page);
 });
 
-test("a folder has no Download in its menu; a file has", async ({ page }) => {
+// T55: a folder downloads whole, so its menu offers Download too.
+test("a folder and a file both have Download in their menu", async ({ page }) => {
   await row(page, "projects").click({ button: "right" });
-  await expect(page.getByRole("menu").getByRole("menuitem", { name: "Download" })).toHaveCount(0);
+  await expect(page.getByRole("menu").getByRole("menuitem", { name: "Download" })).toHaveCount(1);
   await page.keyboard.press("Escape");
   await row(page, "notes.txt").click({ button: "right" });
   await page.getByRole("menu").getByRole("menuitem", { name: "Download" }).click();

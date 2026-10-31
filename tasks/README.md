@@ -196,7 +196,7 @@ Périmètre et décisions : `docs/10-fonctions-a-venir.md`.
 | Fiche | Titre | Dépend de | Risque | Repli | Statut |
 |---|---|---|---|---|---|
 | T54 | SFTP : sélection multiple, téléchargement et suppression en lot | T53 | moyen | Sonnet 5 · medium | livrée |
-| T55 | SFTP : téléchargement récursif d'un dossier | T54 | moyen | Opus 5 · high | prête |
+| T55 | SFTP : téléchargement récursif d'un dossier | T54 | moyen | Opus 5 · high | livrée |
 | T56 | SFTP : envoi récursif d'un dossier | T55 | moyen | Opus 5 · high | prête |
 | T57 | SFTP : éditer un fichier distant — moteur (dossier privé, surveillance, renvoi, conflit) | T56 | **élevé** | Opus 5 · high | prête |
 | T57b | SFTP : éditer un fichier distant — interface | T57 | moyen | Sonnet 5 · medium | prête |

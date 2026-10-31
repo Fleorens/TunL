@@ -22,6 +22,10 @@ export interface Transfer {
   error: AppError | null;
   /** Where the file ended up, once the transfer is done. */
   path: string | null;
+  /** How many files a folder transfer copies, once counted; `null` for a single file (T55). */
+  files: number | null;
+  /** How many links (or other entries) a folder transfer skipped. */
+  skipped: number;
 }
 
 /** A brand-new transfer, running, with nothing transferred yet. */
@@ -42,6 +46,8 @@ export function newTransfer(
     status: "running",
     error: null,
     path: null,
+    files: null,
+    skipped: 0,
   };
 }
 
@@ -69,6 +75,8 @@ export function applyTransferEvent(t: Transfer, event: TransferEvent): Transfer 
       return { ...t, status: "failed", error: event.error };
     case "cancelled":
       return { ...t, status: "cancelled" };
+    case "counted":
+      return { ...t, files: event.files, skipped: event.skipped, total: event.bytes };
   }
 }
 

@@ -696,7 +696,11 @@
       "folder": "Les dossiers ne peuvent pas encore être envoyés",
       "cancelled": "Annulé",
       "cancel": "Annuler {{name}}",
-      "reveal": "Afficher dans le dossier de {{name}}"
+      "reveal": "Afficher dans le dossier de {{name}}",
+      "files_one": "1 fichier",
+      "files_other": "{{count}} fichiers",
+      "skipped_one": "1 lien ignoré",
+      "skipped_other": "{{count}} liens ignorés"
     }
   },
   "rdp": {
