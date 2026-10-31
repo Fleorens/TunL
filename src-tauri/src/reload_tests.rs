@@ -89,6 +89,7 @@ fn end_all_sessions_reports_how_many_were_open() {
         config_dir: dir.path().join("config"),
         data_dir: dir.path().join("data"),
         log_dir: dir.path().join("logs"),
+        edit_dir: None,
     };
     paths.ensure_created().unwrap();
     let state = AppState::from_disk(&paths, 1_000, SecretStore::memory()).unwrap();

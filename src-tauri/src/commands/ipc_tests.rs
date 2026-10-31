@@ -21,6 +21,7 @@ pub(crate) fn mock_app(dir: &Path) -> (tauri::App<MockRuntime>, WebviewWindow<Mo
         config_dir: dir.join("config"),
         data_dir: dir.join("data"),
         log_dir: dir.join("logs"),
+        edit_dir: None,
     };
     paths.ensure_created().unwrap();
     let state = AppState::from_disk(&paths, 1_700_000_000_000, SecretStore::memory()).unwrap();

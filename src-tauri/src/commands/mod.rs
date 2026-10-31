@@ -1,5 +1,6 @@
 pub mod app;
 pub mod connections;
+pub mod edit;
 pub mod exchange;
 pub mod groups;
 pub mod import;
@@ -51,3 +52,6 @@ mod ipc_window_tests;
 
 #[cfg(test)]
 mod ipc_ack_tests;
+
+#[cfg(test)]
+mod ipc_edit_tests;

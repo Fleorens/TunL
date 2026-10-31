@@ -64,6 +64,12 @@ pub fn run() {
         .setup(|app| {
             let paths = AppPaths::resolve(app.handle())?;
             paths.ensure_created()?;
+            // Clear the private edit folder left by a crashed session (T57). A missing one is nothing to clear.
+            if let Some(edit_dir) = &paths.edit_dir
+                && let Err(error) = crate::sftp::edit::clear_edits(edit_dir)
+            {
+                log::warn!("could not clear the edit folder: {error}");
+            }
             log::info!(
                 "TunL {} starting (config: {})",
                 app.package_info().version,
@@ -163,6 +169,8 @@ pub fn invoke_handler<R: tauri::Runtime>()
         commands::transfer::sftp_download,
         commands::transfer::sftp_upload,
         commands::transfer::transfer_cancel,
+        commands::edit::sftp_edit,
+        commands::edit::sftp_edit_resolve,
         commands::secrets::secret_set,
         commands::secrets::secret_has,
         commands::secrets::secret_delete,

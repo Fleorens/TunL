@@ -12,6 +12,10 @@ pub struct AppPaths {
     pub config_dir: PathBuf,
     pub data_dir: PathBuf,
     pub log_dir: PathBuf,
+    /// The private folder for remote-file edits (`<runtime_dir>/tunl/edit`), when a runtime directory
+    /// is available (T57). `None` refuses every edit (docs/06-securite.md, S9): never fall back to a
+    /// shared temp directory.
+    pub edit_dir: Option<PathBuf>,
 }
 
 impl AppPaths {
@@ -29,6 +33,7 @@ impl AppPaths {
                 .map_err(|e| unresolved("config", e))?,
             data_dir: resolver.app_data_dir().map_err(|e| unresolved("data", e))?,
             log_dir: resolver.app_log_dir().map_err(|e| unresolved("log", e))?,
+            edit_dir: resolver.runtime_dir().ok(),
         })
     }
 

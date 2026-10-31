@@ -13,6 +13,8 @@ use uuid::Uuid;
 
 use crate::error::{AppError, AppResult};
 
+pub mod edit;
+pub mod edit_registry;
 pub mod ops;
 pub mod progress;
 pub mod session;
