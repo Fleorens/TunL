@@ -127,6 +127,10 @@ pub async fn fetch(
         |error| local_io_error("the edit broke off", &error),
     )
     .await?;
+    // The last write must be on disk before the application opens the copy.
+    dst.flush()
+        .await
+        .map_err(|error| local_io_error("the edit broke off", &error))?;
 
     Ok((local, stamp))
 }
@@ -146,19 +150,17 @@ pub async fn push(
             return Err(PushError::Conflict);
         }
     }
+    // The local file first: one that cannot be read leaves the remote file untouched.
+    let unreadable =
+        |error: io::Error| PushError::Failed(local_io_error("cannot read the local file", &error));
+    let mut src = tokio::fs::File::open(local).await.map_err(unreadable)?;
+    let size = src.metadata().await.map_err(unreadable)?.len();
     // In place: open the existing file with WRITE | TRUNCATE (no CREATE). A file deleted meanwhile fails
     // to open, not recreated (decision D17).
     let mut file = sftp
         .open_with_flags(remote, OpenFlags::WRITE | OpenFlags::TRUNCATE)
         .await
         .map_err(|error| PushError::Failed(map_sftp_error("open", remote, &error)))?;
-    let size = tokio::fs::metadata(local)
-        .await
-        .map_err(|error| PushError::Failed(local_io_error("cannot read the local file", &error)))?
-        .len();
-    let mut src = tokio::fs::File::open(local)
-        .await
-        .map_err(|error| PushError::Failed(local_io_error("cannot read the local file", &error)))?;
 
     move_file(
         &mut src,

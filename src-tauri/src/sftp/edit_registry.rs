@@ -145,8 +145,8 @@ pub struct LocalStamp {
 }
 
 /// The local file's stamp, or `None` when it cannot be read (deleted, or never written).
-pub fn local_stamp(local: &Path) -> Option<LocalStamp> {
-    let metadata = std::fs::metadata(local).ok()?;
+pub async fn local_stamp(local: &Path) -> Option<LocalStamp> {
+    let metadata = tokio::fs::metadata(local).await.ok()?;
     let mtime = metadata
         .modified()
         .ok()?
@@ -165,7 +165,7 @@ pub const EDIT_POLL: std::time::Duration = std::time::Duration::from_secs(1);
 /// Watch one edit for local saves, and push them to the remote file (T57).
 ///
 /// The local file is polled every `EDIT_POLL`; a change is pushed when it is stable over two polls and
-/// differs from the last one sent (an editor that writes in several places pushes once). A remote
+/// differs from the last one handled (an editor that writes in several places pushes once). A remote
 /// conflict stops the task on `resolve_rx` until `sftp_edit_resolve` answers.
 pub async fn run_edit_watch(
     sftp: Arc<SftpSession>,
@@ -177,56 +177,92 @@ pub async fn run_edit_watch(
     sink: &dyn EditSink,
 ) {
     let mut poll = tokio::time::interval(EDIT_POLL);
-    let mut last: Option<LocalStamp> = None;
-    // `expected` is the remote stamp checked for a conflict before each push; `last_sent` is the local
-    // stamp of the last push, so an unchanged local file is not pushed again.
+    // The copy just downloaded is the starting point: only a later save is pushed.
+    let mut last = local_stamp(local).await;
+    // `expected` is the remote stamp checked for a conflict before each push; `last_handled` is the local
+    // stamp of the last save handled, so an unchanged local file is not pushed again.
     let mut expected = expected;
-    let mut last_sent: Option<LocalStamp> = None;
+    let mut last_handled = last;
     loop {
         poll.tick().await;
         if cancel.is_cancelled() {
             break;
         }
-        let Some(current) = local_stamp(local) else {
+        let Some(current) = local_stamp(local).await else {
             last = None;
             continue;
         };
-        // Push only when the value is stable over two polls and differs from the last one sent.
-        let stable_change = match last {
-            Some(prev) => current == prev && Some(current) != last_sent,
-            None => false,
-        };
+        // Push only when the value is stable over two polls and differs from the last one handled.
+        let stable_change = last == Some(current) && last_handled != Some(current);
         last = Some(current);
         if !stable_change {
             continue;
         }
+        // This save is handled whatever the outcome: after a failure or a refused overwrite, the task waits
+        // for the next save instead of pushing again every second.
+        last_handled = Some(current);
+        let landed = push_save(
+            &sftp,
+            remote,
+            local,
+            expected,
+            &cancel,
+            &mut resolve_rx,
+            sink,
+        )
+        .await;
+        if let Some(new) = landed {
+            expected = new;
+        }
+    }
+}
 
-        match push(&sftp, local, remote, Some(expected)).await {
-            Ok(new) => {
-                sink.event(EditEvent::Saved);
-                expected = new;
-                last_sent = Some(current);
+/// Push one local save, asking `resolve_rx` on a conflict. The new remote stamp when the save landed.
+async fn push_save(
+    sftp: &SftpSession,
+    remote: &str,
+    local: &Path,
+    expected: RemoteStamp,
+    cancel: &CancellationToken,
+    resolve_rx: &mut mpsc::UnboundedReceiver<bool>,
+    sink: &dyn EditSink,
+) -> Option<RemoteStamp> {
+    let overwrite = match push(sftp, local, remote, Some(expected)).await {
+        Ok(new) => {
+            sink.event(EditEvent::Saved);
+            return Some(new);
+        }
+        Err(PushError::Failed(error)) => {
+            sink.event(EditEvent::Failed { error });
+            return None;
+        }
+        Err(PushError::Conflict) => {
+            // An answer sent while nothing was waiting (a double click, a late reply) must not decide this
+            // conflict (D17): drop it before asking.
+            while resolve_rx.try_recv().is_ok() {}
+            sink.event(EditEvent::Conflict);
+            // Wait for `sftp_edit_resolve`: overwrite writes anyway, otherwise the last stamp is kept.
+            tokio::select! {
+                _ = cancel.cancelled() => false,
+                answer = resolve_rx.recv() => answer.unwrap_or(false),
             }
-            Err(PushError::Failed(error)) => sink.event(EditEvent::Failed { error }),
-            Err(PushError::Conflict) => {
-                sink.event(EditEvent::Conflict);
-                // Wait for `sftp_edit_resolve`: overwrite writes anyway, otherwise the last stamp is kept.
-                let overwrite = tokio::select! {
-                    _ = cancel.cancelled() => false,
-                    answer = resolve_rx.recv() => answer.unwrap_or(false),
-                };
-                if overwrite {
-                    match push(&sftp, local, remote, None).await {
-                        Ok(new) => {
-                            sink.event(EditEvent::Saved);
-                            expected = new;
-                            last_sent = Some(current);
-                        }
-                        Err(PushError::Failed(error)) => sink.event(EditEvent::Failed { error }),
-                        Err(PushError::Conflict) => sink.event(EditEvent::Conflict),
-                    }
-                }
-            }
+        }
+    };
+    if !overwrite {
+        return None;
+    }
+    match push(sftp, local, remote, None).await {
+        Ok(new) => {
+            sink.event(EditEvent::Saved);
+            Some(new)
+        }
+        Err(PushError::Failed(error)) => {
+            sink.event(EditEvent::Failed { error });
+            None
+        }
+        Err(PushError::Conflict) => {
+            sink.event(EditEvent::Conflict);
+            None
         }
     }
 }

@@ -1,10 +1,10 @@
 // Mock handlers for the edit commands (T57): a remote file is opened locally in a private folder, then its
 // first save is pushed back in place. A save lands, except for a `.bashrc` file in the mock, which always
 // changed on the server meanwhile and so asks the UI to overwrite (conflict).
-import type { AppError } from "@/bindings/AppError";
 import type { EditEvent } from "@/bindings/EditEvent";
 import type { Handler } from "./data";
 import { arg } from "./data";
+import { validation } from "./sessions";
 import { mockRemoteNode } from "./sftp";
 
 /** How long an edit stays "opened" before its first push (the sheet's 300 ms). */
@@ -21,10 +21,6 @@ interface ActiveEdit {
 
 /** Every open edit, by edit id. */
 const active = new Map<string, ActiveEdit>();
-
-function validation(message: string): AppError {
-  return { kind: "validation", message, detail: null };
-}
 
 /** The base name of a path, without its directory. */
 function nameOf(path: string): string {
@@ -70,7 +66,7 @@ export const editHandlers: Record<string, Handler<Record<string, unknown>>> = {
     const node = mockRemoteNode(sessionId, remotePath);
     if (node === undefined) throw validation("no such file");
     if (node.kind !== "file") throw validation("not a file");
-    const path = localPath(editId, remotePath);
+    onEvent({ type: "opened", localPath: localPath(editId, remotePath) });
     if (nameOf(remotePath) === ".bashrc") {
       // A `.bashrc` always changed on the server meanwhile: it opens, then asks to overwrite.
       active.set(editId, { conflicted: true, onEvent });
@@ -79,7 +75,7 @@ export const editHandlers: Record<string, Handler<Record<string, unknown>>> = {
       active.set(editId, { conflicted: false, onEvent });
       void runAfterSave(editId, onEvent, "saved");
     }
-    return { state, result: { editId, path } };
+    return { state, result: null };
   },
   sftp_edit_resolve: (state, args) => {
     const { editId, overwrite } = arg<{ editId: string; overwrite: boolean }>(args);
