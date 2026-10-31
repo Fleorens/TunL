@@ -11,8 +11,9 @@ use tokio_util::sync::CancellationToken;
 use uuid::Uuid;
 
 use crate::error::{AppError, AppResult};
-use crate::sftp::ops::validate_remote_path;
+use crate::sftp::ops::{is_dir, validate_remote_path};
 use crate::sftp::transfer::{TransferEvent, TransferSink, download, upload};
+use crate::sftp::tree::download_dir;
 use crate::ssh::auth::expand_home;
 use crate::state::AppState;
 
@@ -27,7 +28,8 @@ impl TransferSink for ChannelSink {
     }
 }
 
-/// Download `remote_path` into the configured download folder, then report through `on_event`.
+/// Download `remote_path` into the configured download folder, then report through `on_event`. A folder
+/// (lstat: a link to a folder is not one) downloads whole, as one transfer (T55).
 ///
 /// The session must be connected (`not_found` otherwise). The folder is `ui.downloadDir` (with `~/`
 /// expanded) when set, else the system download folder; it must be a directory. Answers at once.
@@ -64,7 +66,13 @@ pub async fn sftp_download<R: Runtime>(
     state.transfers.insert(transfer_id, token.clone())?;
     let transfers = state.transfers.clone();
     tauri::async_runtime::spawn(async move {
-        download(&session, &remote_path, &dir, token, &ChannelSink(on_event)).await;
+        let sink = ChannelSink(on_event);
+        // An lstat that fails leaves the file path, whose own `Failed` reports the error as before.
+        if matches!(is_dir(&session, &remote_path).await, Ok(true)) {
+            download_dir(&session, &remote_path, &dir, token, &sink).await;
+        } else {
+            download(&session, &remote_path, &dir, token, &sink).await;
+        }
         transfers.remove(transfer_id);
     });
     Ok(())

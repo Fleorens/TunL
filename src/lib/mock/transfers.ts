@@ -5,7 +5,7 @@ import type { AppError } from "@/bindings/AppError";
 import type { TransferEvent } from "@/bindings/TransferEvent";
 import type { Handler } from "./data";
 import { arg } from "./data";
-import { mockRemoteNames, mockRemoteNode, mockRemoteWrite } from "./sftp";
+import { mockRemoteNames, mockRemoteNode, mockRemoteTree, mockRemoteWrite } from "./sftp";
 import type { MockNode } from "./sftp-fs";
 
 /** The local folder a download lands in. */
@@ -96,6 +96,33 @@ async function runDownload(
   }
   await runSteps(node.size, onEvent, reg);
   if (reg.cancelled) return;
+  finishDownload(transferId, remotePath, onEvent);
+}
+
+/** A folder downloads whole (T55): `counted` (its files and links), the steps over the total, then `done`. */
+async function runFolderDownload(
+  transferId: string,
+  remotePath: string,
+  nodes: MockNode[],
+  onEvent: (event: TransferEvent) => void,
+): Promise<void> {
+  const reg: ActiveTransfer = { timers: [], cancelled: false, onEvent };
+  active.set(transferId, reg);
+  const files = nodes.filter((node) => node.kind === "file");
+  const bytes = files.reduce((sum, node) => sum + node.size, 0);
+  const skipped = nodes.filter((node) => node.kind === "symlink" || node.kind === "other").length;
+  onEvent({ type: "counted", files: files.length, bytes, skipped });
+  await runSteps(bytes, onEvent, reg);
+  if (reg.cancelled) return;
+  finishDownload(transferId, remotePath, onEvent);
+}
+
+/** The `done` of a download, to a free name in MOCK_DOWNLOAD_DIR. */
+function finishDownload(
+  transferId: string,
+  remotePath: string,
+  onEvent: (event: TransferEvent) => void,
+): void {
   const destName = freeName(nameOf(remotePath), (name) => downloaded.has(name));
   const dest = `${MOCK_DOWNLOAD_DIR}/${destName}`;
   active.delete(transferId);
@@ -137,6 +164,16 @@ export const transferHandlers: Record<string, Handler<Record<string, unknown>>> 
     // A link downloads like its target (T48): follow it once, so a link to a file downloads a file and a
     // broken link (no target) keeps the symlink node and fails as not found.
     const node = mockRemoteNode(sessionId, remotePath);
+    // A folder (never a link to one) downloads whole (T55).
+    if (node?.kind === "dir") {
+      void runFolderDownload(
+        transferId,
+        remotePath,
+        mockRemoteTree(sessionId, remotePath),
+        onEvent,
+      );
+      return { state, result: null };
+    }
     const resolved =
       node?.kind === "symlink" && node.target
         ? (mockRemoteNode(sessionId, node.target) ?? node)

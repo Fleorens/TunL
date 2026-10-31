@@ -75,7 +75,10 @@ function rowAction(transfer: Transfer, t: TFunction) {
   );
 }
 
-/** One transfer line: direction arrow, name, progress or final state, and its action on the right. */
+/**
+ * One transfer line: direction arrow, name (with its file count and skipped links for a folder, T55), progress or
+ * final state, and its action on the right.
+ */
 function TransferRow({ transfer, locale }: { transfer: Transfer; locale: string }) {
   const { t } = useTranslation();
   const pct = percentOf(transfer);
@@ -85,6 +88,16 @@ function TransferRow({ transfer, locale }: { transfer: Transfer; locale: string 
     <li aria-label={transfer.name} className="flex items-center gap-2 px-2 py-1">
       <Arrow className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
       <span className="min-w-0 flex-1 truncate">{transfer.name}</span>
+      {transfer.files !== null && (
+        <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+          {t("sftp.transfers.files", { count: transfer.files })}
+        </span>
+      )}
+      {transfer.status === "done" && transfer.skipped > 0 && (
+        <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+          {t("sftp.transfers.skipped", { count: transfer.skipped })}
+        </span>
+      )}
       {transfer.status === "running" ? (
         <span className="flex w-56 shrink-0 items-center gap-2">
           <Progress aria-label={transfer.name} value={pct ?? 0} className="w-24 shrink-0" />

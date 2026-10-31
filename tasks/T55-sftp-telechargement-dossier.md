@@ -360,8 +360,8 @@ test("a folder downloads with its files, in one line", async ({ page }) => {
 ## Critères d'acceptation
 
 - [ ] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T55 --check` affiche `OK` partout.
-- [ ] `wc -l src-tauri/src/sftp/*.rs` : aucun fichier au-delà de 400 lignes.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `wc -l src-tauri/src/sftp/*.rs` : aucun fichier au-delà de 400 lignes.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 - [ ] La ligne d'un dossier dans le panneau reste sur une ligne, le nombre de fichiers lisible (à l'écran).
 
 ## À regarder par Florian

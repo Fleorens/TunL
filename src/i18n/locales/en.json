@@ -694,7 +694,11 @@
       "folder": "Folders cannot be uploaded yet",
       "cancelled": "Cancelled",
       "cancel": "Cancel {{name}}",
-      "reveal": "Show {{name}} in its folder"
+      "reveal": "Show {{name}} in its folder",
+      "files_one": "1 file",
+      "files_other": "{{count}} files",
+      "skipped_one": "1 link skipped",
+      "skipped_other": "{{count}} links skipped"
     }
   },
   "rdp": {

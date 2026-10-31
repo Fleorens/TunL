@@ -71,16 +71,26 @@ async fn tree(env: &TestEnv, dir: &std::path::Path) -> (SshLink, SftpSession, St
     let broker = Arc::new(PromptBroker::new());
     respond(&broker, vec![]);
     let ctx = context(env, dir, broker, secrets);
-    let link = establish(&ctx, &target, Uuid::new_v4(), CancellationToken::new(), &Quiet)
-        .await
-        .expect("a link to the target");
+    let link = establish(
+        &ctx,
+        &target,
+        Uuid::new_v4(),
+        CancellationToken::new(),
+        &Quiet,
+    )
+    .await
+    .expect("a link to the target");
     let sftp = open_sftp(&link.target).await.unwrap();
     let base = format!("/tmp/tunl-tree-{}", Uuid::new_v4());
     for folder in ["", "/photos", "/photos/sub", "/photos/empty"] {
         ops::mkdir(&sftp, &format!("{base}{folder}")).await.unwrap();
     }
-    sftp.write(format!("{base}/photos/a.txt"), b"aaa").await.unwrap();
-    sftp.write(format!("{base}/photos/sub/b.txt"), b"bbbbb").await.unwrap();
+    sftp.write(format!("{base}/photos/a.txt"), b"aaa")
+        .await
+        .unwrap();
+    sftp.write(format!("{base}/photos/sub/b.txt"), b"bbbbb")
+        .await
+        .unwrap();
     // OpenSSH reads SSH_FXP_SYMLINK's two paths in reverse: russh-sftp's `symlink` gets the target first.
     sftp.symlink("/etc/hostname", format!("{base}/photos/to-hostname"))
         .await
@@ -97,7 +107,14 @@ async fn a_folder_downloads_with_its_content_and_skips_links() {
 
     let events = Events::default();
     let remote = format!("{base}/photos");
-    download_dir(&sftp, &remote, local.path(), CancellationToken::new(), &events).await;
+    download_dir(
+        &sftp,
+        &remote,
+        local.path(),
+        CancellationToken::new(),
+        &events,
+    )
+    .await;
 
     let all = events.all();
     assert!(all.contains(&TransferEvent::Counted {
@@ -118,16 +135,33 @@ async fn a_folder_downloads_with_its_content_and_skips_links() {
         }
     }
     assert_eq!(std::fs::read(top.join("a.txt")).unwrap(), b"aaa");
-    assert_eq!(std::fs::read(top.join("sub").join("b.txt")).unwrap(), b"bbbbb");
+    assert_eq!(
+        std::fs::read(top.join("sub").join("b.txt")).unwrap(),
+        b"bbbbb"
+    );
     assert!(top.join("empty").is_dir());
-    assert!(!top.join("to-hostname").exists(), "a link is never followed");
+    assert!(
+        !top.join("to-hostname").exists(),
+        "a link is never followed"
+    );
 
     let again = Events::default();
-    download_dir(&sftp, &remote, local.path(), CancellationToken::new(), &again).await;
+    download_dir(
+        &sftp,
+        &remote,
+        local.path(),
+        CancellationToken::new(),
+        &again,
+    )
+    .await;
     assert_eq!(
         again.all().last(),
         Some(&TransferEvent::Done {
-            path: local.path().join("photos (1)").to_string_lossy().into_owned()
+            path: local
+                .path()
+                .join("photos (1)")
+                .to_string_lossy()
+                .into_owned()
         })
     );
 
@@ -140,9 +174,12 @@ async fn a_cancelled_folder_download_leaves_no_part_file() {
     let env = TestEnv::load();
     let dir = tempfile::tempdir().unwrap();
     let (link, sftp, base) = tree(&env, dir.path()).await;
-    sftp.write(format!("{base}/photos/big.bin"), &vec![7u8; 8 * 1024 * 1024])
-        .await
-        .unwrap();
+    sftp.write(
+        format!("{base}/photos/big.bin"),
+        &vec![7u8; 8 * 1024 * 1024],
+    )
+    .await
+    .unwrap();
     let local = tempfile::tempdir().unwrap();
 
     let cancel = CancellationToken::new();
@@ -152,7 +189,14 @@ async fn a_cancelled_folder_download_leaves_no_part_file() {
         tokio::time::sleep(Duration::from_millis(50)).await;
         stop.cancel();
     });
-    download_dir(&sftp, &format!("{base}/photos"), local.path(), cancel, &events).await;
+    download_dir(
+        &sftp,
+        &format!("{base}/photos"),
+        local.path(),
+        cancel,
+        &events,
+    )
+    .await;
 
     assert_eq!(events.all().last(), Some(&TransferEvent::Cancelled));
     let mut parts = Vec::new();

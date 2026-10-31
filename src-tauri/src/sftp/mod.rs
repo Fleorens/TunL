@@ -16,6 +16,7 @@ use crate::error::{AppError, AppResult};
 pub mod ops;
 pub mod session;
 pub mod transfer;
+pub mod tree;
 
 #[cfg(test)]
 mod ops_tests;

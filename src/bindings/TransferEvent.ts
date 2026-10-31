@@ -4,4 +4,4 @@ import type { AppError } from "./AppError";
 /**
  * An event about a transfer, sent to the UI through a `TransferSink`.
  */
-export type TransferEvent = { "type": "progress", transferred: number, total: number | null, bytesPerSec: number, } | { "type": "done", path: string, } | { "type": "failed", error: AppError, } | { "type": "cancelled" };
+export type TransferEvent = { "type": "progress", transferred: number, total: number | null, bytesPerSec: number, } | { "type": "done", path: string, } | { "type": "failed", error: AppError, } | { "type": "cancelled" } | { "type": "counted", files: number, bytes: number, skipped: number, };
