@@ -31,8 +31,6 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
   // True while the delete confirmation is open and unanswered. Radix closes it right after its confirm button runs
   // `remove`, and closing another dialog can happen mid-delete: neither may end the busy window, only a cancel.
   const confirming = useRef(false);
-  // The entry of the large-file confirmation, so its "Open" button can start the edit it was opened for.
-  const largeEntry = useRef<RemoteEntry | null>(null);
 
   const closeDialog = (): void => {
     setDialog(null);
@@ -99,7 +97,6 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
   const edit = (entry: RemoteEntry): void => {
     if (busy) return;
     if (entry.size > EDIT_WARN_BYTES) {
-      largeEntry.current = entry;
       setDialog({ type: "editLarge", entry });
       return;
     }
@@ -112,11 +109,9 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
 
   // The large-file dialog's "Open": close it, then start the edit it was opened for.
   const openLarge = async (): Promise<void> => {
-    const entry = largeEntry.current;
-    largeEntry.current = null;
+    if (dialog?.type !== "editLarge") return;
     setDialog(null);
-    if (!entry) return;
-    await startEdit(entry);
+    await startEdit(dialog.entry);
   };
 
   const permissions = (entry: RemoteEntry): void => setDialog({ type: "permissions", entry });

@@ -1,5 +1,5 @@
 // The conflict when a file changed on the server since it opened: keep the local save (send nothing) or
-// replace the server's version with it (destructive). Closing by Escape is a keep.
+// replace the server's version with it (destructive). Cancel or Escape closes the dialog, which is a keep.
 import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
@@ -36,7 +36,7 @@ export function EditConflictDialog({ name, onKeep, onReplace }: EditConflictDial
           <AlertDialogDescription>{t("sftp.edit.conflict")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onKeep}>{t("sftp.edit.keep")}</AlertDialogCancel>
+          <AlertDialogCancel>{t("sftp.edit.keep")}</AlertDialogCancel>
           <AlertDialogAction variant="destructive" onClick={onReplace}>
             {t("sftp.edit.replace")}
           </AlertDialogAction>

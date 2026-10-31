@@ -1,6 +1,14 @@
 // The explorer's context menu: the actions on one entry, or only "New folder" on the empty area; when several rows
 // are selected, the batch actions instead (docs/04 §6).
-import { ClipboardCopy, Download, FolderPlus, Pencil, ShieldCheck, Trash2 } from "lucide-react";
+import {
+  ClipboardCopy,
+  Download,
+  FilePen,
+  FolderPlus,
+  Pencil,
+  ShieldCheck,
+  Trash2,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { RemoteEntry } from "@/bindings/RemoteEntry";
 import {
@@ -72,7 +80,7 @@ export function EntryMenu({
           )}
           {entry !== null && isEditable(entry) && (
             <ContextMenuItem onSelect={() => actions.edit(entry)}>
-              <Pencil />
+              <FilePen />
               {t("sftp.menu.edit")}
             </ContextMenuItem>
           )}

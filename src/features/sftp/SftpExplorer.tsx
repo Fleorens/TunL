@@ -210,7 +210,9 @@ export function SftpExplorer({ sessionId, active }: SftpExplorerProps) {
   const actions = useEntryActions(sessionId, path, (select) => navigate(path, select));
   // The first edit in conflict on this tab, so the dialog mounts once and unmounts when it resolves or closes.
   const conflict = useEdits((s) => {
-    for (const e of Object.values(s.edits)) if (e.status === "conflict") return e;
+    for (const e of Object.values(s.edits)) {
+      if (e.sessionId === sessionId && e.status === "conflict") return e;
+    }
     return null;
   });
   const onOpen = (entry: RemoteEntry): void => {

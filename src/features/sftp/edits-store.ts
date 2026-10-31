@@ -33,7 +33,7 @@ interface EditsState {
   resolve: (id: string, overwrite: boolean) => Promise<void>;
 }
 
-export const useEdits: UseBoundStore<StoreApi<EditsState>> = create<EditsState>()((set) => {
+export const useEdits: UseBoundStore<StoreApi<EditsState>> = create<EditsState>()((set, get) => {
   /** Apply one event to the edit of `id`, ignoring an edit already gone. `name` is captured for the toasts. */
   function apply(
     set: (update: (state: EditsState) => Partial<EditsState>) => void,
@@ -61,9 +61,12 @@ export const useEdits: UseBoundStore<StoreApi<EditsState>> = create<EditsState>(
           });
           return;
       }
-      set((state) => ({ edits: { ...state.edits, [id]: { ...state.edits[id], status } } }));
+      // An event for an edit already gone (closed, or a refused call) changes nothing and says nothing.
+      const current = get().edits[id];
+      if (!current) return;
+      set((state) => ({ edits: { ...state.edits, [id]: { ...current, status } } }));
       if (event.type === "opened") toast(i18n.t("sftp.edit.opened", { name }));
-      if (event.type === "saved") toast(i18n.t("sftp.edit.saved", { name }));
+      if (event.type === "saved") toast.success(i18n.t("sftp.edit.saved", { name }));
     };
   }
 
@@ -90,12 +93,11 @@ export const useEdits: UseBoundStore<StoreApi<EditsState>> = create<EditsState>(
     },
 
     async resolve(id, overwrite) {
+      // Only an edit in conflict is answered, once: the dialog's close after a button press asks again.
+      const current = get().edits[id];
+      if (current?.status !== "conflict") return;
       // Back to watching before the call, so the dialog closes at once even if the push fails.
-      set((state) => {
-        const current = state.edits[id];
-        if (!current) return {};
-        return { edits: { ...state.edits, [id]: { ...current, status: "watching" } } };
-      });
+      set((state) => ({ edits: { ...state.edits, [id]: { ...current, status: "watching" } } }));
       try {
         await ipc.sftpEditResolve(id, overwrite);
       } catch (error) {
