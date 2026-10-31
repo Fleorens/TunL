@@ -307,10 +307,10 @@ test("the setting lists Never, Ask and Always", async ({ page }) => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T60 --check` affiche `OK` partout.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T60 --check` affiche `OK` partout.
 - [x] `grep -c "tabs_load\|tabs_save" src-tauri/src/lib.rs` compte les deux commandes.
 - [x] Aucune nouvelle exception `project-rules: allow`.
-- [ ] Sur l'accueil, l'offre de réouverture tient sur une ligne, au-dessus des favoris, sans décaler le champ de
+- [x] Sur l'accueil, l'offre de réouverture tient sur une ligne, au-dessus des favoris, sans décaler le champ de
   connexion rapide (à l'écran).
 
 ## À regarder par Florian

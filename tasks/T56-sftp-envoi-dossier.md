@@ -331,7 +331,7 @@ test("Upload a folder sends the folder picked", async ({ page }) => {
 - [x] `npm run review` passe (avec `test:ssh`), et `node scripts/contract-tests.mjs T56 --check` affiche `OK` partout.
 - [x] `grep -rn "transfers.folder\|isFolderError" src` ne trouve plus rien.
 - [x] Aucune nouvelle exception `project-rules: allow`.
-- [ ] Le bouton « Envoyer un dossier » a la taille et l'alignement des autres boutons de la barre (à l'écran).
+- [x] Le bouton « Envoyer un dossier » a la taille et l'alignement des autres boutons de la barre (à l'écran).
 
 ## À regarder par Florian
 

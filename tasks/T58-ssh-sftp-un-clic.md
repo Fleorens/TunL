@@ -177,7 +177,7 @@ test("Open a terminal here starts the shell in the folder shown", async ({ page 
 - [x] `npm run review` passe, et `node scripts/contract-tests.mjs T58 --check` affiche `OK` partout.
 - [x] `grep -rn "cd '" src --include=*.ts --include=*.tsx` ne trouve que `shell-quote.ts` et son test.
 - [x] Aucune nouvelle exception `project-rules: allow`.
-- [ ] Le bouton « Ouvrir un terminal ici » est aligné avec les autres boutons de la barre SFTP (à l'écran).
+- [x] Le bouton « Ouvrir un terminal ici » est aligné avec les autres boutons de la barre SFTP (à l'écran).
 
 ## À regarder par Florian
 
