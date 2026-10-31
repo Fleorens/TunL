@@ -1,4 +1,4 @@
-// The explorer's actions on one entry: new folder, rename in place, copy the path, permissions, delete.
+// The explorer's actions on one entry: new folder, rename in place, copy the path, permissions, delete, edit.
 // The open dialog and the entry being renamed live here; every `ipc` call shows a translated toast on failure.
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -7,6 +7,7 @@ import { i18n } from "@/i18n";
 import { copyText } from "@/lib/clipboard";
 import { notifyError } from "@/lib/errors";
 import { ipc } from "@/lib/ipc";
+import { EDIT_WARN_BYTES, useEdits } from "./edits-store";
 import { isDownloadable, isValidName, joinPath } from "./sftp-model";
 import { useTransfers } from "./transfers-store";
 
@@ -15,6 +16,7 @@ export type EntryDialog =
   | { type: "newFolder" }
   | { type: "delete"; entries: RemoteEntry[]; count: number }
   | { type: "permissions"; entry: RemoteEntry }
+  | { type: "editLarge"; entry: RemoteEntry }
   | null;
 
 export type EntryActions = ReturnType<typeof useEntryActions>;
@@ -29,6 +31,8 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
   // True while the delete confirmation is open and unanswered. Radix closes it right after its confirm button runs
   // `remove`, and closing another dialog can happen mid-delete: neither may end the busy window, only a cancel.
   const confirming = useRef(false);
+  // The entry of the large-file confirmation, so its "Open" button can start the edit it was opened for.
+  const largeEntry = useRef<RemoteEntry | null>(null);
 
   const closeDialog = (): void => {
     setDialog(null);
@@ -88,6 +92,31 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
     for (const entry of entries) {
       if (isDownloadable(entry)) download(entry);
     }
+  };
+
+  // Edit a remote file in its application (T57b): over the warn size, confirm first with the large dialog,
+  // else start the edit at once. The store drives the rest (toasts, conflict dialog).
+  const edit = (entry: RemoteEntry): void => {
+    if (busy) return;
+    if (entry.size > EDIT_WARN_BYTES) {
+      largeEntry.current = entry;
+      setDialog({ type: "editLarge", entry });
+      return;
+    }
+    void startEdit(entry);
+  };
+
+  const startEdit = async (entry: RemoteEntry): Promise<void> => {
+    await useEdits.getState().edit(sessionId, entry);
+  };
+
+  // The large-file dialog's "Open": close it, then start the edit it was opened for.
+  const openLarge = async (): Promise<void> => {
+    const entry = largeEntry.current;
+    largeEntry.current = null;
+    setDialog(null);
+    if (!entry) return;
+    await startEdit(entry);
   };
 
   const permissions = (entry: RemoteEntry): void => setDialog({ type: "permissions", entry });
@@ -158,5 +187,7 @@ export function useEntryActions(sessionId: string, dir: string, reload: (select?
     removeMany,
     download,
     downloadMany,
+    edit,
+    openLarge,
   };
 }

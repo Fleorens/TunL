@@ -679,10 +679,22 @@
       "newFolder": "New folder",
       "delete": "Delete…",
       "download": "Download",
+      "edit": "Edit",
       "downloadMany_one": "Download {{count}} item",
       "downloadMany_other": "Download {{count}} items",
       "deleteMany_one": "Delete {{count}} item…",
       "deleteMany_other": "Delete {{count}} items…"
+    },
+    "edit": {
+      "opened": "{{name}} is open: each save is sent to the server",
+      "saved": "{{name}} saved to the server",
+      "bigTitle": "Open a large file?",
+      "big": "{{name}} is {{size}}: it is downloaded in full before it opens.",
+      "open": "Open",
+      "conflictTitle": "{{name}} changed on the server",
+      "conflict": "It was modified since you opened it. Replace the server's version with yours?",
+      "keep": "Don't send",
+      "replace": "Replace"
     },
     "transfers": {
       "title_one": "Transfers ({{count}})",

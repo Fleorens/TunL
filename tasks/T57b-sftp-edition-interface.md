@@ -243,8 +243,8 @@ test("a folder cannot be edited", async ({ page }) => {
 
 ## Critères d'acceptation
 
-- [ ] `npm run review` passe, et `node scripts/contract-tests.mjs T57b --check` affiche `OK` partout.
-- [ ] Aucune nouvelle exception `project-rules: allow`.
+- [x] `npm run review` passe, et `node scripts/contract-tests.mjs T57b --check` affiche `OK` partout.
+- [x] Aucune nouvelle exception `project-rules: allow`.
 - [ ] Le dialogue de conflit garde ses deux boutons sur une ligne, « Remplacer » en rouge (à l'écran).
 
 ## À regarder par Florian

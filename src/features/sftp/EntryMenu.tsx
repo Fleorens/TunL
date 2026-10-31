@@ -9,6 +9,7 @@ import {
   ContextMenuSeparator,
   ContextMenuShortcut,
 } from "@/components/ui/context-menu";
+import { isEditable } from "./edits-store";
 import { isDownloadable } from "./sftp-model";
 import type { EntryActions } from "./use-entry-actions";
 
@@ -67,6 +68,12 @@ export function EntryMenu({
             <ContextMenuItem onSelect={() => actions.download(entry)}>
               <Download />
               {t("sftp.menu.download")}
+            </ContextMenuItem>
+          )}
+          {entry !== null && isEditable(entry) && (
+            <ContextMenuItem onSelect={() => actions.edit(entry)}>
+              <Pencil />
+              {t("sftp.menu.edit")}
             </ContextMenuItem>
           )}
           {entry && (
