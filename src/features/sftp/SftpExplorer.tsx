@@ -7,7 +7,7 @@ import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { Empty, EmptyTitle } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
 import { notifyError } from "@/lib/errors";
-import { pickFiles } from "@/lib/files";
+import { pickFiles, pickFolder } from "@/lib/files";
 import { ipc } from "@/lib/ipc";
 import { DeleteEntryDialog } from "./DeleteEntryDialog";
 import { EntryMenu } from "./EntryMenu";
@@ -155,6 +155,13 @@ export function SftpExplorer({ sessionId, active }: SftpExplorerProps) {
       .catch(notifyError);
   };
 
+  // The toolbar's "Upload a folder": choose one, then upload it whole, surfacing a failure as a toast.
+  const onUploadFolder = (): void => {
+    pickFolder()
+      .then((path) => (path ? uploadAll([path]) : undefined))
+      .catch(notifyError);
+  };
+
   // A link behaves like its target (T48): a link to a file downloads, a link to a folder navigates, a
   // broken link (no target) does nothing. A plain file downloads, a folder or an unknown entry navigates.
   const actions = useEntryActions(sessionId, path, (select) => navigate(path, select));
@@ -213,6 +220,7 @@ export function SftpExplorer({ sessionId, active }: SftpExplorerProps) {
         onToggleHidden={onToggleHidden}
         onNewFolder={actions.newFolder}
         onUpload={onUpload}
+        onUploadFolder={onUploadFolder}
         busy={actions.busy}
       />
       <ContextMenu modal={false}>

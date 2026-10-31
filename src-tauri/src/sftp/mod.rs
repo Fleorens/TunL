@@ -14,9 +14,11 @@ use uuid::Uuid;
 use crate::error::{AppError, AppResult};
 
 pub mod ops;
+pub mod progress;
 pub mod session;
 pub mod transfer;
 pub mod tree;
+pub mod tree_upload;
 
 #[cfg(test)]
 mod ops_tests;

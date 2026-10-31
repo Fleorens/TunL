@@ -12,8 +12,10 @@ use uuid::Uuid;
 
 use crate::error::{AppError, AppResult};
 use crate::sftp::ops::{is_dir, validate_remote_path};
-use crate::sftp::transfer::{TransferEvent, TransferSink, download, upload};
-use crate::sftp::tree::download_dir;
+use crate::sftp::transfer::{
+    Outcome, TransferEvent, TransferSink, download, emit_final, local_io_error, upload,
+};
+use crate::sftp::tree::{download_dir, upload_dir};
 use crate::ssh::auth::expand_home;
 use crate::state::AppState;
 
@@ -100,8 +102,26 @@ pub async fn sftp_upload(
     state.transfers.insert(transfer_id, token.clone())?;
     let transfers = state.transfers.clone();
     tauri::async_runtime::spawn(async move {
+        let sink = ChannelSink(on_event);
         let local = PathBuf::from(local_path);
-        upload(&session, &local, &remote_dir, token, &ChannelSink(on_event)).await;
+        // `lstat`: a real folder goes whole (T56); a symlink to a folder is not one here, so it falls to
+        // `upload`, which refuses it as a directory, as before.
+        let meta = match tokio::fs::symlink_metadata(&local).await {
+            Ok(meta) => meta,
+            Err(error) => {
+                emit_final(
+                    &sink,
+                    Outcome::Failed(local_io_error("cannot read the local file", &error)),
+                );
+                transfers.remove(transfer_id);
+                return;
+            }
+        };
+        if meta.file_type().is_dir() {
+            upload_dir(&session, &local, &remote_dir, token, &sink).await;
+        } else {
+            upload(&session, &local, &remote_dir, token, &sink).await;
+        }
         transfers.remove(transfer_id);
     });
     Ok(())
