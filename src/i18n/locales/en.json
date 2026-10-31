@@ -386,6 +386,7 @@
     "quickInvalid": "Enter an address like deploy@10.0.0.5:22",
     "restoreTabs_one": "Reopen 1 tab",
     "restoreTabs_other": "Reopen {{count}} tabs",
+    "restoreTabsLabel": "Last time's tabs are still saved",
     "restoreDismiss": "Dismiss",
     "favorites": "Favorites",
     "recent": "Recent",

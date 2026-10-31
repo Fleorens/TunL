@@ -388,6 +388,7 @@
     "quickInvalid": "Saisissez une adresse comme deploy@10.0.0.5:22",
     "restoreTabs_one": "Rouvrir 1 onglet",
     "restoreTabs_other": "Rouvrir {{count}} onglets",
+    "restoreTabsLabel": "Les onglets de la dernière fois sont encore enregistrés",
     "restoreDismiss": "Ignorer",
     "favorites": "Favoris",
     "recent": "Récents",

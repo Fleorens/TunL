@@ -15,7 +15,7 @@ export function RestoreOffer() {
     <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
       <span className="flex items-center gap-2 text-sm font-medium">
         <RotateCcw className="size-4" aria-hidden />
-        {t("home.restoreTabs", { count })}
+        {t("home.restoreTabsLabel")}
       </span>
       <div className="ml-auto flex items-center gap-2">
         <Button variant="outline" size="sm" onClick={() => useRestore.getState().dismissOffer()}>

@@ -10,6 +10,20 @@ import { notifyError } from "@/lib/errors";
 import { useResolvedTheme } from "@/lib/theme";
 import { TerminalSearch } from "./TerminalSearch";
 
+// The session reclaims focus when it opens (see the effect below). This guard decides whether the
+// focus currently sits in a field the user deliberately filled during the connection
+// (e.g. #sidebar-filter) and outside the terminal: if so, we must not steal it back. The xterm
+// helper textarea lives inside the terminal, so it does not count as an external field.
+function isExternalFieldFocus(active: Element | null, terminal: Element | null): boolean {
+  if (!active) return false;
+  const isField =
+    active.nodeName === "INPUT" ||
+    active.nodeName === "TEXTAREA" ||
+    active.getAttribute("contenteditable") !== null;
+  if (!isField) return false;
+  return !(terminal && (terminal === active || terminal.contains(active)));
+}
+
 /**
  * The terminal itself, speaking to a port (T21 will wire it to `ipc.sshOpen`; the gallery wires it
  * to a local echo). It owns the xterm instance through `useXterm`, the per-terminal zoom, and the
@@ -72,10 +86,14 @@ export function TerminalView({
   });
 
   // Once a prompt dialog is answered and the session opens, `connected` flips true; the dialog had
-  // already returned the focus to the sidebar, so the terminal takes it again (T30b).
+  // already returned the focus to the sidebar, so the terminal takes it again (T30b). But if the
+  // user deliberately put the focus in a field outside the terminal during the connection, keep it.
   useEffect(() => {
     if (term && active && connected) {
-      term.focus();
+      const terminal = containerRef.current?.closest("[data-terminal]") ?? containerRef.current;
+      if (!isExternalFieldFocus(document.activeElement, terminal)) {
+        term.focus();
+      }
     }
   }, [term, active, connected]);
 
