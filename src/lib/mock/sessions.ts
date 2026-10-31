@@ -234,7 +234,10 @@ async function feed(session: LiveSession, input: string): Promise<void> {
   const s = scheduler(session);
   // A `cd` the UI sends on `connected` (T58) arrives before the shell prints its banner and prompt;
   // wait until ready so the line echoes after the prompt, not in between.
-  while (!session.ready) await s.wait();
+  while (!session.ready) {
+    if (!sessions.has(session.id)) return;
+    await s.wait();
+  }
   for (const ch of input) {
     if (ch === "\r") {
       await runLine(session, s);

@@ -13,12 +13,13 @@ import {
   CommandList,
   CommandShortcut,
 } from "@/components/ui/command";
-import { filterConnections, normalizeForSearch } from "@/features/connections/filter";
+import { filterConnections } from "@/features/connections/filter";
 import { openImport } from "@/features/connections/open-import";
 import { compareNames } from "@/features/connections/sections";
 import { useConnections } from "@/features/connections/store";
 import {
   filterActions,
+  matchesSearch,
   nextTheme,
   PALETTE_ACTIONS,
   type PaletteActionId,
@@ -76,11 +77,7 @@ export function CommandPalette() {
   const tabAction = useMemo(() => {
     if (activeSession?.kind !== "ssh") return null;
     const label = t("tabMenu.openSftp");
-    const terms = normalizeForSearch(search).split(/\s+/).filter(Boolean);
-    if (terms.length === 0 || terms.every((term) => normalizeForSearch(label).includes(term))) {
-      return label;
-    }
-    return null;
+    return matchesSearch(label, search) ? label : null;
   }, [activeSession, search, t]);
 
   // The first visible item, so the highlight can reset to it whenever the list changes. An RDP target has no

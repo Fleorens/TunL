@@ -2,7 +2,7 @@
 // confirmation, via `requestClose`). The tab is the `asChild` trigger, so it keeps its click, middle-click and
 // keyboard handling; the menu only adds the right-click. The Settings tab has no menu (TabBar does not wrap it).
 import { FolderTree, X } from "lucide-react";
-import type { ComponentProps, ReactElement } from "react";
+import type { ReactElement } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ContextMenu,
@@ -15,7 +15,7 @@ import { openSftpFrom } from "@/features/sessions/open-session";
 import type { Session } from "@/features/sessions/session-model";
 import { useSessions } from "@/features/sessions/store";
 
-interface TabMenuProps extends Omit<ComponentProps<typeof ContextMenu>, "children"> {
+interface TabMenuProps {
   session: Session;
   children: ReactElement;
 }
@@ -29,12 +29,14 @@ export function TabMenu({ session, children }: TabMenuProps) {
       <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
       <ContextMenuContent>
         {session.kind === "ssh" && (
-          <ContextMenuItem onClick={() => openSftpFrom(session)}>
-            <FolderTree className="size-3.5" />
-            {t("tabMenu.openSftp")}
-          </ContextMenuItem>
+          <>
+            <ContextMenuItem onClick={() => openSftpFrom(session)}>
+              <FolderTree className="size-3.5" />
+              {t("tabMenu.openSftp")}
+            </ContextMenuItem>
+            <ContextMenuSeparator />
+          </>
         )}
-        <ContextMenuSeparator />
         <ContextMenuItem onClick={() => requestClose(session.id)}>
           <X className="size-3.5" />
           {t("tabMenu.close")}

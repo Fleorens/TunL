@@ -16,6 +16,7 @@ import {
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { Empty, EmptyTitle } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
+import { openTerminalFrom } from "@/features/sessions/open-session";
 import { useSessions } from "@/features/sessions/store";
 import { notifyError } from "@/lib/errors";
 import { pickFiles, pickFolder } from "@/lib/files";
@@ -202,8 +203,7 @@ export function SftpExplorer({ sessionId, active }: SftpExplorerProps) {
   // The toolbar's "Open a terminal here": a shell on the same target, already `cd`-ed into the folder shown.
   const session = useSessions((s) => s.sessions.find((x) => x.id === sessionId));
   const onOpenTerminal = (): void => {
-    if (!session) return;
-    useSessions.getState().open(session.target, session.title, "ssh", { dir: path });
+    if (session) openTerminalFrom(session, path);
   };
 
   // The toolbar's "Upload a folder": choose one, then upload it whole, surfacing a failure as a toast.

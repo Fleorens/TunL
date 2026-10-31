@@ -22,15 +22,19 @@ export type PaletteActionId =
 /**
  * Actions whose translated label contains every search term (`normalizeForSearch`); all of them for `""`.
  */
+/** Whether every term of `search` appears in `label` (accents and case ignored); an empty search matches all. */
+export function matchesSearch(label: string, search: string): boolean {
+  const terms = normalizeForSearch(search).split(/\s+/).filter(Boolean);
+  return terms.every((term) => normalizeForSearch(label).includes(term));
+}
+
 export function filterActions(
   labels: Record<PaletteActionId, string>,
   search: string,
 ): PaletteActionId[] {
-  const terms = normalizeForSearch(search).split(/\s+/).filter(Boolean);
-  if (terms.length === 0) return PALETTE_ACTIONS.map((action) => action.id);
-  return PALETTE_ACTIONS.filter((action) =>
-    terms.every((term) => normalizeForSearch(labels[action.id]).includes(term)),
-  ).map((action) => action.id);
+  return PALETTE_ACTIONS.filter((action) => matchesSearch(labels[action.id], search)).map(
+    (action) => action.id,
+  );
 }
 
 /** Toggle between the two resolved themes: a dark one goes to "light", a light one to "dark". */

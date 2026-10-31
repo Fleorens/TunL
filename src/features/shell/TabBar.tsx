@@ -44,11 +44,15 @@ function TabFrame({
       role="tab"
       tabIndex={active ? 0 : -1}
       aria-selected={active}
-      onClick={() => activate(id)}
+      onClick={(event) => {
+        props.onClick?.(event);
+        activate(id);
+      }}
       onAuxClick={(event) => {
         if (event.button === 1) close(id);
       }}
       onKeyDown={(event) => {
+        props.onKeyDown?.(event);
         if (event.key === "Enter" || event.key === " ") activate(id);
       }}
       className={cn(
