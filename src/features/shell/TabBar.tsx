@@ -2,7 +2,7 @@
 // palette in quick connect. A tab is a `TabFrame` (the shared shell: role, click, middle-click, Enter,
 // close button, indicator), whose content is a session's dot and protocol, or the Settings icon.
 import { Plus, Settings2, X } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, Reorder } from "motion/react";
 import type { ComponentProps, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { IconButton } from "@/components/IconButton";
@@ -123,26 +123,35 @@ export function TabBar() {
   const settingsOpen = useSessions((s) => s.settingsOpen);
   const activate = useSessions((s) => s.activate);
   const requestClose = useSessions((s) => s.requestClose);
+  const reorder = useSessions((s) => s.reorder);
+
+  const lastSessionId = sessions[sessions.length - 1]?.id;
 
   return (
-    <div
+    <Reorder.Group
+      as="div"
+      axis="x"
+      values={sessions.map((session) => session.id)}
+      onReorder={reorder}
       role="tablist"
       aria-label={t("tabs.label")}
       onKeyDown={moveBetweenTabs}
       className="flex h-10 shrink-0 items-end gap-0.5 overflow-x-auto bg-sidebar px-2 select-none"
     >
       {sessions.map((session) => (
-        <TabMenu key={session.id} session={session}>
-          <TabFrame
-            id={session.id}
-            title={session.title}
-            active={session.id === activeId}
-            activate={activate}
-            close={requestClose}
-          >
-            <SessionTab session={session} />
-          </TabFrame>
-        </TabMenu>
+        <Reorder.Item key={session.id} value={session.id} as="div">
+          <TabMenu session={session} lastSession={session.id === lastSessionId}>
+            <TabFrame
+              id={session.id}
+              title={session.title}
+              active={session.id === activeId}
+              activate={activate}
+              close={requestClose}
+            >
+              <SessionTab session={session} />
+            </TabFrame>
+          </TabMenu>
+        </Reorder.Item>
       ))}
       {settingsOpen && (
         <TabFrame
@@ -165,6 +174,6 @@ export function TabBar() {
       >
         <Plus className="size-4" />
       </IconButton>
-    </div>
+    </Reorder.Group>
   );
 }

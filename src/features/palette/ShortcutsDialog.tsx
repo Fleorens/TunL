@@ -17,6 +17,8 @@ const LABELS: Record<ShortcutId, Key> = {
   "tab.close": "shortcuts.labels.tab.close",
   "tab.next": "shortcuts.labels.tab.next",
   "tab.previous": "shortcuts.labels.tab.previous",
+  "tab.moveLeft": "shortcuts.labels.tab.moveLeft",
+  "tab.moveRight": "shortcuts.labels.tab.moveRight",
   "tab.goTo1": "shortcuts.labels.tab.goTo1",
   "tab.goTo2": "shortcuts.labels.tab.goTo2",
   "tab.goTo3": "shortcuts.labels.tab.goTo3",

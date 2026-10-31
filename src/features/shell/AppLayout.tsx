@@ -54,6 +54,8 @@ export function AppLayout() {
     },
     "tab.next": () => useSessions.getState().activateRelative(1),
     "tab.previous": () => useSessions.getState().activateRelative(-1),
+    "tab.moveLeft": () => useSessions.getState().moveActive(-1),
+    "tab.moveRight": () => useSessions.getState().moveActive(1),
     "tab.close": () => {
       const current = useSessions.getState().activeId;
       if (current) useSessions.getState().requestClose(current);

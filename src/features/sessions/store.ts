@@ -23,15 +23,15 @@ import {
   sendSessionSize,
 } from "./session-ports";
 import { cdCommand, hasControlChar } from "./shell-quote";
-import { neighbourTab, relativeTab, SETTINGS_TAB, tabIds } from "./tabs";
+import { moveTab, neighbourTab, relativeTab, SETTINGS_TAB, tabIds } from "./tabs";
 
 const DEFAULT_SIZE: TerminalSize = { cols: 80, rows: 24 };
 
 interface SessionsState {
   sessions: readonly Session[];
   activeId: string | null;
-  /** The tab waiting for the close confirmation, or null. */
-  closing: string | null;
+  /** The session tab ids waiting for the close confirmation, or null. */
+  closing: readonly string[] | null;
   /** The Settings tab is open (a virtual tab, never a session id). */
   settingsOpen: boolean;
   /** The folder a freshly opened SSH tab should `cd` into, keyed by tab id, removed on close. */
@@ -51,10 +51,24 @@ interface SessionsState {
   openSettings: () => void;
   /** Close the Settings tab; focus the tab that was next to it. */
   closeSettings: () => void;
-  /** Queue the close of a connected session behind the confirmation dialog. */
+  /** Reorder the sessions following `ids`: an unknown id is dropped, an absent one stays last. */
+  reorder: (ids: readonly string[]) => void;
+  /** Move the active tab one step in the row, without wrapping (nothing at an edge). */
+  moveActive: (delta: 1 | -1) => void;
+  /** Open a new tab on the same target and kind as `id`, active (an SSH `cd` folder is kept). */
+  duplicate: (id: string) => void;
+  /** Close the non-connected tabs now; the connected ones, if any and confirmation is on, wait here. */
+  requestCloseMany: (ids: readonly string[]) => void;
+  /** Close a single tab (the Settings tab closes without confirmation). */
   requestClose: (id: string) => void;
+  /** Close every tab in `closing`. */
   confirmClose: () => void;
+  /** Keep every tab in `closing`. */
   cancelClose: () => void;
+  /** Close every tab but `id` (the Settings tab is never closed). */
+  closeOthers: (id: string) => void;
+  /** Close every tab to the right of `id` (the Settings tab is never closed). */
+  closeRight: (id: string) => void;
   close: (id: string) => void;
   /** A new attempt on the same tab, with a fresh backend run. */
   reconnect: (id: string) => void;
@@ -122,28 +136,105 @@ export const useSessions = create<SessionsState>()((set, get) => ({
     }));
   },
 
-  requestClose(id) {
-    if (id === SETTINGS_TAB) {
-      get().closeSettings();
-      return;
-    }
+  /** Reorder the sessions following `ids`: an unknown id is dropped, an absent one keeps its place last. */
+  reorder(ids) {
+    set((state) => {
+      const byId = new Map(state.sessions.map((session) => [session.id, session]));
+      const ordered = ids
+        .map((id) => byId.get(id))
+        .filter((session): session is Session => session !== undefined);
+      const absent = state.sessions.filter((session) => !ids.includes(session.id));
+      return { sessions: [...ordered, ...absent] };
+    });
+  },
+
+  /** Move the active tab one step in the row, without wrapping; the Settings tab stays last. */
+  moveActive(delta) {
+    set((state) => {
+      const activeId = state.activeId;
+      if (activeId === null) return {};
+      const ids = tabIds(state.sessions, state.settingsOpen);
+      const index = ids.indexOf(activeId);
+      if (index === -1) return {};
+      const target = index + delta;
+      if (target < 0 || target >= ids.length) return {};
+      const byId = new Map(state.sessions.map((session) => [session.id, session]));
+      const sessions = moveTab(ids, activeId, target)
+        .filter((id) => id !== SETTINGS_TAB)
+        .map((id) => byId.get(id))
+        .filter((session): session is Session => session !== undefined);
+      return { sessions };
+    });
+  },
+
+  /** Open a new tab on the same target and kind as `id`, active; an SSH `cd` folder is kept. */
+  duplicate(id) {
     const session = get().sessions.find((s) => s.id === id);
+    if (!session) return;
+    const startDir = get().startDirs[id];
+    get().open(
+      session.target,
+      session.title,
+      session.kind,
+      startDir ? { dir: startDir } : undefined,
+    );
+  },
+
+  /**
+   * Close the non-connected tabs now; the connected ones, if there is at least one and confirmation is on,
+   * wait in `closing` for a single confirmation (otherwise they close now too, no dialog).
+   */
+  requestCloseMany(ids) {
     const confirm = useSettings.getState().settings?.ui.confirmCloseActiveSession === true;
-    if (session?.status === "connected" && confirm) {
-      set({ closing: id });
+    const connected: string[] = [];
+    for (const id of ids) {
+      if (id === SETTINGS_TAB) {
+        get().closeSettings();
+        continue;
+      }
+      const session = get().sessions.find((s) => s.id === id);
+      if (!session) continue;
+      if (session.status === "connected") {
+        connected.push(id);
+      } else {
+        get().close(id);
+      }
+    }
+    if (connected.length === 0) return;
+    if (confirm) {
+      set({ closing: connected });
     } else {
-      get().close(id);
+      for (const id of connected) get().close(id);
     }
   },
 
+  requestClose(id) {
+    get().requestCloseMany([id]);
+  },
+
   confirmClose() {
-    const id = get().closing;
+    const ids = get().closing;
     set({ closing: null });
-    if (id) get().close(id);
+    for (const id of ids ?? []) get().close(id);
   },
 
   cancelClose() {
     set({ closing: null });
+  },
+
+  closeOthers(id) {
+    get().requestCloseMany(
+      get()
+        .sessions.filter((s) => s.id !== id)
+        .map((s) => s.id),
+    );
+  },
+
+  closeRight(id) {
+    const ids = tabIds(get().sessions, get().settingsOpen);
+    const index = ids.indexOf(id);
+    if (index === -1) return;
+    get().requestCloseMany(ids.slice(index + 1).filter((tabId) => tabId !== SETTINGS_TAB));
   },
 
   close(id) {
@@ -195,8 +286,11 @@ function start(id: string, runId: string): void {
     const next = applySessionEvent(current, event);
     useSessions.setState((state) => ({
       sessions: state.sessions.map((s) => (s.id === id ? next : s)),
-      // A pending close confirmation no longer applies once the session is not connected.
-      closing: state.closing === id && next.status !== "connected" ? null : state.closing,
+      // A pending close confirmation no longer applies once the session is not connected: drop its id.
+      closing:
+        state.closing?.includes(id) && next.status !== "connected"
+          ? state.closing.filter((closingId) => closingId !== id)
+          : state.closing,
     }));
     // When the attempt ends (error or closed), drop this run's pending questions: an answer typed
     // after the backend abandoned its wait (PROMPT_TIMEOUT) would otherwise go into the void.

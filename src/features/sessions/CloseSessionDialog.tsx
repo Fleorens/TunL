@@ -1,5 +1,6 @@
-// The close confirmation: shown while a tab is waiting for it (`closing` set), cancelled or confirmed from here.
+// The close confirmation: shown while tabs are waiting for it (`closing` set), cancelled or confirmed from here.
 import { useTranslation } from "react-i18next";
+import { useShallow } from "zustand/react/shallow";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,19 +17,27 @@ import { useSessions } from "./store";
 export function CloseSessionDialog() {
   const { t } = useTranslation();
   const closing = useSessions((state) => state.closing);
-  const session = useSessions((state) =>
-    closing ? state.sessions.find((s) => s.id === closing) : undefined,
+  const sessions = useSessions(
+    useShallow((state) =>
+      closing ? state.sessions.filter((session) => closing.includes(session.id)) : [],
+    ),
   );
-  if (closing === null || !session) return null;
+  if (closing === null || closing.length === 0) return null;
 
   return (
-    <AlertDialog open={closing !== null} onOpenChange={() => useSessions.getState().cancelClose()}>
+    <AlertDialog open onOpenChange={() => useSessions.getState().cancelClose()}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {t("sessions.confirmClose.title", { name: session.title })}
+            {closing.length === 1
+              ? t("sessions.confirmClose.title", { name: sessions[0].title })
+              : t("sessions.confirmClose.titleMany", { count: closing.length })}
           </AlertDialogTitle>
-          <AlertDialogDescription>{t("sessions.confirmClose.description")}</AlertDialogDescription>
+          <AlertDialogDescription>
+            {closing.length === 1
+              ? t("sessions.confirmClose.description")
+              : t("sessions.confirmClose.descriptionMany")}
+          </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
