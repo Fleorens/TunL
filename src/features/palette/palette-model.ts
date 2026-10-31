@@ -19,15 +19,15 @@ export type PaletteActionId =
   | "shortcuts"
   | "settings";
 
-/**
- * Actions whose translated label contains every search term (`normalizeForSearch`); all of them for `""`.
- */
 /** Whether every term of `search` appears in `label` (accents and case ignored); an empty search matches all. */
 export function matchesSearch(label: string, search: string): boolean {
   const terms = normalizeForSearch(search).split(/\s+/).filter(Boolean);
   return terms.every((term) => normalizeForSearch(label).includes(term));
 }
 
+/**
+ * Actions whose translated label contains every search term (`normalizeForSearch`); all of them for `""`.
+ */
 export function filterActions(
   labels: Record<PaletteActionId, string>,
   search: string,

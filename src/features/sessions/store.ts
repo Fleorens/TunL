@@ -22,7 +22,7 @@ import {
   removeSessionPort,
   sendSessionSize,
 } from "./session-ports";
-import { cdCommand } from "./shell-quote";
+import { cdCommand, hasControlChar } from "./shell-quote";
 import { neighbourTab, relativeTab, SETTINGS_TAB, tabIds } from "./tabs";
 
 const DEFAULT_SIZE: TerminalSize = { cols: 80, rows: 24 };
@@ -73,8 +73,10 @@ export const useSessions = create<SessionsState>()((set, get) => ({
       name,
       get().sessions.map((session) => session.title),
     );
-    // A folder to land in lives on the store, not on the `Session` (its shape is fixed by its test).
-    const startDir = kind === "ssh" && options?.dir ? options.dir : undefined;
+    // A folder to land in lives on the store, not on the `Session` (its shape is fixed by its test). One with a
+    // control character is dropped: the terminal's line editor would act on it before the shell reads the quotes.
+    const dir = options?.dir;
+    const startDir = kind === "ssh" && dir && !hasControlChar(dir) ? dir : undefined;
     // An SFTP tab has no terminal port; only SSH registers one.
     if (kind === "ssh") registerSessionPort(id);
     set((state) => ({

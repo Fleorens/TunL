@@ -1,10 +1,13 @@
 // The single entry point to open a session from anywhere (sidebar double-click, home card, palette).
 // SFTP opens a real explorer tab; a saved RDP connection opens an RDP tab (T28b); everything else opens a real SSH tab.
+import { toast } from "sonner";
 import type { Connection } from "@/bindings/Connection";
 import type { SessionTarget } from "@/bindings/SessionTarget";
 import { useConnections } from "@/features/connections/store";
 import type { QuickTarget } from "@/features/palette/quick-connect";
+import { i18n } from "@/i18n";
 import { quickTitle, type Session } from "./session-model";
+import { hasControlChar } from "./shell-quote";
 import { useSessions } from "./store";
 
 /** Opening a saved connection: SFTP opens a real explorer tab, RDP opens a real tab, SSH opens a real tab. */
@@ -58,7 +61,14 @@ export function openSftpFrom(session: Session): void {
   useSessions.getState().open(session.target, besideTitle(session), "sftp");
 }
 
-/** Open an SSH tab on an SFTP tab's target, already `cd`-ed into `dir` (the SFTP toolbar's "Open a terminal here"). */
+/**
+ * Open an SSH tab on an SFTP tab's target, already `cd`-ed into `dir` (the SFTP toolbar's "Open a terminal here").
+ * A `dir` with a control character is never typed into the shell: the tab opens in the home folder, with a toast.
+ */
 export function openTerminalFrom(session: Session, dir: string): void {
-  useSessions.getState().open(session.target, besideTitle(session), "ssh", { dir });
+  const unsafe = hasControlChar(dir);
+  if (unsafe) toast.warning(i18n.t("sftp.openTerminalUnsafe"));
+  useSessions
+    .getState()
+    .open(session.target, besideTitle(session), "ssh", unsafe ? undefined : { dir });
 }

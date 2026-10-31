@@ -17,8 +17,10 @@ import { listMove, moveIndex } from "@/lib/list-keys";
 import { cn } from "@/lib/utils";
 import { TabMenu } from "./TabMenu";
 
-/** The shared tab shell: role, click, middle-click, Enter, close button, and the active indicator. It is the
-`asChild` trigger of a tab's context menu, so it accepts and forwards the rest of the trigger's props. */
+/**
+ * The shared tab shell: role, click, middle-click, Enter, close button, and the active indicator. It is the
+ * `asChild` trigger of a tab's context menu, so it accepts and forwards the rest of the trigger's props.
+ */
 function TabFrame({
   id,
   title,

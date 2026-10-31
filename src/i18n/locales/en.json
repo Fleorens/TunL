@@ -636,6 +636,7 @@
     "up": "Parent folder",
     "refresh": "Refresh",
     "openTerminal": "Open a terminal here",
+    "openTerminalUnsafe": "This folder's name holds a control character: the terminal opens in your home folder instead.",
     "working": "Working…",
     "upload": "Upload files",
     "uploadFolder": "Upload a folder",
