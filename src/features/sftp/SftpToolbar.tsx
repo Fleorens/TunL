@@ -8,6 +8,7 @@ import {
   FolderUp,
   Pencil,
   RefreshCw,
+  SquareTerminal,
   Upload,
 } from "lucide-react";
 import { Fragment, useState } from "react";
@@ -36,6 +37,7 @@ interface SftpToolbarProps {
   onNewFolder: () => void;
   onUpload: () => void;
   onUploadFolder: () => void;
+  onOpenTerminal: () => void;
   busy: boolean;
 }
 
@@ -90,6 +92,7 @@ export function SftpToolbar({
   onNewFolder,
   onUpload,
   onUploadFolder,
+  onOpenTerminal,
   busy,
 }: SftpToolbarProps) {
   const { t } = useTranslation();
@@ -161,6 +164,14 @@ export function SftpToolbar({
         onClick={onNewFolder}
       >
         <FolderPlus className="size-4" />
+      </IconButton>
+      <IconButton
+        variant="outline"
+        size="sm"
+        label={t("sftp.openTerminal")}
+        onClick={onOpenTerminal}
+      >
+        <SquareTerminal className="size-4" />
       </IconButton>
       <Toggle
         size="sm"

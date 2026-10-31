@@ -200,7 +200,7 @@ Périmètre et décisions : `docs/10-fonctions-a-venir.md`.
 | T56 | SFTP : envoi récursif d'un dossier | T55 | moyen | Opus 5 · high | livrée |
 | T57 | SFTP : éditer un fichier distant — moteur (dossier privé, surveillance, renvoi, conflit) | T56 | **élevé** | Opus 5 · high | livrée |
 | T57b | SFTP : éditer un fichier distant — interface | T57 | moyen | Sonnet 5 · medium | livrée |
-| T58 | SSH ↔ SFTP en un clic (ouvrir en SFTP, terminal dans le dossier) | T57b | faible | Sonnet 5 · medium | prête |
+| T58 | SSH ↔ SFTP en un clic (ouvrir en SFTP, terminal dans le dossier) | T57b | faible | Sonnet 5 · medium | livrée |
 | T59 | Onglets : glisser pour réordonner, menu d'onglet (dupliquer, fermer les autres) | T58 | moyen | Sonnet 5 · medium | prête |
 | T60 | Rouvrir les onglets de la dernière fois (réglage Jamais / Demander / Toujours) | T59 | faible | Sonnet 5 · medium | prête |
 | T61 | Commandes enregistrées : modèle, `snippets.json`, commandes, ipc et mock | T60 | moyen | Sonnet 5 · high | à écrire |

@@ -3,7 +3,7 @@
 // close button, indicator), whose content is a session's dot and protocol, or the Settings icon.
 import { Plus, Settings2, X } from "lucide-react";
 import { motion } from "motion/react";
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { IconButton } from "@/components/IconButton";
 import { ProtocolIcon } from "@/components/ProtocolIcon";
@@ -15,8 +15,12 @@ import { SETTINGS_TAB } from "@/features/sessions/tabs";
 import { useUi } from "@/features/shell/ui-store";
 import { listMove, moveIndex } from "@/lib/list-keys";
 import { cn } from "@/lib/utils";
+import { TabMenu } from "./TabMenu";
 
-/** The shared tab shell: role, click, middle-click, Enter, close button, and the active indicator. */
+/**
+ * The shared tab shell: role, click, middle-click, Enter, close button, and the active indicator. It is the
+ * `asChild` trigger of a tab's context menu, so it accepts and forwards the rest of the trigger's props.
+ */
 function TabFrame({
   id,
   title,
@@ -25,6 +29,7 @@ function TabFrame({
   close,
   closeLabel,
   children,
+  ...props
 }: {
   id: string;
   title: string;
@@ -33,18 +38,23 @@ function TabFrame({
   close: (id: string) => void;
   closeLabel?: string;
   children: ReactNode;
-}) {
+} & ComponentProps<"div">) {
   const { t } = useTranslation();
   return (
     <div
+      {...props}
       role="tab"
       tabIndex={active ? 0 : -1}
       aria-selected={active}
-      onClick={() => activate(id)}
+      onClick={(event) => {
+        props.onClick?.(event);
+        activate(id);
+      }}
       onAuxClick={(event) => {
         if (event.button === 1) close(id);
       }}
       onKeyDown={(event) => {
+        props.onKeyDown?.(event);
         if (event.key === "Enter" || event.key === " ") activate(id);
       }}
       className={cn(
@@ -122,16 +132,17 @@ export function TabBar() {
       className="flex h-10 shrink-0 items-end gap-0.5 overflow-x-auto bg-sidebar px-2 select-none"
     >
       {sessions.map((session) => (
-        <TabFrame
-          key={session.id}
-          id={session.id}
-          title={session.title}
-          active={session.id === activeId}
-          activate={activate}
-          close={requestClose}
-        >
-          <SessionTab session={session} />
-        </TabFrame>
+        <TabMenu key={session.id} session={session}>
+          <TabFrame
+            id={session.id}
+            title={session.title}
+            active={session.id === activeId}
+            activate={activate}
+            close={requestClose}
+          >
+            <SessionTab session={session} />
+          </TabFrame>
+        </TabMenu>
       ))}
       {settingsOpen && (
         <TabFrame

@@ -247,6 +247,10 @@
     "close": "Close {{name}}",
     "closeSettings": "Close Settings"
   },
+  "tabMenu": {
+    "openSftp": "Open in SFTP",
+    "close": "Close tab"
+  },
   "sessions": {
     "connecting": "Connecting to {{name}}…",
     "steps": {
@@ -440,6 +444,7 @@
     "quickPlaceholder": "user@host[:port]",
     "groups": {
       "connections": "Connections",
+      "tab": "Current tab",
       "quickConnect": "Quick connect",
       "actions": "Actions"
     },
@@ -630,6 +635,8 @@
     "files": "Files",
     "up": "Parent folder",
     "refresh": "Refresh",
+    "openTerminal": "Open a terminal here",
+    "openTerminalUnsafe": "This folder's name holds a control character: the terminal opens in your home folder instead.",
     "working": "Working…",
     "upload": "Upload files",
     "uploadFolder": "Upload a folder",
