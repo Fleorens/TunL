@@ -678,8 +678,10 @@
       "newFolder": "New folder",
       "delete": "Delete…",
       "download": "Download",
-      "downloadMany": "Download {{count}} items",
-      "deleteMany": "Delete {{count}} items…"
+      "downloadMany_one": "Download {{count}} item",
+      "downloadMany_other": "Download {{count}} items",
+      "deleteMany_one": "Delete {{count}} item…",
+      "deleteMany_other": "Delete {{count}} items…"
     },
     "transfers": {
       "title_one": "Transfers ({{count}})",

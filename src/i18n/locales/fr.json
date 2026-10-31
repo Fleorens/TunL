@@ -680,8 +680,10 @@
       "newFolder": "Nouveau dossier",
       "delete": "Supprimer…",
       "download": "Télécharger",
-      "downloadMany": "Télécharger {{count}} éléments",
-      "deleteMany": "Supprimer {{count}} éléments…"
+      "downloadMany_one": "Télécharger {{count}} élément",
+      "downloadMany_other": "Télécharger {{count}} éléments",
+      "deleteMany_one": "Supprimer {{count}} élément…",
+      "deleteMany_other": "Supprimer {{count}} éléments…"
     },
     "transfers": {
       "title_one": "Transferts ({{count}})",

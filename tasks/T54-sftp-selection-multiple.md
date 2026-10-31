@@ -83,8 +83,8 @@ Textes (`sftp.menu.downloadMany`, `sftp.menu.deleteMany`, `sftp.delete.titleMany
 
 | Clé | en | fr |
 |---|---|---|
-| `downloadMany` | Download {{count}} items | Télécharger {{count}} éléments |
-| `deleteMany` | Delete {{count}} items… | Supprimer {{count}} éléments… |
+| `downloadMany_one` / `_other` | Download {{count}} item / items | Télécharger {{count}} élément / éléments |
+| `deleteMany_one` / `_other` | Delete {{count}} item / items… | Supprimer {{count}} élément / éléments… |
 | `titleMany` | Delete {{count}} items? | Supprimer {{count}} éléments ? |
 | `many` | {{count}} items in all will be deleted. This cannot be undone. | {{count}} éléments en tout seront supprimés. Cette action est irréversible. |
 
