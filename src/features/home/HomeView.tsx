@@ -157,9 +157,10 @@ function Dashboard({ connections }: DashboardProps) {
       </div>
       {invalid && <p className="text-sm text-muted-foreground">{t("home.quickInvalid")}</p>}
 
-      {favorites.length > 0 ? (
+      <RestoreOffer />
+
+      {favorites.length > 0 && (
         <section>
-          <RestoreOffer />
           <SectionHeader title={t("home.favorites")} />
           <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3">
             {favorites.map((connection) => (
@@ -171,9 +172,10 @@ function Dashboard({ connections }: DashboardProps) {
             ))}
           </div>
         </section>
-      ) : recents.length > 0 ? (
+      )}
+
+      {recents.length > 0 && (
         <section aria-label={t("home.recent")}>
-          <RestoreOffer />
           <SectionHeader title={t("home.recent")} />
           <div className="flex flex-col">
             {recents.map((connection) => (
@@ -181,8 +183,6 @@ function Dashboard({ connections }: DashboardProps) {
             ))}
           </div>
         </section>
-      ) : (
-        <RestoreOffer />
       )}
 
       <Hints />

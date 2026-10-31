@@ -1,6 +1,6 @@
 // Mock handler for the tabs of last time (T60): keep them in `sessionStorage`, so a reload of the page plays
 // the role of a restart (the in-memory mock state resets, the saved tabs do not). A `sessionStorage` the browser
-// rejects is ignored, never an error (S1: the ids are not a secret, but the file stays private).
+// rejects is ignored, never an error.
 import type { SavedTab } from "@/bindings/SavedTab";
 import type { Handler, MockState } from "./data";
 import { arg } from "./data";

@@ -4,6 +4,7 @@
 import { create } from "zustand";
 import type { SavedTab } from "@/bindings/SavedTab";
 import { useConnections } from "@/features/connections/store";
+import { openSession } from "./open-session";
 import { useSessions } from "./store";
 
 interface RestoreOfferState {
@@ -21,13 +22,7 @@ function openRestoredTab(tab: SavedTab): string | null {
     .getState()
     .connections.find((candidate) => candidate.id === tab.connectionId);
   if (!connection) return null;
-  return useSessions
-    .getState()
-    .open(
-      { type: "saved", connectionId: connection.id },
-      connection.name,
-      tab.kind === "sftp" ? "sftp" : undefined,
-    );
+  return openSession(connection, tab.kind === "sftp" ? "sftp" : undefined);
 }
 
 export const useRestore = create<RestoreOfferState>()((set, get) => ({

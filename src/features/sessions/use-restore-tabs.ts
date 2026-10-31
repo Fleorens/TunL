@@ -13,6 +13,42 @@ import { useSessions } from "./store";
 
 const SAVE_DEBOUNCE_MS = 500;
 
+// Once per startup, not per effect run: the connections reload after an import or a retry (status `loading`, then
+// `ready` again), and that must neither reopen the tabs a second time nor bring the offer back.
+let loadStarted = false;
+let loaded = false;
+// One error toast per series of failed saves: re-armed only by a save that succeeds (like the probes, T53).
+let notified = false;
+
+/** Read last time's tabs, then reopen them or offer them, per the setting. */
+function loadAndRestore(): void {
+  void ipc
+    .tabsLoad()
+    .then((saved) => {
+      // Set before opening: the tabs reopened here are then saved like any other change.
+      loaded = true;
+      const restorableTabs = restorable(saved, useConnections.getState().connections);
+      const mode = useSettings.getState().settings?.ui.restoreTabs ?? "ask";
+      if (mode === "never" || restorableTabs.length === 0) return;
+      useRestore.setState({ offer: restorableTabs });
+      if (mode === "always") useRestore.getState().openOffer();
+    })
+    .catch(notifyError);
+}
+
+function saveTabs(tabs: SavedTab[]): void {
+  void ipc
+    .tabsSave(tabs)
+    .then(() => {
+      notified = false;
+    })
+    .catch((error) => {
+      if (notified) return;
+      notified = true;
+      notifyError(error);
+    });
+}
+
 export function useRestoreTabs(): void {
   // Wait for both: restoring needs the connections to resolve each tab, and the setting to choose the mode.
   const connectionsReady = useConnections((state) => state.status === "ready");
@@ -20,42 +56,14 @@ export function useRestoreTabs(): void {
 
   useEffect(() => {
     if (!connectionsReady || !settingsLoaded) return undefined;
+    if (!loadStarted) {
+      loadStarted = true;
+      loadAndRestore();
+    }
 
-    let loaded = false;
     let previous: string | null = null;
     let timer: ReturnType<typeof setTimeout> | undefined;
-    let notified = false;
-
-    const scheduleSave = (tabs: SavedTab[]): void => {
-      // One error toast per burst: reset the flag on every new save, so a persist failure is not repeated.
-      clearTimeout(timer);
-      notified = false;
-      timer = setTimeout(() => {
-        void ipc.tabsSave(tabs).catch((error) => {
-          if (!notified) {
-            notified = true;
-            notifyError(error);
-          }
-        });
-      }, SAVE_DEBOUNCE_MS);
-    };
-
-    // Load the saved set once, then restore it per the setting.
-    void ipc
-      .tabsLoad()
-      .then((saved) => {
-        loaded = true;
-        const restorableTabs = restorable(saved, useConnections.getState().connections);
-        const mode = useSettings.getState().settings?.ui.restoreTabs ?? "ask";
-        if (mode === "always") {
-          // Open them in order, the first becoming active, then hide the (nonexistent) offer.
-          useRestore.setState({ offer: restorableTabs });
-          useRestore.getState().openOffer();
-        } else if (mode === "ask" && restorableTabs.length > 0) {
-          useRestore.setState({ offer: restorableTabs });
-        }
-      })
-      .catch(notifyError);
+    let pending: SavedTab[] | null = null;
 
     // Save the saved set whenever the tabs change (open, close, reorder), at most once per 500 ms, and never
     // before the load: otherwise the empty startup list would overwrite the last run's set.
@@ -65,11 +73,18 @@ export function useRestoreTabs(): void {
       const key = current.map((tab) => `${tab.connectionId}:${tab.kind}`).join("\u0000");
       if (key === previous) return;
       previous = key;
-      scheduleSave(current);
+      pending = current;
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        pending = null;
+        saveTabs(current);
+      }, SAVE_DEBOUNCE_MS);
     });
 
     return () => {
+      // A change still waiting is written now rather than lost.
       clearTimeout(timer);
+      if (pending) saveTabs(pending);
       unsubscribe();
     };
   }, [connectionsReady, settingsLoaded]);
