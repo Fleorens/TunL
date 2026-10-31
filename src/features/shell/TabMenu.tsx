@@ -1,7 +1,7 @@
 // The right-click menu of a session tab: Duplicate, "Open in SFTP" (SSH tabs only), then "Close tab",
 // "Close other tabs", "Close tabs to the right". The tab is the `asChild` trigger, so it keeps its click,
 // middle-click and keyboard handling; the menu only adds the right-click. The Settings tab has no menu.
-import { Copy, FolderTree, X } from "lucide-react";
+import { ArrowRightToLine, Copy, FolderTree, ListX, X } from "lucide-react";
 import type { ReactElement } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -49,9 +49,11 @@ export function TabMenu({ session, children, lastSession }: TabMenuProps) {
           {t("tabMenu.close")}
         </ContextMenuItem>
         <ContextMenuItem onClick={() => closeOthers(session.id)}>
+          <ListX className="size-3.5" />
           {t("tabMenu.closeOthers")}
         </ContextMenuItem>
         <ContextMenuItem onClick={() => closeRight(session.id)} disabled={lastSession}>
+          <ArrowRightToLine className="size-3.5" />
           {t("tabMenu.closeRight")}
         </ContextMenuItem>
       </ContextMenuContent>

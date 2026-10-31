@@ -22,19 +22,19 @@ export function CloseSessionDialog() {
       closing ? state.sessions.filter((session) => closing.includes(session.id)) : [],
     ),
   );
-  if (closing === null || closing.length === 0) return null;
+  if (closing === null || closing.length === 0 || sessions.length === 0) return null;
 
   return (
     <AlertDialog open onOpenChange={() => useSessions.getState().cancelClose()}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {closing.length === 1
+            {sessions.length === 1
               ? t("sessions.confirmClose.title", { name: sessions[0].title })
-              : t("sessions.confirmClose.titleMany", { count: closing.length })}
+              : t("sessions.confirmClose.titleMany", { count: sessions.length })}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            {closing.length === 1
+            {sessions.length === 1
               ? t("sessions.confirmClose.description")
               : t("sessions.confirmClose.descriptionMany")}
           </AlertDialogDescription>

@@ -8,6 +8,7 @@ import { usePrompts } from "@/features/prompts/store";
 import { useSettings } from "@/features/settings/store";
 import { notifyError, toAppError } from "@/lib/errors";
 import { ipc, type TerminalSize } from "@/lib/ipc";
+import { besideTitle } from "./beside-title";
 import {
   applySessionEvent,
   newSession,
@@ -23,7 +24,7 @@ import {
   sendSessionSize,
 } from "./session-ports";
 import { cdCommand, hasControlChar } from "./shell-quote";
-import { moveTab, neighbourTab, relativeTab, SETTINGS_TAB, tabIds } from "./tabs";
+import { moveTab, neighbourTab, relativeTab, SETTINGS_TAB, tabIds, tabsRightOf } from "./tabs";
 
 const DEFAULT_SIZE: TerminalSize = { cols: 80, rows: 24 };
 
@@ -174,7 +175,7 @@ export const useSessions = create<SessionsState>()((set, get) => ({
     const startDir = get().startDirs[id];
     get().open(
       session.target,
-      session.title,
+      besideTitle(session),
       session.kind,
       startDir ? { dir: startDir } : undefined,
     );
@@ -232,9 +233,7 @@ export const useSessions = create<SessionsState>()((set, get) => ({
 
   closeRight(id) {
     const ids = tabIds(get().sessions, get().settingsOpen);
-    const index = ids.indexOf(id);
-    if (index === -1) return;
-    get().requestCloseMany(ids.slice(index + 1).filter((tabId) => tabId !== SETTINGS_TAB));
+    get().requestCloseMany(tabsRightOf(ids, id).filter((tabId) => tabId !== SETTINGS_TAB));
   },
 
   close(id) {
@@ -271,6 +270,17 @@ export const useSessions = create<SessionsState>()((set, get) => ({
   },
 }));
 
+/** The close confirmation without `id` once its session is no longer connected; `null` when nothing is left. */
+function dropClosing(
+  closing: readonly string[] | null,
+  id: string,
+  status: Session["status"],
+): readonly string[] | null {
+  if (!closing?.includes(id) || status === "connected") return closing;
+  const rest = closing.filter((closingId) => closingId !== id);
+  return rest.length === 0 ? null : rest;
+}
+
 /**
  * Start one attempt: open the backend session, apply its events (only while they belong to this run),
  * and push its bytes to the tab's port. A refusal at the Target step becomes an error on the session.
@@ -287,10 +297,7 @@ function start(id: string, runId: string): void {
     useSessions.setState((state) => ({
       sessions: state.sessions.map((s) => (s.id === id ? next : s)),
       // A pending close confirmation no longer applies once the session is not connected: drop its id.
-      closing:
-        state.closing?.includes(id) && next.status !== "connected"
-          ? state.closing.filter((closingId) => closingId !== id)
-          : state.closing,
+      closing: dropClosing(state.closing, id, next.status),
     }));
     // When the attempt ends (error or closed), drop this run's pending questions: an answer typed
     // after the backend abandoned its wait (PROMPT_TIMEOUT) would otherwise go into the void.

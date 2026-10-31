@@ -86,6 +86,7 @@ What TunL relies on, beside the package's own dependencies (WebKitGTK 4.1):
 | SFTP folder download: a whole folder from its menu, as one transfer with its file count; links skipped (T55) | |
 | SFTP edit: open a remote file in its application from the menu, push each save back in place, warn before a large file, ask before replacing a version changed on the server (T57, T57b) | |
 | Open a terminal tab in SFTP (tab menu or palette), and a terminal in the SFTP folder shown (T58) | |
+| Tabs: drag to reorder, Ctrl+Shift+PgUp/PgDn, duplicate, close others / to the right with one confirmation (T59) | |
 | Reopen last time's tabs at startup: offered on the home screen, or always, or never (Settings › Appearance) (T60) | |
 | RDP tab: FreeRDP in its own window, session card with duration, translated end reason, filtered log, relaunch, install help when the client is missing (T28b) | |
 | RDP through a bastion: a stable tunnel port and the real host name so FreeRDP re-checks the certificate it trusted (T28c) | |

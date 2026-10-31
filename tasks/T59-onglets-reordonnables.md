@@ -206,7 +206,7 @@ test("Close tabs to the right keeps the tab and those before it", async ({ page 
 - [x] `npm run review` passe, et `node scripts/contract-tests.mjs T59 --check` affiche `OK` partout.
 - [x] `wc -l src/features/sessions/store.ts src/features/shell/TabBar.tsx` : 400 lignes au plus chacun.
 - [x] Aucune nouvelle exception `project-rules: allow`.
-- [ ] Pendant un glisser, l'onglet suit la souris et les autres s'écartent sans sauter ; l'indicateur reste sous
+- [x] Pendant un glisser, l'onglet suit la souris et les autres s'écartent sans sauter ; l'indicateur reste sous
   l'onglet actif (à l'écran).
 
 ## À regarder par Florian

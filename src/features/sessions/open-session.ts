@@ -3,9 +3,9 @@
 import { toast } from "sonner";
 import type { Connection } from "@/bindings/Connection";
 import type { SessionTarget } from "@/bindings/SessionTarget";
-import { useConnections } from "@/features/connections/store";
 import type { QuickTarget } from "@/features/palette/quick-connect";
 import { i18n } from "@/i18n";
+import { besideTitle } from "./beside-title";
 import { quickTitle, type Session } from "./session-model";
 import { hasControlChar } from "./shell-quote";
 import { useSessions } from "./store";
@@ -34,19 +34,6 @@ export function openQuickSession(target: QuickTarget): void {
       { type: "quick", host: target.host, port: target.port, username: target.username },
       quickTitle(target),
     );
-}
-
-/**
- * The title of a tab opened beside another on the same target: the saved connection's current name, or the quick
- * target's command line (`uniqueTitle` then adds " (2)"). A connection deleted meanwhile keeps the source tab's title.
- */
-function besideTitle(session: Session): string {
-  const target: SessionTarget = session.target;
-  if (target.type === "quick") return quickTitle(target);
-  const connection = useConnections
-    .getState()
-    .connections.find((c) => c.id === target.connectionId);
-  return connection?.name ?? session.title;
 }
 
 /**
