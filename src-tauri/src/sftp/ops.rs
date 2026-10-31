@@ -356,8 +356,9 @@ pub async fn reserve_remote(
 }
 
 /// An `O_EXCL` collision: OpenSSH reports it as `SSH_FX_FAILURE` (`FILE_ALREADY_EXISTS` is a v4 code), so the
-/// name is taken and the caller moves on. Anything else stops the upload (docs/01 review).
-fn is_taken(error: &SftpError) -> bool {
+/// name is taken and the caller moves on. Anything else stops the upload (docs/01 review). Shared by the
+/// file reservation and the folder reservation (T56).
+pub(crate) fn is_taken(error: &SftpError) -> bool {
     matches!(
         error,
         SftpError::Status(status) if status.status_code == StatusCode::Failure

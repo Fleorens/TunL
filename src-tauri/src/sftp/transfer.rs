@@ -18,6 +18,7 @@ use ts_rs::TS;
 // `suffixed` lives with the other name helpers in `ops`; re-exported here so the T26 contract test
 // (transfer_tests.rs) keeps importing it from `transfer`.
 pub use crate::sftp::ops::suffixed;
+pub(crate) use crate::sftp::progress::Cumulative;
 
 use crate::error::{AppError, AppResult, ErrorKind};
 

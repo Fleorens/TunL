@@ -1,6 +1,15 @@
 // The SFTP tab's top line: up, refresh, the path (breadcrumb or a typed field), new folder, and the hidden-files
 // toggle.
-import { ArrowUp, Eye, EyeOff, FolderPlus, Pencil, RefreshCw, Upload } from "lucide-react";
+import {
+  ArrowUp,
+  Eye,
+  EyeOff,
+  FolderPlus,
+  FolderUp,
+  Pencil,
+  RefreshCw,
+  Upload,
+} from "lucide-react";
 import { Fragment, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { IconButton } from "@/components/IconButton";
@@ -26,6 +35,7 @@ interface SftpToolbarProps {
   onToggleHidden: (showHidden: boolean) => void;
   onNewFolder: () => void;
   onUpload: () => void;
+  onUploadFolder: () => void;
   busy: boolean;
 }
 
@@ -79,6 +89,7 @@ export function SftpToolbar({
   onToggleHidden,
   onNewFolder,
   onUpload,
+  onUploadFolder,
   busy,
 }: SftpToolbarProps) {
   const { t } = useTranslation();
@@ -134,6 +145,14 @@ export function SftpToolbar({
       </IconButton>
       <IconButton variant="outline" size="sm" label={t("sftp.upload")} onClick={onUpload}>
         <Upload className="size-4" />
+      </IconButton>
+      <IconButton
+        variant="outline"
+        size="sm"
+        label={t("sftp.uploadFolder")}
+        onClick={onUploadFolder}
+      >
+        <FolderUp className="size-4" />
       </IconButton>
       <IconButton
         variant="outline"

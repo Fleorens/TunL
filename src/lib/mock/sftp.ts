@@ -136,6 +136,23 @@ export function mockRemoteWrite(path: string, size: number): void {
   fs = new Map(fs).set(path, { kind: "file", size, modifiedAt: Date.now(), permissions: 0o644 });
 }
 
+/** Add a folder and its files to the shared remote tree (an upload of a folder, T56); the tree is replaced, not mutated. */
+export function mockRemoteAddFolder(dirs: string[], files: { path: string; size: number }[]): void {
+  const next = new Map(fs);
+  for (const dir of dirs) {
+    next.set(dir, { kind: "dir", size: 4096, modifiedAt: Date.now(), permissions: 0o755 });
+  }
+  for (const file of files) {
+    next.set(file.path, {
+      kind: "file",
+      size: file.size,
+      modifiedAt: Date.now(),
+      permissions: 0o644,
+    });
+  }
+  fs = next;
+}
+
 /** Back to the demo file system with no connected tab, for `resetMockBackend()`. */
 export function resetMockSftp(): void {
   fs = sftpFs.demoFs();

@@ -4,6 +4,9 @@
 //! UI learns the file count and the total size (`Counted`) before the first byte. A link is never followed
 //! (S11): it is counted in `skipped`, like an entry of another type. Only names checked by `valid_name` build
 //! a local path. Each file goes through its own `.part`, renamed at the end; none is ever left behind.
+//!
+//! The upload (T56) shares the walk, the cumulative `Progress` and the `.part` rule; it lives in `tree_upload`
+//! and is re-exported here so `sftp::tree::upload_dir` is the public path of both.
 use std::io;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
@@ -17,9 +20,13 @@ use tokio_util::sync::CancellationToken;
 use crate::error::AppError;
 use crate::sftp::ops::{entry_metadata, map_sftp_error, valid_name};
 use crate::sftp::transfer::{
-    Outcome, PROGRESS_INTERVAL, TransferEvent, TransferSink, copy, emit_final, emit_progress,
-    finish_local, first_free, local_io_error, remote_base_name,
+    Cumulative, Outcome, TransferEvent, TransferSink, copy, emit_final, finish_local, first_free,
+    local_io_error, remote_base_name,
 };
+
+// The upload (T56) lives in `tree_upload`; re-export it so `sftp::tree::upload_dir` is the public path of
+// both the download and the upload, as the tests and the command import it there.
+pub use super::tree_upload::upload_dir;
 
 /// One remote file to copy: its remote path, its path under the local top folder, its size.
 struct RemoteFile {
@@ -35,54 +42,6 @@ struct Scan {
     files: Vec<RemoteFile>,
     bytes: u64,
     skipped: u32,
-}
-
-/// Shifts the `Progress` of one file's `copy` onto the whole folder: `transferred` counts the bytes of the
-/// files already copied, `total` is the folder's, and the rate is measured from the start of the folder.
-/// The final `Progress` of each file is held back unless `PROGRESS_INTERVAL` has passed since the last one
-/// sent (`last`, shared by the files of the folder), so many small files do not flood the UI; the very last
-/// one (the whole folder copied) always goes through.
-struct Cumulative<'a> {
-    sink: &'a dyn TransferSink,
-    offset: u64,
-    total: u64,
-    start: Instant,
-    last: &'a Mutex<Option<Instant>>,
-}
-
-impl Cumulative<'_> {
-    /// Whether a `Progress` for `transferred` bytes of the folder goes out now (and marks the time if so).
-    fn due(&self, transferred: u64) -> bool {
-        let now = Instant::now();
-        let Ok(mut last) = self.last.lock() else {
-            return true;
-        };
-        let due = transferred >= self.total
-            || last.is_none_or(|sent| now.duration_since(sent) >= PROGRESS_INTERVAL);
-        if due {
-            *last = Some(now);
-        }
-        due
-    }
-}
-
-impl TransferSink for Cumulative<'_> {
-    fn event(&self, event: TransferEvent) {
-        match event {
-            TransferEvent::Progress { transferred, .. } => {
-                let transferred = self.offset + transferred;
-                if self.due(transferred) {
-                    emit_progress(
-                        self.sink,
-                        transferred,
-                        Some(self.total),
-                        self.start.elapsed(),
-                    );
-                }
-            }
-            other => self.sink.event(other),
-        }
-    }
 }
 
 /// Walk `remote` with a stack: folders are entered, files kept with their size, anything else skipped.

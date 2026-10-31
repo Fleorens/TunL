@@ -3,9 +3,16 @@
 // A destination name never clobbers an already-downloaded file (download) or an existing remote file (upload).
 import type { AppError } from "@/bindings/AppError";
 import type { TransferEvent } from "@/bindings/TransferEvent";
+import { MOCK_DROP_DIR, MOCK_PICKED_FOLDER } from "@/lib/files";
 import type { Handler } from "./data";
 import { arg } from "./data";
-import { mockRemoteNames, mockRemoteNode, mockRemoteTree, mockRemoteWrite } from "./sftp";
+import {
+  mockRemoteAddFolder,
+  mockRemoteNames,
+  mockRemoteNode,
+  mockRemoteTree,
+  mockRemoteWrite,
+} from "./sftp";
 import type { MockNode } from "./sftp-fs";
 
 /** The local folder a download lands in. */
@@ -39,6 +46,36 @@ function notFound(path: string): AppError {
 /** The base name of a path, without its directory. */
 function nameOf(path: string): string {
   return path.slice(path.lastIndexOf("/") + 1);
+}
+
+/** One simulated local folder: its files (with a fictitious size) and the links dragged alongside them. */
+interface LocalFolder {
+  files: { name: string; size: number }[];
+  links: string[];
+}
+
+/** The local folders the mock "drags" or "chooses": an already-known name falls through to a file. */
+const LOCAL_FOLDERS: Record<string, LocalFolder> = {
+  [`${MOCK_DROP_DIR}/photos`]: {
+    files: [
+      { name: "IMG_1.jpg", size: 1024 * 1024 },
+      { name: "IMG_2.jpg", size: 1024 * 1024 },
+      { name: "IMG_3.jpg", size: 1024 * 1024 },
+    ],
+    links: ["shortcut"],
+  },
+  [MOCK_PICKED_FOLDER]: {
+    files: [
+      { name: "a.txt", size: 1024 },
+      { name: "b.txt", size: 1024 },
+    ],
+    links: [],
+  },
+};
+
+/** A dropped or picked path that is one of the simulated local folders, else `undefined` (a file). */
+function localFolder(localPath: string): LocalFolder | undefined {
+  return LOCAL_FOLDERS[localPath];
 }
 
 /** `base`, or `base (n)` before its extension when `taken` already holds it. */
@@ -151,6 +188,30 @@ async function runUpload(
   onEvent({ type: "done", path: dest });
 }
 
+/** A folder uploads whole (T56): `counted` (its files and links), the steps over the total, then `done` to a
+ * free folder of `remoteDir`, whose name and files are written to the shared remote tree. */
+async function runFolderUpload(
+  transferId: string,
+  localPath: string,
+  remoteDir: string,
+  names: string[],
+  folder: LocalFolder,
+  onEvent: (event: TransferEvent) => void,
+): Promise<void> {
+  const reg: ActiveTransfer = { timers: [], cancelled: false, onEvent };
+  active.set(transferId, reg);
+  const bytes = folder.files.reduce((sum, file) => sum + file.size, 0);
+  onEvent({ type: "counted", files: folder.files.length, bytes, skipped: folder.links.length });
+  await runSteps(bytes, onEvent, reg);
+  if (reg.cancelled) return;
+  const topName = freeName(nameOf(localPath), (name) => names.includes(name));
+  const top = remoteDir.endsWith("/") ? `${remoteDir}${topName}` : `${remoteDir}/${topName}`;
+  const files = folder.files.map((file) => ({ path: `${top}/${file.name}`, size: file.size }));
+  mockRemoteAddFolder([top], files);
+  active.delete(transferId);
+  onEvent({ type: "done", path: top });
+}
+
 export const transferHandlers: Record<string, Handler<Record<string, unknown>>> = {
   sftp_download: (state, args) => {
     const { sessionId, transferId, remotePath, onEvent } = arg<{
@@ -190,7 +251,13 @@ export const transferHandlers: Record<string, Handler<Record<string, unknown>>> 
       onEvent: (event: TransferEvent) => void;
     }>(args);
     const names = mockRemoteNames(sessionId, remoteDir);
-    void runUpload(transferId, localPath, remoteDir, names, onEvent);
+    // A folder uploaded whole (T56); any other path stays a file, as before.
+    const folder = localFolder(localPath);
+    if (folder) {
+      void runFolderUpload(transferId, localPath, remoteDir, names, folder, onEvent);
+    } else {
+      void runUpload(transferId, localPath, remoteDir, names, onEvent);
+    }
     return { state, result: null };
   },
   transfer_cancel: (state, args) => {
