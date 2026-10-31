@@ -255,7 +255,10 @@
   },
   "tabMenu": {
     "openSftp": "Open in SFTP",
-    "close": "Close tab"
+    "close": "Close tab",
+    "duplicate": "Duplicate",
+    "closeOthers": "Close other tabs",
+    "closeRight": "Close tabs to the right"
   },
   "sessions": {
     "connecting": "Connecting to {{name}}…",
@@ -291,7 +294,9 @@
     "confirmClose": {
       "title": "Close {{name}}?",
       "description": "The session is still open: closing the tab ends it.",
-      "confirm": "Close"
+      "confirm": "Close",
+      "titleMany": "Close {{count}} connected tabs?",
+      "descriptionMany": "Their sessions are still open: closing the tabs ends them."
     }
   },
   "prompts": {
@@ -478,6 +483,8 @@
       "tab.close": "Close tab",
       "tab.next": "Next tab",
       "tab.previous": "Previous tab",
+      "tab.moveLeft": "Move tab left",
+      "tab.moveRight": "Move tab right",
       "tab.goTo1": "Go to tab 1…8",
       "tab.goTo2": "Go to tab 2",
       "tab.goTo3": "Go to tab 3",

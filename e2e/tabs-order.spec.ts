@@ -5,7 +5,10 @@ import { expect, type Page, test } from "./support/test.ts";
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
   for (const name of ["nas", "pi-hole", "web-01"]) {
-    await page.getByRole("button", { name: new RegExp(`^${name}`) }).first().dblclick();
+    await page
+      .getByRole("button", { name: new RegExp(`^${name}`) })
+      .first()
+      .dblclick();
     await expect(page.getByRole("tab", { selected: true })).toContainText(name);
     await expect(
       page.getByRole("region", { name, exact: true }).locator(".xterm-rows"),

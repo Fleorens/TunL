@@ -44,7 +44,7 @@ export function moveTab(ids: readonly string[], id: string, toIndex: number): re
   const from = ids.indexOf(id);
   if (from === -1) return ids;
   const clamped = Math.max(0, Math.min(toIndex, ids.length - 1));
-  const rest = ids.filter((item, index) => index !== from);
+  const rest = ids.filter((_, index) => index !== from);
   rest.splice(clamped, 0, id);
   return rest;
 }

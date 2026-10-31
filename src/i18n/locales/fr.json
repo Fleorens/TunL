@@ -256,7 +256,10 @@
   },
   "tabMenu": {
     "openSftp": "Ouvrir en SFTP",
-    "close": "Fermer l'onglet"
+    "close": "Fermer l'onglet",
+    "duplicate": "Dupliquer",
+    "closeOthers": "Fermer les autres onglets",
+    "closeRight": "Fermer les onglets à droite"
   },
   "sessions": {
     "connecting": "Connexion à {{name}}…",
@@ -290,9 +293,11 @@
     },
     "reconnect": "Se reconnecter",
     "confirmClose": {
-      "title": "Fermer {{name}}?",
+      "title": "Fermer {{name}} ?",
       "description": "La session est encore ouverte : fermer l'onglet la termine.",
-      "confirm": "Fermer"
+      "confirm": "Fermer",
+      "titleMany": "Fermer {{count}} onglets connectés ?",
+      "descriptionMany": "Leurs sessions sont encore ouvertes : fermer les onglets les termine."
     }
   },
   "prompts": {
@@ -480,6 +485,8 @@
       "tab.close": "Fermer l'onglet",
       "tab.next": "Onglet suivant",
       "tab.previous": "Onglet précédent",
+      "tab.moveLeft": "Déplacer l'onglet à gauche",
+      "tab.moveRight": "Déplacer l'onglet à droite",
       "tab.goTo1": "Aller à l'onglet 1…8",
       "tab.goTo2": "Aller à l'onglet 2",
       "tab.goTo3": "Aller à l'onglet 3",

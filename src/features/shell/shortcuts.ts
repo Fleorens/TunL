@@ -7,6 +7,8 @@ export type ShortcutId =
   | "tab.close"
   | "tab.next"
   | "tab.previous"
+  | "tab.moveLeft"
+  | "tab.moveRight"
   | `tab.goTo${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9}`
   | "sidebar.toggle"
   | "sidebar.filter"
@@ -73,6 +75,16 @@ export const SHORTCUTS: readonly ShortcutDefinition[] = [
       { key: "Tab", ctrl: true, shift: true },
     ],
     display: ["Ctrl", "PgUp"],
+  },
+  {
+    id: "tab.moveLeft",
+    combos: [{ key: "PageUp", ctrl: true, shift: true }],
+    display: ["Ctrl", "⇧", "PgUp"],
+  },
+  {
+    id: "tab.moveRight",
+    combos: [{ key: "PageDown", ctrl: true, shift: true }],
+    display: ["Ctrl", "⇧", "PgDn"],
   },
   goToTab(1),
   goToTab(2),
